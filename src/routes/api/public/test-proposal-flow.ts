@@ -68,7 +68,50 @@ export const Route = createFileRoute("/api/public/test-proposal-flow")({
           .select("id, business_name, trade_type, email, anthropic_api_key")
           .eq("id", input.contractorId)
           .maybeSingle();
-        if (cErr || !contractor) return Response.json({ error: "Contractor not found" }, { status: 404 });
+        if (cErr) {
+          const supabaseHost = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).host : "missing";
+          console.error("[test-proposal-flow] contractor lookup failed", {
+            contractorId: input.contractorId,
+            supabaseHost,
+            code: cErr.code,
+            message: cErr.message,
+            details: cErr.details,
+            hint: cErr.hint,
+          });
+          return Response.json({
+            error: "Contractor lookup failed",
+            details: {
+              supabaseHost,
+              code: cErr.code,
+              message: cErr.message,
+              hint: cErr.hint,
+            },
+          }, { status: 500 });
+        }
+        if (!contractor) {
+          const supabaseHost = process.env.SUPABASE_URL ? new URL(process.env.SUPABASE_URL).host : "missing";
+          const { data: visibleContractors, error: listErr } = await supabaseAdmin
+            .from("contractors")
+            .select("id")
+            .limit(3);
+          console.warn("[test-proposal-flow] contractor not found", {
+            contractorId: input.contractorId,
+            supabaseHost,
+            visibleCount: visibleContractors?.length ?? null,
+            listErrorCode: listErr?.code,
+            listErrorMessage: listErr?.message,
+          });
+          return Response.json({
+            error: "Contractor not found",
+            details: {
+              contractorId: input.contractorId,
+              supabaseHost,
+              visibleCount: visibleContractors?.length ?? null,
+              listErrorCode: listErr?.code ?? null,
+              listErrorMessage: listErr?.message ?? null,
+            },
+          }, { status: 404 });
+        }
 
         // 2. Generate proposal via Claude
         const anthropicKey = (contractor.anthropic_api_key && contractor.anthropic_api_key.trim()) || process.env.ANTHROPIC_API_KEY || "";
