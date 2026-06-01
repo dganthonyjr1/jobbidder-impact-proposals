@@ -36,3 +36,9 @@ dist-ssr
 
 # Vercel generated output
 .vercel/
+
+# Local verification artifacts
+__pycache__/
+*.pyc
+test-results/
+.live_bundle_private.json

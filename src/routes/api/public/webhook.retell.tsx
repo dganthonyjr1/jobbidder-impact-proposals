@@ -299,7 +299,10 @@ async function callClaude(opts: {
     ? `Job is in ${opts.job.job_state}. Exclude any catalog item whose restricted_states includes that state.`
     : "";
 
-  const catalogStr = opts.catalog
+  const maxCatalogItems = 40;
+  const visibleCatalog = opts.catalog.slice(0, maxCatalogItems);
+  const omittedCatalogCount = Math.max(0, opts.catalog.length - visibleCatalog.length);
+  const catalogStr = visibleCatalog
     .map((m) => `- id:${m.id} | ${m.category} | ${m.name}${m.description ? ` — ${m.description}` : ""} | unit:${m.unit} | sia:$${m.sia_price ?? "n/a"} | retail:$${m.retail_price}${m.restricted_states?.length ? ` | restricted:${m.restricted_states.join(",")}` : ""}`)
     .join("\n");
   const langName = languageName(opts.language);
@@ -323,6 +326,7 @@ SCOPE NOTES: ${opts.job.job_scope || "(none)"}
 
 SIA WHOLESALE MATERIALS CATALOG:
 ${catalogStr || "(catalog empty — generate realistic line items)"}
+${omittedCatalogCount ? `\nNOTE: ${omittedCatalogCount} additional catalog items were omitted from this prompt for speed; add realistic custom line items if needed.` : ""}
 
 Return this exact JSON shape:
 {
@@ -339,20 +343,31 @@ Return this exact JSON shape:
   }
 }`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": opts.apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 4096,
-      system,
-      messages: [{ role: "user", content: user }],
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 22_000);
+  let res: Response;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": opts.apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2048,
+        system,
+        messages: [{ role: "user", content: user }],
+      }),
+    });
+  } catch (e: any) {
+    if (e?.name === "AbortError") throw new Error("Claude proposal generation timed out after 22 seconds; using fallback proposal");
+    throw e;
+  } finally {
+    clearTimeout(timeoutId);
+  }
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(`Claude API ${res.status}: ${txt.slice(0, 400)}`);
@@ -405,6 +420,13 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
         const language: Lang = normalizeLanguage(
           analysis.language || analysis.detected_language || analysis.caller_language || body?.call?.language,
         );
+        const deliveryMode = String(
+          analysis.delivery_mode || analysis.delivery_channel || analysis.notification_mode || body?.delivery_mode || "",
+        ).toLowerCase().trim();
+        const skipSms =
+          analysis.skip_sms === true ||
+          analysis.sms === false ||
+          ["email_only", "email-only", "no_sms", "no-sms", "none"].includes(deliveryMode);
 
         // Look up contractor (for Claude context and per-contractor API key)
         const { data: contractor, error: cErr } = await supabaseAdmin
@@ -503,8 +525,8 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           const origin = `${url.protocol}//${url.host}`;
           const estimateUrl = `${origin}/e/${createdEst.id}`;
 
-          let smsResult: any = null;
-          if (job.client_phone) {
+          let smsResult: any = skipSms ? { skipped: "email_only_or_no_sms_requested" } : null;
+          if (job.client_phone && !skipSms) {
             try {
               smsResult = await sendSmsViaGHL({
                 to: job.client_phone,
@@ -622,9 +644,9 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           }
         }
 
-        // SMS the client (if we captured a phone) with the proposal link
-        let smsResult: any = null;
-        if (job.client_phone) {
+        // SMS the client (if we captured a phone) with the proposal link, unless an explicit test/intake payload requested email-only/no-SMS delivery.
+        let smsResult: any = skipSms ? { skipped: "email_only_or_no_sms_requested" } : null;
+        if (job.client_phone && !skipSms) {
           try {
             smsResult = await sendSmsViaGHL({
               to: job.client_phone,
