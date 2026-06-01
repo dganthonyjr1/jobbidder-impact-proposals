@@ -96,6 +96,44 @@ export function normalizeLanguage(raw: unknown): "en" | "es" | "fr" | "pt" | "ht
   return "en";
 }
 
+export function buildFallbackEstimate(opts: {
+  contractor: { business_name: string; trade_type: string | null };
+  job: { client_name: string; job_address: string | null; job_state: string | null; trade_type: string | null; job_description: string };
+  language?: string | null;
+}): EstimateAIShape {
+  const lang = normalizeLanguage(opts.language);
+  const trade = opts.job.trade_type || opts.contractor.trade_type || "roofing";
+  const isRoofing = /roof/i.test(trade) || /shingle|flashing|roof/i.test(opts.job.job_description);
+  const materialLow = isRoofing ? 1250 : 900;
+  const materialHigh = isRoofing ? 2200 : 1700;
+  const laborLow = isRoofing ? 1800 : 1400;
+  const laborHigh = isRoofing ? 3200 : 2600;
+  const summaries: Record<ReturnType<typeof normalizeLanguage>, string> = {
+    en: `Ballpark estimate for ${opts.job.client_name}: includes site setup, standard materials, professional labor, cleanup, and final review for the requested ${trade} work. Final pricing may change after an on-site inspection, material selection, hidden conditions, and permit requirements are confirmed.`,
+    es: `Estimación aproximada para ${opts.job.client_name}: incluye preparación del sitio, materiales estándar, mano de obra profesional, limpieza y revisión final para el trabajo solicitado de ${trade}. El precio final puede cambiar después de confirmar la inspección en sitio, la selección de materiales, condiciones ocultas y requisitos de permisos.`,
+    fr: `Estimation approximative pour ${opts.job.client_name} : comprend la préparation du site, les matériaux standard, la main-d’œuvre professionnelle, le nettoyage et la revue finale pour les travaux de ${trade} demandés. Le prix final peut changer après inspection sur place, choix des matériaux, conditions cachées et exigences de permis.`,
+    pt: `Estimativa aproximada para ${opts.job.client_name}: inclui preparação do local, materiais padrão, mão de obra profissional, limpeza e revisão final para o trabalho solicitado de ${trade}. O preço final pode mudar após vistoria no local, seleção de materiais, condições ocultas e requisitos de licença.`,
+    ht: `Estimasyon apwoksimatif pou ${opts.job.client_name}: li enkli preparasyon sit la, materyèl estanda, men-dèv pwofesyonèl, netwayaj ak dènye revizyon pou travay ${trade} yo mande a. Pri final la ka chanje apre enspeksyon sou plas, chwa materyèl, kondisyon kache ak pèmi yo konfime.`,
+  };
+  const timelines: Record<ReturnType<typeof normalizeLanguage>, string> = {
+    en: "Estimated 1-3 business days for typical repair work after scheduling and material availability are confirmed.",
+    es: "Estimado de 1 a 3 días hábiles para reparaciones típicas después de confirmar la programación y disponibilidad de materiales.",
+    fr: "Estimation de 1 à 3 jours ouvrables pour des réparations typiques après confirmation du calendrier et de la disponibilité des matériaux.",
+    pt: "Estimativa de 1 a 3 dias úteis para reparos típicos após confirmação do agendamento e disponibilidade de materiais.",
+    ht: "Estimasyon 1 a 3 jou ouvrab pou reparasyon nòmal apre yo konfime orè a ak disponiblite materyèl yo.",
+  };
+  return {
+    scope_summary: summaries[lang],
+    material_low: materialLow,
+    material_high: materialHigh,
+    labor_low: laborLow,
+    labor_high: laborHigh,
+    total_low: materialLow + laborLow,
+    total_high: materialHigh + laborHigh,
+    timeline_text: timelines[lang],
+  };
+}
+
 export function generateEstimateNumber(): string {
   const d = new Date();
   const y = d.getFullYear().toString().slice(2);
@@ -129,6 +167,7 @@ export async function upgradeEstimateToProposal(estimateId: string): Promise<{ p
       trade_type: est.trade_type,
       job_description: est.scope_summary || "Upgraded from estimate",
       valid_through: validThrough.toISOString().slice(0, 10),
+      language: est.language || "en",
       raw_input: { from_estimate: est.id },
     })
     .select("id")

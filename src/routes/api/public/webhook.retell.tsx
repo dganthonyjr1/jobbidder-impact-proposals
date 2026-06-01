@@ -6,7 +6,7 @@ import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 import { computeTotals, fmt, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { sendEmailViaGHL, sendSmsViaGHL } from "@/lib/ghl.server";
-import { callClaudeForEstimate, generateEstimateNumber, languageName, normalizeLanguage } from "@/lib/estimates.server";
+import { buildFallbackEstimate, callClaudeForEstimate, generateEstimateNumber, languageName, normalizeLanguage } from "@/lib/estimates.server";
 import { sendLovableEmail } from "@lovable.dev/email-js";
 
 const EMAIL_SITE_NAME = "Bidpilot";
@@ -190,8 +190,10 @@ function buildFallbackProposal(opts: {
     job_state: string | null; trade_type: string | null; job_description: string; job_scope: string | null;
   };
   catalog: MaterialRow[];
+  language?: Lang;
 }): AIShape {
   const trade = (opts.job.trade_type || opts.contractor.trade_type || "general contracting").toString();
+  const lang = normalizeLanguage(opts.language);
   const usableCatalog = (opts.catalog || []).slice(0, 6);
   const materials = usableCatalog.length
     ? usableCatalog.slice(0, 4).map((m) => ({
@@ -208,22 +210,77 @@ function buildFallbackProposal(opts: {
         { item: "Site protection and cleanup supplies", description: "Protection, disposal bags, cleanup, and jobsite consumables", qty: 1, unit: "allowance", retail_price: 300, sia_price: 240 },
       ];
 
-  return {
-    scope_of_work: `Prepare, coordinate, and complete the requested ${trade} work for ${opts.job.client_name}. Scope is based on the voice intake details: ${opts.job.job_scope || opts.job.job_description}. Final quantities, selections, and site conditions should be confirmed before work begins.`,
-    timeline: "Estimated 3-7 business days after material selections and scheduling are confirmed.",
-    warranty: "1-year workmanship warranty, excluding owner-supplied materials, pre-existing conditions, and normal wear.",
-    exclusions: ["Permit fees unless explicitly listed", "Hidden damage or structural repairs not visible during intake", "Changes in material selections or scope after approval"],
-    materials,
-    labor: [
+  const scopeByLang: Record<Lang, string> = {
+    en: `Prepare, coordinate, and complete the requested ${trade} work for ${opts.job.client_name}. Scope is based on the voice intake details: ${opts.job.job_scope || opts.job.job_description}. Final quantities, selections, and site conditions should be confirmed before work begins.`,
+    es: `Preparar, coordinar y completar el trabajo solicitado de ${trade} para ${opts.job.client_name}. El alcance se basa en los detalles de la llamada: ${opts.job.job_scope || opts.job.job_description}. Las cantidades finales, selecciones y condiciones del sitio deben confirmarse antes de comenzar.`,
+    fr: `Préparer, coordonner et réaliser les travaux de ${trade} demandés pour ${opts.job.client_name}. La portée est basée sur les détails recueillis lors de l’appel : ${opts.job.job_scope || opts.job.job_description}. Les quantités finales, les choix de matériaux et les conditions du site doivent être confirmés avant le début des travaux.`,
+    pt: `Preparar, coordenar e concluir o trabalho solicitado de ${trade} para ${opts.job.client_name}. O escopo se baseia nos detalhes da chamada: ${opts.job.job_scope || opts.job.job_description}. As quantidades finais, seleções e condições do local devem ser confirmadas antes do início.`,
+    ht: `Prepare, kowòdone epi fini travay ${trade} yo mande pou ${opts.job.client_name}. Dimansyon an baze sou detay apèl la: ${opts.job.job_scope || opts.job.job_description}. Kantite final yo, chwa materyèl yo ak kondisyon sit la dwe konfime anvan travay la kòmanse.`,
+  };
+  const timelineByLang: Record<Lang, string> = {
+    en: "Estimated 3-7 business days after material selections and scheduling are confirmed.",
+    es: "Estimado de 3 a 7 días hábiles después de confirmar materiales y programación.",
+    fr: "Estimation de 3 à 7 jours ouvrables après confirmation des matériaux et du calendrier.",
+    pt: "Estimativa de 3 a 7 dias úteis após a confirmação dos materiais e do agendamento.",
+    ht: "Estimasyon 3 a 7 jou ouvrab apre yo konfime materyèl yo ak orè a.",
+  };
+  const warrantyByLang: Record<Lang, string> = {
+    en: "1-year workmanship warranty, excluding owner-supplied materials, pre-existing conditions, and normal wear.",
+    es: "Garantía de mano de obra de 1 año, excluyendo materiales provistos por el propietario, condiciones preexistentes y desgaste normal.",
+    fr: "Garantie de main-d’œuvre d’un an, excluant les matériaux fournis par le propriétaire, les conditions préexistantes et l’usure normale.",
+    pt: "Garantia de mão de obra de 1 ano, excluindo materiais fornecidos pelo proprietário, condições preexistentes e desgaste normal.",
+    ht: "Garanti 1 ane pou travay la, eksepte materyèl pwopriyetè a bay, kondisyon ki te deja la, ak mete nòmal.",
+  };
+  const exclusionsByLang: Record<Lang, string[]> = {
+    en: ["Permit fees unless explicitly listed", "Hidden damage or structural repairs not visible during intake", "Changes in material selections or scope after approval"],
+    es: ["Tarifas de permisos salvo que se indiquen explícitamente", "Daños ocultos o reparaciones estructurales no visibles durante la evaluación", "Cambios en materiales o alcance después de la aprobación"],
+    fr: ["Frais de permis sauf indication explicite", "Dommages cachés ou réparations structurelles non visibles lors de l’évaluation", "Modifications des matériaux ou de la portée après approbation"],
+    pt: ["Taxas de licença, salvo se listadas explicitamente", "Danos ocultos ou reparos estruturais não visíveis durante a avaliação", "Alterações de materiais ou escopo após a aprovação"],
+    ht: ["Frè pèmi sof si yo ekri yo klèman", "Domaj kache oswa reparasyon estriktirèl ki pa vizib pandan evalyasyon an", "Chanjman nan materyèl oswa dimansyon apre apwobasyon"],
+  };
+  const laborByLang: Record<Lang, LaborLine[]> = {
+    en: [
       { task: "Project setup and protection", description: "Mobilization, layout, protection, and preparation", hours: 4, rate: 85 },
       { task: `${trade} installation labor`, description: "Complete labor for the requested scope", hours: 16, rate: 95 },
       { task: "Cleanup and final walkthrough", description: "Debris removal, cleanup, and punch-list review", hours: 3, rate: 85 },
     ],
-    tiers: {
-      good: { label: "Good", description: "Essential scope with standard materials and finish quality" },
-      better: { label: "Better", description: "Recommended scope with upgraded details and balanced value" },
-      best: { label: "Best", description: "Premium finish level with enhanced materials and added detail" },
-    },
+    es: [
+      { task: "Preparación y protección del proyecto", description: "Movilización, preparación, protección y planificación", hours: 4, rate: 85 },
+      { task: `Mano de obra de ${trade}`, description: "Mano de obra completa para el alcance solicitado", hours: 16, rate: 95 },
+      { task: "Limpieza y revisión final", description: "Retiro de escombros, limpieza y revisión de pendientes", hours: 3, rate: 85 },
+    ],
+    fr: [
+      { task: "Préparation et protection du projet", description: "Mobilisation, implantation, protection et préparation", hours: 4, rate: 85 },
+      { task: `Main-d’œuvre de ${trade}`, description: "Main-d’œuvre complète pour la portée demandée", hours: 16, rate: 95 },
+      { task: "Nettoyage et visite finale", description: "Évacuation des débris, nettoyage et revue finale", hours: 3, rate: 85 },
+    ],
+    pt: [
+      { task: "Preparação e proteção do projeto", description: "Mobilização, layout, proteção e preparação", hours: 4, rate: 85 },
+      { task: `Mão de obra de ${trade}`, description: "Mão de obra completa para o escopo solicitado", hours: 16, rate: 95 },
+      { task: "Limpeza e vistoria final", description: "Remoção de detritos, limpeza e revisão final", hours: 3, rate: 85 },
+    ],
+    ht: [
+      { task: "Preparasyon ak pwoteksyon pwojè a", description: "Mobilizasyon, aranjman, pwoteksyon ak preparasyon", hours: 4, rate: 85 },
+      { task: `Travay men-dèv pou ${trade}`, description: "Tout travay men-dèv pou dimansyon yo mande a", hours: 16, rate: 95 },
+      { task: "Netwayaj ak dènye enspeksyon", description: "Retire debri, netwaye, epi revize lis final la", hours: 3, rate: 85 },
+    ],
+  };
+  const tierByLang: Record<Lang, AIShape["tiers"]> = {
+    en: { good: { label: "Good", description: "Essential scope with standard materials and finish quality" }, better: { label: "Better", description: "Recommended scope with upgraded details and balanced value" }, best: { label: "Best", description: "Premium finish level with enhanced materials and added detail" } },
+    es: { good: { label: "Bueno", description: "Alcance esencial con materiales estándar y calidad confiable" }, better: { label: "Mejor", description: "Alcance recomendado con detalles mejorados y buen valor" }, best: { label: "Óptimo", description: "Nivel premium con materiales superiores y detalles adicionales" } },
+    fr: { good: { label: "Bon", description: "Portée essentielle avec matériaux standard et qualité fiable" }, better: { label: "Mieux", description: "Portée recommandée avec détails améliorés et valeur équilibrée" }, best: { label: "Meilleur", description: "Niveau haut de gamme avec matériaux améliorés et détails supplémentaires" } },
+    pt: { good: { label: "Bom", description: "Escopo essencial com materiais padrão e qualidade confiável" }, better: { label: "Melhor", description: "Escopo recomendado com detalhes aprimorados e bom valor" }, best: { label: "Ótimo", description: "Nível premium com materiais superiores e detalhes adicionais" } },
+    ht: { good: { label: "Bon", description: "Dimansyon esansyèl ak materyèl estanda ak bon kalite" }, better: { label: "Pi bon", description: "Dimansyon rekòmande ak detay amelyore ak bon valè" }, best: { label: "Meyè", description: "Nivo prim ak materyèl amelyore ak plis detay" } },
+  };
+
+  return {
+    scope_of_work: scopeByLang[lang],
+    timeline: timelineByLang[lang],
+    warranty: warrantyByLang[lang],
+    exclusions: exclusionsByLang[lang],
+    materials,
+    labor: laborByLang[lang],
+    tiers: tierByLang[lang],
   };
 }
 
@@ -384,9 +441,31 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
             } catch (e: any) {
               estError = e?.message || "Estimate generation failed";
               console.error("[retell webhook] estimate error:", estError);
+              est = buildFallbackEstimate({
+                contractor: { business_name: contractor.business_name, trade_type: contractor.trade_type },
+                job: {
+                  client_name: job.client_name,
+                  job_address: job.job_address,
+                  job_state: job.job_state,
+                  trade_type: job.trade_type,
+                  job_description: job.job_description,
+                },
+                language,
+              });
             }
           } else {
             estError = "No Anthropic API key configured";
+            est = buildFallbackEstimate({
+              contractor: { business_name: contractor.business_name, trade_type: contractor.trade_type },
+              job: {
+                client_name: job.client_name,
+                job_address: job.job_address,
+                job_state: job.job_state,
+                trade_type: job.trade_type,
+                job_description: job.job_description,
+              },
+              language,
+            });
           }
 
           const validThrough = new Date();
@@ -445,7 +524,8 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
             estimate_id: createdEst.id,
             estimate_number: createdEst.estimate_number,
             estimate_url: estimateUrl,
-            ai_error: estError,
+            ai_error: null,
+            generation_warning: estError,
             sms: smsResult,
             language,
           });
@@ -476,11 +556,11 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           } catch (e: any) {
             aiError = e?.message || "AI generation failed";
             console.error("[retell webhook] Claude error:", aiError);
-            ai = buildFallbackProposal({ contractor, job, catalog });
+            ai = buildFallbackProposal({ contractor, job, catalog, language });
           }
         } else {
           aiError = "No Anthropic API key configured (contractor or global)";
-          ai = buildFallbackProposal({ contractor, job, catalog });
+          ai = buildFallbackProposal({ contractor, job, catalog, language });
         }
 
         const validThrough = new Date();
@@ -564,7 +644,8 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           proposal_id: created.id,
           proposal_number: created.proposal_number,
           proposal_url: proposalUrl,
-          ai_error: aiError,
+          ai_error: null,
+          generation_warning: aiError,
           email: emailResult,
           sms: smsResult,
           language,
