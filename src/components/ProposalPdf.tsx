@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image, Link } from "@react-pdf/renderer";
 import { computeTotals, fmt, TIER_LABELS, type MaterialLine, type LaborLine } from "@/lib/pricing";
 
 const styles = StyleSheet.create({
@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
   exclusionItem: { fontSize: 9, color: "#444", marginBottom: 2 },
   photoGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
   photo: { width: 160, height: 120, objectFit: "cover", borderRadius: 3, border: "1 solid #ddd" },
+  videoLink: { fontSize: 9, color: "#0f62fe", marginTop: 4 },
   footer: { position: "absolute", bottom: 20, left: 40, right: 40, fontSize: 8, color: "#888", textAlign: "center", borderTop: "0.5 solid #ddd", paddingTop: 6 },
 });
 
@@ -58,7 +59,10 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
   const expires = proposal.expires_at
     ? new Date(proposal.expires_at)
     : new Date(created.getTime() + 72 * 60 * 60 * 1000);
-  const photos: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
+  const mediaUrls: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
+  const isVideoUrl = (url: string) => /\.(mp4|mov|webm)(\?|#|$)/i.test(url);
+  const photos = mediaUrls.filter((url) => !isVideoUrl(url));
+  const videos = mediaUrls.filter((url) => isVideoUrl(url));
 
   return (
     <Document>
@@ -103,14 +107,25 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
           </View>
         ) : null}
 
-        {photos.length > 0 ? (
+        {mediaUrls.length > 0 ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Job-site Photos</Text>
-            <View style={styles.photoGrid}>
-              {photos.slice(0, 6).map((url, i) => (
-                <Image key={i} src={url} style={styles.photo} />
-              ))}
-            </View>
+            <Text style={styles.sectionTitle}>Job-site Media</Text>
+            {photos.length > 0 ? (
+              <View style={styles.photoGrid}>
+                {photos.slice(0, 6).map((url, i) => (
+                  <Image key={i} src={url} style={styles.photo} />
+                ))}
+              </View>
+            ) : null}
+            {videos.length > 0 ? (
+              <View style={{ marginTop: 8 }}>
+                {videos.map((url, i) => (
+                  <Text key={url} style={styles.videoLink}>
+                    Video {i + 1}: <Link src={url}>{url}</Link>
+                  </Text>
+                ))}
+              </View>
+            ) : null}
           </View>
         ) : null}
 

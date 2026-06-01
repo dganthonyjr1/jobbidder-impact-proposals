@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Check, FileText, Sparkles } from "lucide-react";
+import { Check, FileText, PlayCircle, Sparkles } from "lucide-react";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { getT, fmtMoney } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
@@ -111,6 +111,8 @@ function PublicProposal() {
   const fmt = (n: number) => fmtMoney(n, proposal.language);
   const TIER_LABELS = t.tiers;
   const taxPct = `${Math.round((Number(proposal.tax_rate) || 0.07) * 100)}%`;
+  const mediaUrls: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
+  const isVideoUrl = (url: string) => /\.(mp4|mov|webm)(\?|#|$)/i.test(url);
 
   async function sign() {
     if (!signName.trim()) { toast.error("Please enter your name"); return; }
@@ -230,7 +232,7 @@ function PublicProposal() {
               {savingPhotos && <span className="text-xs text-muted-foreground">{t.saving}</span>}
             </div>
             <PhotoUploader
-              value={Array.isArray(proposal.photos) ? proposal.photos : []}
+              value={mediaUrls}
               onChange={savePhotos}
               prefix="proposal"
               max={8}
@@ -238,15 +240,27 @@ function PublicProposal() {
           </Card>
         )}
 
-        {!isOwner && Array.isArray(proposal.photos) && proposal.photos.length > 0 && (
+        {!isOwner && mediaUrls.length > 0 && (
           <Card className="p-6 mb-6">
             <h2 className="font-display font-semibold text-xl mb-4">{t.jobPhotos}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {proposal.photos.map((url: string, i: number) => (
-                <a key={i} href={url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-md border border-border">
-                  <img src={url} alt={`Job photo ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />
-                </a>
-              ))}
+              {mediaUrls.map((url: string, i: number) => {
+                const video = isVideoUrl(url);
+                return (
+                  <a key={i} href={url} target="_blank" rel="noreferrer" className="relative block aspect-square overflow-hidden rounded-md border border-border bg-muted">
+                    {video ? (
+                      <>
+                        <video src={url} className="w-full h-full object-cover" muted preload="metadata" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 text-white">
+                          <PlayCircle className="h-10 w-10 drop-shadow" />
+                        </div>
+                      </>
+                    ) : (
+                      <img src={url} alt={`Job media ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />
+                    )}
+                  </a>
+                );
+              })}
             </div>
           </Card>
         )}
