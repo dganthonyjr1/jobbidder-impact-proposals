@@ -13,6 +13,8 @@ type GhlContactInput = {
   phone?: string | null;
   email?: string | null;
   name?: string | null;
+  language?: string | null;
+  tags?: string[] | null;
 };
 
 type GhlContactResult =
@@ -44,16 +46,35 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
   if (input.email) body.email = input.email.toLowerCase().trim();
   if (input.name) body.name = input.name;
 
+  const language = (input.language || "").toLowerCase().trim().slice(0, 5);
+  const tags = Array.from(new Set([...(input.tags || []), ...(language ? [`lang:${language}`] : [])]));
+  if (tags.length) body.tags = tags;
+  if (language) body.customFields = [{ key: "language", field_value: language }];
+
   if (!body.phone && !body.email) {
     return { ok: false, error: "GHL contact upsert requires phone or email" };
   }
 
-  const upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
+  let upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
     method: "POST",
     headers: ghlHeaders(token),
     body: JSON.stringify(body),
   });
-  const upsertJson: any = await upsertRes.json().catch(() => ({}));
+  let upsertJson: any = await upsertRes.json().catch(() => ({}));
+
+  // Some GHL locations require custom-field IDs instead of field keys. If that
+  // happens, preserve delivery by retrying with tags only.
+  if (!upsertRes.ok && body.customFields) {
+    const retryBody = { ...body };
+    delete (retryBody as Record<string, unknown>).customFields;
+    upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
+      method: "POST",
+      headers: ghlHeaders(token),
+      body: JSON.stringify(retryBody),
+    });
+    upsertJson = await upsertRes.json().catch(() => ({}));
+  }
+
   if (!upsertRes.ok) {
     return {
       ok: false,
@@ -82,6 +103,10 @@ export async function sendSmsViaGHL(opts: {
   fromNumber?: string;
   contactName?: string;
   contactEmail?: string;
+  language?: string;
+  tags?: string[];
+  name?: string;
+  email?: string;
 }): Promise<GhlSmsResult> {
   const token = process.env.GHL_API_TOKEN;
   const fromNumber = opts.fromNumber || process.env.GHL_FROM_NUMBER;
@@ -99,8 +124,10 @@ export async function sendSmsViaGHL(opts: {
   try {
     const contact = await upsertGhlContact({
       phone: to,
-      email: opts.contactEmail,
-      name: opts.contactName,
+      email: opts.contactEmail || opts.email,
+      name: opts.contactName || opts.name,
+      language: opts.language,
+      tags: opts.tags,
     });
     if (!contact.ok) return contact;
 
@@ -147,6 +174,8 @@ export async function sendEmailViaGHL(opts: {
   fromEmail?: string;
   contactName?: string;
   contactPhone?: string | null;
+  language?: string;
+  tags?: string[];
 }): Promise<GhlEmailResult> {
   const token = process.env.GHL_API_TOKEN;
   const fromEmail = opts.fromEmail || process.env.GHL_EMAIL_FROM || process.env.GHL_FROM_EMAIL || "noreply@suddenimpactagency.io";
@@ -165,6 +194,8 @@ export async function sendEmailViaGHL(opts: {
       email: to,
       phone: opts.contactPhone,
       name: opts.contactName,
+      language: opts.language,
+      tags: opts.tags,
     });
     if (!contact.ok) return contact;
 

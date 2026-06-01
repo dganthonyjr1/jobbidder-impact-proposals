@@ -100,6 +100,7 @@ Confirm details back to them. Be friendly, concise, and never quote prices yours
     job_description: "string — detailed scope of work",
     job_scope: "string — extra scope notes (optional)",
     document_type: "enum: 'estimate' (ballpark) or 'proposal' (full itemized)",
+    language: "enum: 'en' | 'es' | 'fr' | 'pt' | 'ht' — language Alex detected the caller speaking. Drives proposal copy + GHL/Michelle SMS+email locale.",
   }, null, 2);
 
   return (

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Check, FileText, Sparkles } from "lucide-react";
-import { computeTotals, fmt, TIER_LABELS, type MaterialLine, type LaborLine } from "@/lib/pricing";
+import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
+import { getT, fmtMoney } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import { PhotoUploader } from "@/components/PhotoUploader";
@@ -98,13 +99,18 @@ function PublicProposal() {
     }
   }
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading proposal…</div>;
-  if (!proposal) return <div className="min-h-screen flex items-center justify-center"><div className="text-center"><FileText className="h-10 w-10 mx-auto text-muted-foreground" /><p className="mt-4">Proposal not found</p></div></div>;
+  const tLoading = getT(proposal?.language);
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">{tLoading.loading}</div>;
+  if (!proposal) return <div className="min-h-screen flex items-center justify-center"><div className="text-center"><FileText className="h-10 w-10 mx-auto text-muted-foreground" /><p className="mt-4">{tLoading.notFound}</p></div></div>;
 
   const materials = (proposal.materials || []) as MaterialLine[];
   const labor = (proposal.labor || []) as LaborLine[];
   const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07);
   const brand = contractor?.primary_color || "#EC4899";
+  const t = getT(proposal.language);
+  const fmt = (n: number) => fmtMoney(n, proposal.language);
+  const TIER_LABELS = t.tiers;
+  const taxPct = `${Math.round((Number(proposal.tax_rate) || 0.07) * 100)}%`;
 
   async function sign() {
     if (!signName.trim()) { toast.error("Please enter your name"); return; }
@@ -169,7 +175,7 @@ function PublicProposal() {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-muted-foreground">Proposal</div>
+            <div className="text-xs text-muted-foreground">{t.proposal}</div>
             <div className="font-mono text-sm">{proposal.proposal_number}</div>
             <div className="mt-2">
               <DownloadPdfButton proposal={proposal} contractor={contractor} tier={tier} />
@@ -180,8 +186,8 @@ function PublicProposal() {
 
       <div className="max-w-5xl mx-auto px-6 py-10">
         <div className="mb-10">
-          <Badge variant="secondary" className="mb-3">Prepared for {proposal.client_name}</Badge>
-          <h1 className="font-display text-4xl font-bold tracking-tight capitalize">{proposal.trade_type || "Project"} Proposal</h1>
+          <Badge variant="secondary" className="mb-3">{t.preparedFor} {proposal.client_name}</Badge>
+          <h1 className="font-display text-4xl font-bold tracking-tight capitalize">{t.tradeProposal(proposal.trade_type || t.projectFallback)}</h1>
           {proposal.job_address && <p className="text-muted-foreground mt-2">{proposal.job_address}</p>}
         </div>
 
@@ -209,7 +215,7 @@ function PublicProposal() {
 
         {proposal.scope_of_work && (
           <Card className="p-6 mb-6">
-            <h2 className="font-display font-semibold text-xl mb-3">Scope of Work</h2>
+            <h2 className="font-display font-semibold text-xl mb-3">{t.scopeOfWork}</h2>
             <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{proposal.scope_of_work}</p>
           </Card>
         )}
@@ -218,10 +224,10 @@ function PublicProposal() {
           <Card className="p-6 mb-6 print:hidden border-dashed">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="font-display font-semibold text-xl">Job site photos</h2>
-                <p className="text-xs text-muted-foreground">Add up to 8 photos. Appears on the PDF and the client gallery.</p>
+                <h2 className="font-display font-semibold text-xl">{t.jobPhotos}</h2>
+                <p className="text-xs text-muted-foreground">{t.jobPhotosHint}</p>
               </div>
-              {savingPhotos && <span className="text-xs text-muted-foreground">Saving…</span>}
+              {savingPhotos && <span className="text-xs text-muted-foreground">{t.saving}</span>}
             </div>
             <PhotoUploader
               value={Array.isArray(proposal.photos) ? proposal.photos : []}
@@ -234,7 +240,7 @@ function PublicProposal() {
 
         {!isOwner && Array.isArray(proposal.photos) && proposal.photos.length > 0 && (
           <Card className="p-6 mb-6">
-            <h2 className="font-display font-semibold text-xl mb-4">Job site photos</h2>
+            <h2 className="font-display font-semibold text-xl mb-4">{t.jobPhotos}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {proposal.photos.map((url: string, i: number) => (
                 <a key={i} href={url} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-md border border-border">
@@ -247,10 +253,10 @@ function PublicProposal() {
 
         {materials.length > 0 && (
           <Card className="p-6 mb-6">
-            <h2 className="font-display font-semibold text-xl mb-4">Materials</h2>
+            <h2 className="font-display font-semibold text-xl mb-4">{t.materials}</h2>
             <div className="overflow-hidden rounded-md border border-border">
               <table className="w-full text-sm">
-                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">Item</th><th className="text-right p-3">Qty</th><th className="text-right p-3">Unit price</th><th className="text-right p-3">Total</th></tr></thead>
+                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">{t.item}</th><th className="text-right p-3">{t.qty}</th><th className="text-right p-3">{t.unitPrice}</th><th className="text-right p-3">{t.total}</th></tr></thead>
                 <tbody>
                   {materials.map((m, i) => {
                     const unit = (m.sia_price ?? m.retail_price) || 0;
@@ -268,7 +274,7 @@ function PublicProposal() {
             </div>
             {totals.savings > 0 && (
               <div className="mt-3 text-sm rounded-md bg-green-500/10 text-green-400 px-3 py-2 inline-block">
-                You save {fmt(totals.savings)} vs. retail thanks to Sudden Impact Agency wholesale pricing.
+                {t.savingsLine(fmt(totals.savings))}
               </div>
             )}
           </Card>
@@ -276,10 +282,10 @@ function PublicProposal() {
 
         {labor.length > 0 && (
           <Card className="p-6 mb-6">
-            <h2 className="font-display font-semibold text-xl mb-4">Labor</h2>
+            <h2 className="font-display font-semibold text-xl mb-4">{t.labor}</h2>
             <div className="overflow-hidden rounded-md border border-border">
               <table className="w-full text-sm">
-                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">Task</th><th className="text-right p-3">Hours</th><th className="text-right p-3">Rate</th><th className="text-right p-3">Total</th></tr></thead>
+                <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">{t.task}</th><th className="text-right p-3">{t.hours}</th><th className="text-right p-3">{t.rate}</th><th className="text-right p-3">{t.total}</th></tr></thead>
                 <tbody>
                   {labor.map((l, i) => (
                     <tr key={i} className="border-t border-border">
@@ -297,25 +303,25 @@ function PublicProposal() {
 
         <Card className="p-6 mb-6">
           <div className="space-y-2 text-sm">
-            <Row label="Materials" v={fmt(totals.materialsSia)} />
-            <Row label="Labor" v={fmt(totals.laborTotal)} />
-            <Row label="Tax (7%)" v={fmt(totals.tax)} />
+            <Row label={t.materials} v={fmt(totals.materialsSia)} />
+            <Row label={t.labor} v={fmt(totals.laborTotal)} />
+            <Row label={t.tax(taxPct)} v={fmt(totals.tax)} />
             <div className="border-t border-border pt-3 mt-3 flex justify-between items-center">
-              <span className="font-display text-lg">Total</span>
+              <span className="font-display text-lg">{t.total}</span>
               <span className="font-display text-3xl font-bold" style={{ color: brand }}>{fmt(totals.grandTotal)}</span>
             </div>
           </div>
         </Card>
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">
-          {proposal.timeline && <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">Timeline</div><div className="font-medium">{proposal.timeline}</div></Card>}
-          {proposal.warranty && <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">Warranty</div><div className="font-medium">{proposal.warranty}</div></Card>}
-          <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">Payment</div><div className="font-medium">{proposal.payment_terms}</div></Card>
+          {proposal.timeline && <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">{t.timeline}</div><div className="font-medium">{proposal.timeline}</div></Card>}
+          {proposal.warranty && <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">{t.warranty}</div><div className="font-medium">{proposal.warranty}</div></Card>}
+          <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">{t.payment}</div><div className="font-medium">{proposal.payment_terms}</div></Card>
         </div>
 
         {Array.isArray(proposal.exclusions) && proposal.exclusions.length > 0 && (
           <Card className="p-6 mb-6">
-            <h3 className="font-display font-semibold mb-3">Exclusions</h3>
+            <h3 className="font-display font-semibold mb-3">{t.exclusions}</h3>
             <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               {proposal.exclusions.map((e: string, i: number) => <li key={i}>{e}</li>)}
             </ul>
@@ -326,47 +332,47 @@ function PublicProposal() {
           {accepted || proposal.status === "accepted" ? (
             <div className="text-center py-6">
               <div className="h-14 w-14 rounded-full bg-green-500/20 mx-auto flex items-center justify-center"><Check className="h-7 w-7 text-green-400" /></div>
-              <h3 className="font-display text-2xl font-bold mt-4">Proposal accepted</h3>
-              <p className="text-muted-foreground mt-2">Your contractor has been notified.</p>
+              <h3 className="font-display text-2xl font-bold mt-4">{t.accepted}</h3>
+              <p className="text-muted-foreground mt-2">{t.acceptedSub}</p>
             </div>
           ) : declined || proposal.status === "declined" ? (
             <div className="text-center py-6">
-              <h3 className="font-display text-2xl font-bold mt-4">Proposal declined</h3>
-              <p className="text-muted-foreground mt-2">Your contractor has been notified.</p>
+              <h3 className="font-display text-2xl font-bold mt-4">{t.declined}</h3>
+              <p className="text-muted-foreground mt-2">{t.declinedSub}</p>
             </div>
           ) : (
             <>
-              <h3 className="font-display text-2xl font-bold mb-2">Accept this proposal</h3>
-              <p className="text-sm text-muted-foreground mb-5">Selected tier: <strong>{TIER_LABELS[tier].name}</strong> — {fmt(totals.grandTotal)}. Type your full name to e-sign.</p>
+              <h3 className="font-display text-2xl font-bold mb-2">{t.acceptThisProposal}</h3>
+              <p className="text-sm text-muted-foreground mb-5">{t.selectedTier(TIER_LABELS[tier].name, fmt(totals.grandTotal))}</p>
               <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div><Label>Full name</Label><Input value={signName} onChange={(e) => setSignName(e.target.value)} /></div>
-                <div><Label>Email (optional)</Label><Input type="email" value={signEmail} onChange={(e) => setSignEmail(e.target.value)} /></div>
+                <div><Label>{t.fullName}</Label><Input value={signName} onChange={(e) => setSignName(e.target.value)} /></div>
+                <div><Label>{t.emailOptional}</Label><Input type="email" value={signEmail} onChange={(e) => setSignEmail(e.target.value)} /></div>
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="shadow-glow text-white" style={{ background: brand }} onClick={sign} disabled={signing}>
-                  {signing ? "Submitting…" : `Accept & sign — ${fmt(totals.grandTotal)}`}
+                  {signing ? t.submitting : t.acceptAndSign(fmt(totals.grandTotal))}
                 </Button>
                 {!showDecline ? (
                   <Button size="lg" variant="outline" onClick={() => setShowDecline(true)} disabled={signing}>
-                    Decline
+                    {t.decline}
                   </Button>
                 ) : null}
               </div>
               {showDecline && (
                 <div className="mt-5 pt-5 border-t border-border">
-                  <Label>Reason for declining (optional)</Label>
+                  <Label>{t.declineReasonLabel}</Label>
                   <Input
                     value={declineReason}
                     onChange={(e) => setDeclineReason(e.target.value)}
-                    placeholder="e.g. went with another quote, timing didn't work…"
+                    placeholder={t.declineReasonPh}
                     className="mt-1"
                   />
                   <div className="flex gap-3 mt-3">
                     <Button variant="destructive" onClick={decline} disabled={declining}>
-                      {declining ? "Submitting…" : "Confirm decline"}
+                      {declining ? t.submitting : t.confirmDecline}
                     </Button>
                     <Button variant="ghost" onClick={() => setShowDecline(false)} disabled={declining}>
-                      Cancel
+                      {t.cancel}
                     </Button>
                   </div>
                 </div>
@@ -376,10 +382,8 @@ function PublicProposal() {
         </Card>
 
         <Card className="p-6 mt-6 print:hidden">
-          <h3 className="font-display text-lg font-bold mb-2">Send to client</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Email this proposal directly to your client. Works with any inbox — Gmail, Outlook, Yahoo, Apple, business email or custom domain.
-          </p>
+          <h3 className="font-display text-lg font-bold mb-2">{t.sendToClient}</h3>
+          <p className="text-sm text-muted-foreground mb-4">{t.sendToClientHint}</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
               type="email"
@@ -389,11 +393,11 @@ function PublicProposal() {
               className="flex-1"
             />
             <Button onClick={sendToClient} disabled={sending}>
-              {sending ? "Sending…" : "Send proposal"}
+              {sending ? t.sending : t.sendBtn}
             </Button>
           </div>
           {sentTo && (
-            <p className="text-xs text-green-400 mt-3">✓ Sent to {sentTo}</p>
+            <p className="text-xs text-green-400 mt-3">{t.sentTo(sentTo)}</p>
           )}
         </Card>
 

@@ -6,12 +6,34 @@ import { render } from "@react-email/components";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 import { computeTotals, fmt, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { sendEmailViaGHL, sendSmsViaGHL } from "@/lib/ghl.server";
-import { callClaudeForEstimate, generateEstimateNumber } from "@/lib/estimates.server";
+import { callClaudeForEstimate, generateEstimateNumber, languageName, normalizeLanguage } from "@/lib/estimates.server";
 import { sendLovableEmail } from "@lovable.dev/email-js";
 
 const EMAIL_SITE_NAME = "Bidpilot";
 const EMAIL_SENDER_DOMAIN = "notify.suddenimpactagency.io";
 const EMAIL_FROM_DOMAIN = "suddenimpactagency.io";
+
+type Lang = "en" | "es" | "fr" | "pt" | "ht";
+
+function proposalSms(lang: Lang, business: string, num: string, url: string): string {
+  switch (lang) {
+    case "es": return `${business}: Su propuesta ${num} está lista. Verla: ${url}`;
+    case "fr": return `${business} : Votre proposition ${num} est prête. Voir : ${url}`;
+    case "pt": return `${business}: A sua proposta ${num} está pronta. Ver: ${url}`;
+    case "ht": return `${business}: Pwopozisyon ou ${num} pare. Gade li: ${url}`;
+    default: return `${business}: Your proposal ${num} is ready. View: ${url}`;
+  }
+}
+
+function estimateSms(lang: Lang, name: string, business: string, url: string): string {
+  switch (lang) {
+    case "es": return `Hola ${name}, aquí está su estimación aproximada de ${business}: ${url}  Responda si desea una propuesta completa.`;
+    case "fr": return `Bonjour ${name}, voici votre estimation de ${business} : ${url}  Répondez si vous souhaitez une proposition complète.`;
+    case "pt": return `Olá ${name}, aqui está a sua estimativa de ${business}: ${url}  Responda se quiser uma proposta completa.`;
+    case "ht": return `Bonjou ${name}, men estimasyon ou de ${business}: ${url}  Reponn si w vle yon pwopozisyon konplè.`;
+    default: return `Hi ${name}, here's your ballpark estimate from ${business}: ${url}  Reply if you'd like a full proposal.`;
+  }
+}
 
 function genToken() {
   const b = new Uint8Array(32);
@@ -26,6 +48,7 @@ async function sendProposalEmail(opts: {
   proposalUrl: string;
   contactName?: string | null;
   contactPhone?: string | null;
+  language?: string | null;
 }) {
   const normalized = opts.to.toLowerCase().trim();
   const { data: suppressed } = await supabaseAdmin
@@ -72,6 +95,7 @@ async function sendProposalEmail(opts: {
     text,
     contactName: opts.contactName || opts.proposal.client_name,
     contactPhone: opts.contactPhone || opts.proposal.client_phone,
+    language: opts.language || opts.proposal.language,
   });
   if (ghlResult.ok) {
     await supabaseAdmin.from("email_send_log").insert({
@@ -212,6 +236,7 @@ async function callClaude(opts: {
     job_description: string; job_scope: string | null;
   };
   catalog: MaterialRow[];
+  language?: string;
 }): Promise<AIShape> {
   const restrictedNote = opts.job.job_state
     ? `Job is in ${opts.job.job_state}. Exclude any catalog item whose restricted_states includes that state.`
@@ -220,6 +245,7 @@ async function callClaude(opts: {
   const catalogStr = opts.catalog
     .map((m) => `- id:${m.id} | ${m.category} | ${m.name}${m.description ? ` — ${m.description}` : ""} | unit:${m.unit} | sia:$${m.sia_price ?? "n/a"} | retail:$${m.retail_price}${m.restricted_states?.length ? ` | restricted:${m.restricted_states.join(",")}` : ""}`)
     .join("\n");
+  const langName = languageName(opts.language);
 
   const system = `You are a senior estimator for ${opts.contractor.business_name} (${opts.contractor.trade_type || opts.job.trade_type || "general contracting"}). Produce a realistic, professional construction proposal in USD.
 
@@ -229,6 +255,7 @@ Rules:
 - Apply a 10% waste factor on all flooring, tile, paint and drywall quantities.
 - Use realistic labor hours and rates for the trade and region.
 - ${restrictedNote}
+- Write ALL human-readable text (scope_of_work, timeline, warranty, exclusions, materials.item, materials.description, labor.task, labor.description, tiers.*.label, tiers.*.description) in ${langName}. Money stays in USD. JSON keys, catalog_id values, units (sq ft, ea, hr) and numeric fields are NOT translated.
 - Return ONLY valid JSON. No prose, no markdown.`;
 
   const user = `CLIENT: ${opts.job.client_name}
@@ -318,6 +345,9 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
         // Default to "proposal" for backward compat.
         const docTypeRaw = (analysis.document_type || analysis.doc_type || "proposal").toString().toLowerCase().trim();
         const documentType: "estimate" | "proposal" = docTypeRaw === "estimate" ? "estimate" : "proposal";
+        const language: Lang = normalizeLanguage(
+          analysis.language || analysis.detected_language || analysis.caller_language || body?.call?.language,
+        );
 
         // Look up contractor (for Claude context and per-contractor API key)
         const { data: contractor, error: cErr } = await supabaseAdmin
@@ -349,6 +379,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
                   trade_type: job.trade_type,
                   job_description: job.job_description,
                 },
+                language,
               });
             } catch (e: any) {
               estError = e?.message || "Estimate generation failed";
@@ -374,6 +405,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
               job_address: [job.job_address, job.job_city].filter(Boolean).join(", ") || null,
               job_state: job.job_state,
               trade_type: job.trade_type,
+              language,
               scope_summary: est?.scope_summary || null,
               material_low: est?.material_low ?? null,
               material_high: est?.material_high ?? null,
@@ -397,7 +429,10 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
             try {
               smsResult = await sendSmsViaGHL({
                 to: job.client_phone,
-                body: `Hi ${job.client_name}, here's your ballpark estimate from ${contractor.business_name}: ${estimateUrl}  Reply if you'd like a full proposal.`,
+                body: estimateSms(language, job.client_name, contractor.business_name, estimateUrl),
+                contactName: job.client_name,
+                contactEmail: job.client_email || undefined,
+                language,
               });
             } catch (e) {
               smsResult = { ok: false, error: (e as Error).message };
@@ -412,6 +447,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
             estimate_url: estimateUrl,
             ai_error: estError,
             sms: smsResult,
+            language,
           });
         }
 
@@ -435,6 +471,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
               contractor: { business_name: contractor.business_name, trade_type: contractor.trade_type },
               job,
               catalog,
+              language,
             });
           } catch (e: any) {
             aiError = e?.message || "AI generation failed";
@@ -461,6 +498,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           job_state: job.job_state,
           trade_type: job.trade_type,
           job_description: job.job_description,
+          language,
           scope_of_work: ai?.scope_of_work || null,
           timeline: ai?.timeline || null,
           warranty: ai?.warranty || null,
@@ -496,6 +534,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
               proposalUrl,
               contactName: job.client_name,
               contactPhone: job.client_phone,
+              language,
             });
           } catch (e) {
             console.warn("[retell webhook] client email send failed:", (e as Error).message);
@@ -509,9 +548,10 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           try {
             smsResult = await sendSmsViaGHL({
               to: job.client_phone,
-              body: `${contractor.business_name}: Your proposal ${created.proposal_number} is ready. View: ${proposalUrl}`,
+              body: proposalSms(language, contractor.business_name, created.proposal_number, proposalUrl),
               contactName: job.client_name,
               contactEmail: job.client_email || undefined,
+              language,
             });
           } catch (e) {
             console.warn("[retell webhook] sms send failed:", (e as Error).message);
@@ -527,6 +567,7 @@ export const Route = createFileRoute("/api/public/webhook/retell")({
           ai_error: aiError,
           email: emailResult,
           sms: smsResult,
+          language,
         });
       },
       OPTIONS: async () => new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type" } }),

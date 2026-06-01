@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight } from "lucide-react";
+import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages } from "lucide-react";
 import { VoiceCallButton } from "@/components/VoiceCallButton";
 
 const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
@@ -9,10 +9,10 @@ const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bidpilot — AI Proposals That Close" },
-      { name: "description", content: "AI-powered proposal & estimate platform for contractors. Voice-call to signed contract in minutes." },
+      { title: "Bidpilot AI Proposals That Close" },
+      { name: "description", content: "AI proposal and estimate platform for contractors. Voice call to signed contract in minutes." },
       { property: "og:title", content: "Bidpilot" },
-      { property: "og:description", content: "AI-powered proposal & estimate platform for contractors." },
+      { property: "og:description", content: "AI proposal and estimate platform for contractors." },
     ],
   }),
   component: Index,
@@ -48,8 +48,15 @@ function Index() {
             From voice call to <span className="text-gradient-sia">signed proposal</span> in 60 seconds.
           </h1>
           <p className="mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-2xl">
-            Bidpilot turns your AI intake calls into professional Good / Better / Best proposals with itemized materials, labor, and one-click client acceptance.
+            Bidpilot turns your AI intake calls into professional Good, Better, Best proposals with itemized materials, labor, and one click client acceptance, in English, Spanish, French, Portuguese, and Haitian Creole.
           </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["English", "Español", "Français", "Português", "Kreyòl Ayisyen"].map((lang) => (
+              <span key={lang} className="inline-flex items-center gap-1 rounded-full border border-border bg-card/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+                {lang}
+              </span>
+            ))}
+          </div>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3">
             <VoiceCallButton />
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
@@ -58,11 +65,12 @@ function Index() {
           </div>
         </div>
 
-        <div className="mt-16 sm:mt-24 grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="mt-16 sm:mt-24 grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
-            { icon: FileText, title: "AI-generated proposals", body: "Claude-grade copy, scope, materials and labor estimated automatically." },
-            { icon: DollarSign, title: "Good / Better / Best", body: "Three tiers, one click for clients. Built-in Sudden Impact Agency wholesale pricing." },
-            { icon: ShieldCheck, title: "Sign & send", body: "Public link, e-signature, materials order — all wired in." },
+            { icon: Languages, title: "Speaks your customer's language", body: "Intake calls and proposals auto localize to 5 languages. Win bids competitors can't even quote." },
+            { icon: FileText, title: "AI generated proposals", body: "Claude grade copy, scope, materials and labor estimated automatically." },
+            { icon: DollarSign, title: "Good, Better, Best", body: "Three tiers, one click for clients. Built in Sudden Impact Agency wholesale pricing." },
+            { icon: ShieldCheck, title: "Sign and send", body: "Public link, e signature, materials order, all wired in." },
           ].map((f) => (
             <div key={f.title} className="rounded-xl border border-border bg-card p-5 sm:p-6 shadow-card">
               <f.icon className="h-6 w-6 text-primary" />

@@ -21,8 +21,10 @@ export async function callClaudeForEstimate(opts: {
     trade_type: string | null;
     job_description: string;
   };
+  language?: string;
 }): Promise<EstimateAIShape> {
-  const system = `You are a senior estimator for ${opts.contractor.business_name} (${opts.contractor.trade_type || opts.job.trade_type || "general contracting"}). Produce a quick, realistic BALLPARK ESTIMATE with price RANGES in USD. This is not a binding proposal — give honest low/high ranges that account for site unknowns. Return ONLY valid JSON.`;
+  const langName = languageName(opts.language);
+  const system = `You are a senior estimator for ${opts.contractor.business_name} (${opts.contractor.trade_type || opts.job.trade_type || "general contracting"}). Produce a quick, realistic BALLPARK ESTIMATE with price RANGES in USD. This is not a binding proposal — give honest low/high ranges that account for site unknowns. Write ALL human-readable text fields (scope_summary, timeline_text) in ${langName}. Numeric fields stay as numbers. Return ONLY valid JSON.`;
 
   const user = `CLIENT: ${opts.job.client_name}
 ADDRESS: ${opts.job.job_address || "TBD"}${opts.job.job_state ? ", " + opts.job.job_state : ""}
@@ -72,6 +74,26 @@ Rules:
   const end = cleaned.lastIndexOf("}");
   const sliced = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
   return JSON.parse(sliced) as EstimateAIShape;
+}
+
+export function languageName(code?: string | null): string {
+  switch ((code || "en").toLowerCase()) {
+    case "es": return "Spanish";
+    case "fr": return "French";
+    case "pt": return "Portuguese";
+    case "ht": return "Haitian Creole";
+    default: return "English";
+  }
+}
+
+export function normalizeLanguage(raw: unknown): "en" | "es" | "fr" | "pt" | "ht" {
+  const v = (raw ?? "").toString().toLowerCase().trim();
+  // accept full names + common aliases
+  if (/^es|spanish|espa/.test(v)) return "es";
+  if (/^fr|french|fran/.test(v)) return "fr";
+  if (/^pt|portuguese|portug/.test(v)) return "pt";
+  if (/^ht|haitian|kreyol|creole/.test(v)) return "ht";
+  return "en";
 }
 
 export function generateEstimateNumber(): string {

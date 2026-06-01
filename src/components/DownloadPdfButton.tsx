@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { getT } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
 
 type Props = {
@@ -39,7 +40,7 @@ export function DownloadPdfButton({ proposal, contractor, tier }: Props) {
   return (
     <Button size="sm" variant="outline" className="print:hidden" onClick={handleDownload} disabled={loading}>
       <Download className="h-3.5 w-3.5 mr-1.5" />
-      {loading ? "Generating…" : "Download PDF"}
+      {loading ? "…" : getT((proposal as any)?.language).downloadPdf}
     </Button>
   );
 }

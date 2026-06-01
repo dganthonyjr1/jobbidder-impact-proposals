@@ -204,6 +204,7 @@ export type Database = {
           job_state: string | null
           labor_high: number | null
           labor_low: number | null
+          language: string
           material_high: number | null
           material_low: number | null
           raw_input: Json | null
@@ -230,6 +231,7 @@ export type Database = {
           job_state?: string | null
           labor_high?: number | null
           labor_low?: number | null
+          language?: string
           material_high?: number | null
           material_low?: number | null
           raw_input?: Json | null
@@ -256,6 +258,7 @@ export type Database = {
           job_state?: string | null
           labor_high?: number | null
           labor_low?: number | null
+          language?: string
           material_high?: number | null
           material_low?: number | null
           raw_input?: Json | null
@@ -499,6 +502,7 @@ export type Database = {
           job_description: string | null
           job_state: string | null
           labor: Json | null
+          language: string
           materials: Json | null
           payment_terms: string | null
           photos: Json
@@ -529,6 +533,7 @@ export type Database = {
           job_description?: string | null
           job_state?: string | null
           labor?: Json | null
+          language?: string
           materials?: Json | null
           payment_terms?: string | null
           photos?: Json
@@ -559,6 +564,7 @@ export type Database = {
           job_description?: string | null
           job_state?: string | null
           labor?: Json | null
+          language?: string
           materials?: Json | null
           payment_terms?: string | null
           photos?: Json
