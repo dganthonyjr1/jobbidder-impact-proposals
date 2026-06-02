@@ -1,4 +1,3 @@
-import process from "node:process";
 import { toE164US } from "./twilio.server";
 
 export type GhlSmsResult =
@@ -9,17 +8,65 @@ export type GhlEmailResult =
   | { ok: true; messageId?: string; emailMessageId?: string; conversationId?: string; to: string }
   | { ok: false; error: string; status?: number };
 
+export type GhlCredentials = {
+  apiToken?: string | null;
+  locationId?: string | null;
+  fromNumber?: string | null;
+  fromEmail?: string | null;
+};
+
+type GhlRuntimeConfig = {
+  token: string;
+  locationId: string;
+  fromNumber?: string;
+  fromEmail?: string;
+  source: "contractor" | "platform";
+};
+
 type GhlContactInput = {
   phone?: string | null;
   email?: string | null;
   name?: string | null;
   language?: string | null;
   tags?: string[] | null;
+  credentials?: GhlCredentials | null;
 };
 
 type GhlContactResult =
   | { ok: true; contactId: string }
   | { ok: false; error: string; status?: number };
+
+function clean(value?: string | null) {
+  const trimmed = (value || "").trim();
+  return trimmed || null;
+}
+
+function resolveGhlConfig(credentials?: GhlCredentials | null): GhlRuntimeConfig | null {
+  const contractorToken = clean(credentials?.apiToken);
+  const contractorLocationId = clean(credentials?.locationId);
+
+  if (contractorToken && contractorLocationId) {
+    return {
+      token: contractorToken,
+      locationId: contractorLocationId,
+      fromNumber: clean(credentials?.fromNumber) || undefined,
+      fromEmail: clean(credentials?.fromEmail) || undefined,
+      source: "contractor",
+    };
+  }
+
+  const token = clean(process.env.GHL_API_TOKEN);
+  const locationId = clean(process.env.GHL_LOCATION_ID);
+  if (!token || !locationId) return null;
+
+  return {
+    token,
+    locationId,
+    fromNumber: clean(process.env.GHL_FROM_NUMBER) || undefined,
+    fromEmail: clean(process.env.GHL_EMAIL_FROM) || clean(process.env.GHL_FROM_EMAIL) || undefined,
+    source: "platform",
+  };
+}
 
 function ghlHeaders(token: string) {
   return {
@@ -31,17 +78,16 @@ function ghlHeaders(token: string) {
 }
 
 async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResult> {
-  const token = process.env.GHL_API_TOKEN;
-  const locationId = process.env.GHL_LOCATION_ID;
+  const config = resolveGhlConfig(input.credentials);
 
-  if (!token || !locationId) {
+  if (!config) {
     return {
       ok: false,
-      error: "GHL not configured (missing GHL_API_TOKEN/GHL_LOCATION_ID)",
+      error: "GHL not configured (missing contractor or platform GHL_API_TOKEN/GHL_LOCATION_ID)",
     };
   }
 
-  const body: Record<string, unknown> = { locationId };
+  const body: Record<string, unknown> = { locationId: config.locationId };
   if (input.phone) body.phone = toE164US(input.phone);
   if (input.email) body.email = input.email.toLowerCase().trim();
   if (input.name) body.name = input.name;
@@ -57,7 +103,7 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
 
   let upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
     method: "POST",
-    headers: ghlHeaders(token),
+    headers: ghlHeaders(config.token),
     body: JSON.stringify(body),
   });
   let upsertJson: any = await upsertRes.json().catch(() => ({}));
@@ -69,7 +115,7 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
     delete (retryBody as Record<string, unknown>).customFields;
     upsertRes = await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
       method: "POST",
-      headers: ghlHeaders(token),
+      headers: ghlHeaders(config.token),
       body: JSON.stringify(retryBody),
     });
     upsertJson = await upsertRes.json().catch(() => ({}));
@@ -89,13 +135,10 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
 }
 
 /**
- * Send an SMS via GoHighLevel's Conversations API using a Private
- * Integration Token (PIT). Requires an A2P-verified number on the
- * sub-account. Never throws — returns a result object.
- *
- * Flow:
- *   1. Upsert a contact by phone (so we have a contactId).
- *   2. POST /conversations/messages with type=SMS.
+ * Send an SMS via GoHighLevel's Conversations API. If contractor-owned GHL
+ * credentials are supplied, the contact and message are created in that
+ * contractor's sub-account; otherwise the platform-level GHL configuration is
+ * used as a backward-compatible fallback.
  */
 export async function sendSmsViaGHL(opts: {
   to: string;
@@ -107,14 +150,15 @@ export async function sendSmsViaGHL(opts: {
   tags?: string[];
   name?: string;
   email?: string;
+  credentials?: GhlCredentials | null;
 }): Promise<GhlSmsResult> {
-  const token = process.env.GHL_API_TOKEN;
-  const fromNumber = opts.fromNumber || process.env.GHL_FROM_NUMBER;
+  const config = resolveGhlConfig(opts.credentials);
+  const fromNumber = opts.fromNumber || config?.fromNumber;
 
-  if (!token || !process.env.GHL_LOCATION_ID || !fromNumber) {
+  if (!config || !fromNumber) {
     return {
       ok: false,
-      error: "GHL not configured (missing GHL_API_TOKEN/GHL_LOCATION_ID/GHL_FROM_NUMBER)",
+      error: "GHL not configured (missing contractor or platform GHL token/location/from number)",
     };
   }
 
@@ -128,12 +172,13 @@ export async function sendSmsViaGHL(opts: {
       name: opts.contactName || opts.name,
       language: opts.language,
       tags: opts.tags,
+      credentials: opts.credentials,
     });
     if (!contact.ok) return contact;
 
     const msgRes = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
       method: "POST",
-      headers: ghlHeaders(token),
+      headers: ghlHeaders(config.token),
       body: JSON.stringify({
         type: "SMS",
         contactId: contact.contactId,
@@ -162,9 +207,9 @@ export async function sendSmsViaGHL(opts: {
 }
 
 /**
- * Send an email via GoHighLevel's Conversations API using the sub-account's
- * configured email provider. This is for proposal delivery and CRM threading;
- * it is separate from Supabase Auth SMTP, which still requires SMTP settings.
+ * Send an email via GoHighLevel's Conversations API. Contractor-owned GHL
+ * credentials and sender addresses are preferred when supplied; platform-level
+ * delivery remains available as a fallback for existing deployments.
  */
 export async function sendEmailViaGHL(opts: {
   to: string;
@@ -176,14 +221,15 @@ export async function sendEmailViaGHL(opts: {
   contactPhone?: string | null;
   language?: string;
   tags?: string[];
+  credentials?: GhlCredentials | null;
 }): Promise<GhlEmailResult> {
-  const token = process.env.GHL_API_TOKEN;
-  const fromEmail = opts.fromEmail || process.env.GHL_EMAIL_FROM || process.env.GHL_FROM_EMAIL || "noreply@suddenimpactagency.io";
+  const config = resolveGhlConfig(opts.credentials);
+  const fromEmail = opts.fromEmail || config?.fromEmail || "noreply@suddenimpactagency.io";
 
-  if (!token || !process.env.GHL_LOCATION_ID || !fromEmail) {
+  if (!config || !fromEmail) {
     return {
       ok: false,
-      error: "GHL email not configured (missing GHL_API_TOKEN/GHL_LOCATION_ID)",
+      error: "GHL email not configured (missing contractor or platform GHL token/location/from email)",
     };
   }
 
@@ -196,12 +242,13 @@ export async function sendEmailViaGHL(opts: {
       name: opts.contactName,
       language: opts.language,
       tags: opts.tags,
+      credentials: opts.credentials,
     });
     if (!contact.ok) return contact;
 
     const msgRes = await fetch("https://services.leadconnectorhq.com/conversations/messages", {
       method: "POST",
-      headers: ghlHeaders(token),
+      headers: ghlHeaders(config.token),
       body: JSON.stringify({
         type: "Email",
         contactId: contact.contactId,

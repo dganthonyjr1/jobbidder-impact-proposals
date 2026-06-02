@@ -16,6 +16,7 @@ function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [contractor, setContractor] = useState<any>(null);
+  const [integration, setIntegration] = useState<any>({ contractor_sms_notifications_enabled: false });
   const [webhookUrl, setWebhookUrl] = useState("");
   const [intakeUrl, setIntakeUrl] = useState("");
 
@@ -28,6 +29,15 @@ function SettingsPage() {
       setLoading(false);
       setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data?.id}`);
       if (data?.slug) setIntakeUrl(`${window.location.origin}/intake/${data.slug}`);
+
+      if (data?.id) {
+        const { data: existingIntegration } = await supabase
+          .from("contractor_integrations")
+          .select("*")
+          .eq("contractor_id", data.id)
+          .maybeSingle();
+        setIntegration(existingIntegration || { contractor_id: data.id, contractor_sms_notifications_enabled: false });
+      }
     })();
   }, []);
 
@@ -45,9 +55,23 @@ function SettingsPage() {
       slug: contractor.slug || null,
       business_address: contractor.business_address || null,
     }).eq("id", contractor.id);
+
+    let integrationError: any = null;
+    if (!error) {
+      const { error: upsertError } = await supabase.from("contractor_integrations").upsert({
+        contractor_id: contractor.id,
+        ghl_api_token: integration.ghl_api_token?.trim() || null,
+        ghl_location_id: integration.ghl_location_id?.trim() || null,
+        ghl_from_number: integration.ghl_from_number?.trim() || null,
+        ghl_from_email: integration.ghl_from_email?.trim() || null,
+        contractor_sms_notifications_enabled: integration.contractor_sms_notifications_enabled === true,
+      }, { onConflict: "contractor_id" });
+      integrationError = upsertError;
+    }
+
     setSaving(false);
-    if (error) {
-      toast.error(error.message);
+    if (error || integrationError) {
+      toast.error(error?.message || integrationError?.message);
     } else {
       toast.success("Saved");
       if (contractor.slug) setIntakeUrl(`${window.location.origin}/intake/${contractor.slug}`);
@@ -57,6 +81,7 @@ function SettingsPage() {
   if (loading || !contractor) return <div className="p-8 text-muted-foreground">Loading…</div>;
 
   const set = (k: string, v: string) => setContractor((c: any) => ({ ...c, [k]: v }));
+  const setInt = (k: string, v: string | boolean) => setIntegration((i: any) => ({ ...i, [k]: v }));
 
   return (
     <div className="p-8 max-w-3xl space-y-6">
@@ -113,6 +138,31 @@ function SettingsPage() {
             Use this URL in your GoHighLevel workflow webhook action after the voice agent captures a lead. {" "}
             <a href="/ghl-setup" className="underline text-foreground">Full GoHighLevel setup guide →</a>
           </p>
+        </div>
+        <div className="border-t pt-4 space-y-3">
+          <div>
+            <h3 className="font-display font-semibold">Contractor-owned GoHighLevel</h3>
+            <p className="text-sm text-muted-foreground">
+              Optional. Add the contractor's own GHL Private Integration Token and location details so proposal contacts, emails, and SMS are created in that contractor's sub-account instead of the platform fallback account.
+            </p>
+          </div>
+          <div><Label>GHL Private Integration Token</Label><Input type="password" value={integration.ghl_api_token || ""} onChange={(e) => setInt("ghl_api_token", e.target.value)} placeholder="pit-…" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><Label>GHL Location ID</Label><Input value={integration.ghl_location_id || ""} onChange={(e) => setInt("ghl_location_id", e.target.value)} placeholder="Location/sub-account ID" /></div>
+            <div><Label>SMS From Number</Label><Input value={integration.ghl_from_number || ""} onChange={(e) => setInt("ghl_from_number", e.target.value)} placeholder="+15551234567" /></div>
+          </div>
+          <div><Label>Email From Address</Label><Input value={integration.ghl_from_email || ""} onChange={(e) => setInt("ghl_from_email", e.target.value)} placeholder="proposals@contractor.com" /></div>
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={integration.contractor_sms_notifications_enabled === true}
+              onChange={(e) => setInt("contractor_sms_notifications_enabled", e.target.checked)}
+            />
+            <span>
+              Send contractor status notifications by SMS. Leave this off for email-only owner/test notifications. Customer proposal/estimate SMS remains controlled by each webhook/test payload.
+            </span>
+          </label>
         </div>
       </Card>
 

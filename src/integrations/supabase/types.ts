@@ -80,6 +80,47 @@ export type Database = {
         }
         Relationships: []
       }
+      contractor_integrations: {
+        Row: {
+          contractor_id: string
+          contractor_sms_notifications_enabled: boolean
+          created_at: string
+          ghl_api_token: string | null
+          ghl_from_email: string | null
+          ghl_from_number: string | null
+          ghl_location_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          contractor_id: string
+          contractor_sms_notifications_enabled?: boolean
+          created_at?: string
+          ghl_api_token?: string | null
+          ghl_from_email?: string | null
+          ghl_from_number?: string | null
+          ghl_location_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contractor_id?: string
+          contractor_sms_notifications_enabled?: boolean
+          created_at?: string
+          ghl_api_token?: string | null
+          ghl_from_email?: string | null
+          ghl_from_number?: string | null
+          ghl_location_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_integrations_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: true
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string

@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/integrations/supabase/client.server'
 import { TEMPLATES } from '@/lib/email-templates/registry'
 import { computeTotals, fmt, type MaterialLine, type LaborLine } from '@/lib/pricing'
 import { scheduleProposalFollowups } from '@/lib/followups.server'
-import { sendSmsViaGHL } from '@/lib/ghl.server'
+import { sendSmsViaGHL, type GhlCredentials } from '@/lib/ghl.server'
 import { sendSms } from '@/lib/twilio.server'
 
 const SITE_NAME = 'Bidpilot'
@@ -65,6 +65,18 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           .select('business_name')
           .eq('id', proposal.contractor_id)
           .maybeSingle() : { data: null as { business_name: string | null } | null }
+        const { data: integration, error: integrationError } = proposal.contractor_id ? await supabaseAdmin
+          .from('contractor_integrations')
+          .select('ghl_api_token, ghl_location_id, ghl_from_number, ghl_from_email, contractor_sms_notifications_enabled')
+          .eq('contractor_id', proposal.contractor_id)
+          .maybeSingle() : { data: null as any, error: null as any }
+        if (integrationError) console.warn('contractor integration lookup failed:', integrationError.message)
+        const ghlCredentials: GhlCredentials | null = integration?.ghl_api_token && integration?.ghl_location_id ? {
+          apiToken: integration.ghl_api_token,
+          locationId: integration.ghl_location_id,
+          fromNumber: integration.ghl_from_number,
+          fromEmail: integration.ghl_from_email,
+        } : null
 
         // 2. Suppression check
         const { data: suppressed } = await supabaseAdmin
@@ -200,13 +212,15 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
 
         // 9. Also send SMS with the link if a client phone is on file.
         let smsRes: any = { skipped: 'no client phone' }
-        if (proposal.client_phone) {
+        if (proposal.client_phone && integration?.contractor_sms_notifications_enabled !== false) {
           const smsBody = `${contractor?.business_name || 'Your contractor'} sent your proposal ${proposal.proposal_number}${totals.grandTotal ? ` (${fmt(totals.grandTotal)})` : ''}: ${proposalUrl}`
-          smsRes = await sendSmsViaGHL({ to: proposal.client_phone, body: smsBody })
-          if (!smsRes.ok) {
+          smsRes = await sendSmsViaGHL({ to: proposal.client_phone, body: smsBody, credentials: ghlCredentials })
+          if (!smsRes.ok && !ghlCredentials) {
             const tw = await sendSms({ to: proposal.client_phone, body: smsBody })
             if (tw.ok) smsRes = tw
           }
+        } else if (proposal.client_phone) {
+          smsRes = { skipped: 'contractor SMS disabled' }
         }
 
         return Response.json({

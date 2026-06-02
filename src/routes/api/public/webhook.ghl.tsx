@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
-import { sendEmailViaGHL, sendSmsViaGHL } from "@/lib/ghl.server";
+import { sendEmailViaGHL, sendSmsViaGHL, type GhlCredentials } from "@/lib/ghl.server";
 
 type JsonRecord = Record<string, any>;
 
@@ -64,6 +64,21 @@ function cors(headers: Record<string, string> = {}) {
   };
 }
 
+function toGhlCredentials(integration: any): GhlCredentials | null {
+  if (!integration?.ghl_api_token || !integration?.ghl_location_id) return null;
+  return {
+    apiToken: integration.ghl_api_token,
+    locationId: integration.ghl_location_id,
+    fromNumber: integration.ghl_from_number,
+    fromEmail: integration.ghl_from_email,
+  };
+}
+
+function wantsEmailOnly(body: JsonRecord) {
+  const mode = String(body.delivery_mode || body.deliveryMode || custom(body, "delivery_mode", "deliveryMode") || "").toLowerCase();
+  return body.skip_sms === true || body.skipSms === true || mode === "email_only" || mode === "email-only" || mode === "email";
+}
+
 export const Route = createFileRoute("/api/public/webhook/ghl")({
   server: {
     handlers: {
@@ -121,8 +136,17 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
 
         const proposalUrl = `${origin}/p/${created.id}`;
         const notify = body.notify !== false && body.send_notifications !== false;
+        const emailOnly = wantsEmailOnly(body);
+        const { data: integration, error: integrationError } = await supabaseAdmin
+          .from("contractor_integrations")
+          .select("ghl_api_token, ghl_location_id, ghl_from_number, ghl_from_email, contractor_sms_notifications_enabled")
+          .eq("contractor_id", contractorId)
+          .maybeSingle();
+        if (integrationError) console.warn("GHL webhook contractor integration lookup failed", integrationError.message);
+        const ghlCredentials = toGhlCredentials(integration);
+        const smsAllowed = !emailOnly && integration?.contractor_sms_notifications_enabled !== false;
         let email: any = { skipped: !clientEmail ? "no email" : "disabled" };
-        let sms: any = { skipped: !clientPhone ? "no phone" : "disabled" };
+        let sms: any = { skipped: !clientPhone ? "no phone" : emailOnly ? "email-only delivery" : !smsAllowed ? "contractor SMS disabled" : "disabled" };
 
         if (notify && clientEmail) {
           email = await sendEmailViaGHL({
@@ -133,16 +157,18 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
             contactName: clientName,
             contactPhone: clientPhone,
             tags: ["bidpilot", "proposal-ready"],
+            credentials: ghlCredentials,
           });
         }
 
-        if (notify && clientPhone) {
+        if (notify && clientPhone && smsAllowed) {
           sms = await sendSmsViaGHL({
             to: clientPhone,
             body: `Your Bidpilot proposal ${created.proposal_number} is ready: ${proposalUrl}`,
             contactName: clientName,
             contactEmail: clientEmail || undefined,
             tags: ["bidpilot", "proposal-ready"],
+            credentials: ghlCredentials,
           });
         }
 
