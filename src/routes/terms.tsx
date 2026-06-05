@@ -144,7 +144,7 @@ function TermsPage() {
             <p>
               Bidpilot relies on third-party services for hosting, database, authentication, storage, communications, voice
               intake, AI processing, analytics, and related infrastructure. These services may include providers such as Vercel,
-              Supabase, Retell AI, Anthropic, GoHighLevel, email providers, SMS providers, and other vendors. Third-party
+              Supabase, GoHighLevel, Anthropic, email providers, SMS providers, and other vendors. Third-party
               services are not controlled by Bidpilot, and their availability, functionality, terms, and policies may affect the
               Service.
             </p>

@@ -26,7 +26,7 @@ function SettingsPage() {
       const { data } = await supabase.from("contractors").select("*").eq("user_id", user.id).single();
       setContractor(data);
       setLoading(false);
-      setWebhookUrl(`${window.location.origin}/api/public/webhook/retell?contractor=${data?.id}`);
+      setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data?.id}`);
       if (data?.slug) setIntakeUrl(`${window.location.origin}/intake/${data.slug}`);
     })();
   }, []);
@@ -107,11 +107,11 @@ function SettingsPage() {
           <p className="text-xs text-muted-foreground mt-1">Save changes after editing the slug to update your public intake URL.</p>
         </div>
         <div>
-          <Label>Retell webhook URL (post-call)</Label>
+          <Label>GoHighLevel workflow webhook URL</Label>
           <Input readOnly value={webhookUrl} className="font-mono text-xs" />
           <p className="text-xs text-muted-foreground mt-1">
-            Paste this in Retell as your end-of-call webhook. Replace <code>/retell</code> with <code>/ghl</code> for GoHighLevel.{" "}
-            <a href="/retell-setup" className="underline text-foreground">Full Retell setup guide →</a>
+            Use this URL in your GoHighLevel workflow webhook action after the voice agent captures a lead. {" "}
+            <a href="/ghl-setup" className="underline text-foreground">Full GoHighLevel setup guide →</a>
           </p>
         </div>
       </Card>

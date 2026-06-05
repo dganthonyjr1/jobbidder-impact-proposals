@@ -67,7 +67,7 @@ function Dashboard() {
           <div className="p-16 text-center">
             <FileText className="h-10 w-10 mx-auto text-muted-foreground" />
             <h3 className="mt-4 font-display font-semibold">No proposals yet</h3>
-            <p className="text-sm text-muted-foreground mt-1">Create your first proposal or wire up the Retell webhook.</p>
+            <p className="text-sm text-muted-foreground mt-1">Create your first proposal or wire up the GoHighLevel workflow webhook.</p>
             <Button asChild className="mt-4"><Link to="/proposals/new">Create proposal</Link></Button>
           </div>
         ) : (
@@ -121,7 +121,7 @@ function Dashboard() {
               <div className="p-16 text-center">
                 <FileText className="h-10 w-10 mx-auto text-muted-foreground" />
                 <h3 className="mt-4 font-display font-semibold">No estimates yet</h3>
-                <p className="text-sm text-muted-foreground mt-1">Estimates are generated when callers ask for a quick ballpark during a Retell call.</p>
+                <p className="text-sm text-muted-foreground mt-1">Estimates are generated when callers ask for a quick ballpark during a GoHighLevel voice-agent call.</p>
               </div>
             ) : (
               <table className="w-full">

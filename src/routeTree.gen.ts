@@ -24,7 +24,7 @@ import { Route as IntakeSlugRouteImport } from './routes/intake.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EIdRouteImport } from './routes/e.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
-import { Route as AuthenticatedRetellSetupRouteImport } from './routes/_authenticated.retell-setup'
+import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
@@ -39,7 +39,6 @@ import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authent
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as ApiPublicWebhookRetellRouteImport } from './routes/api/public/webhook.retell'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
@@ -118,12 +117,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedRetellSetupRoute =
-  AuthenticatedRetellSetupRouteImport.update({
-    id: '/retell-setup',
-    path: '/retell-setup',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
+const AuthenticatedGhlSetupRoute = AuthenticatedGhlSetupRouteImport.update({
+  id: '/ghl-setup',
+  path: '/ghl-setup',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -201,11 +199,6 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicWebhookRetellRoute = ApiPublicWebhookRetellRouteImport.update({
-  id: '/api/public/webhook/retell',
-  path: '/api/public/webhook/retell',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicWebhookGhlPaymentRoute =
   ApiPublicWebhookGhlPaymentRouteImport.update({
     id: '/api/public/webhook/ghl-payment',
@@ -234,7 +227,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-bidpilot': typeof WhyBidpilotRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/retell-setup': typeof AuthenticatedRetellSetupRoute
+  '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -254,7 +247,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
-  '/api/public/webhook/retell': typeof ApiPublicWebhookRetellRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -269,7 +261,7 @@ export interface FileRoutesByTo {
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-bidpilot': typeof WhyBidpilotRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/retell-setup': typeof AuthenticatedRetellSetupRoute
+  '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -289,7 +281,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
-  '/api/public/webhook/retell': typeof ApiPublicWebhookRetellRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -306,7 +297,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-bidpilot': typeof WhyBidpilotRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/retell-setup': typeof AuthenticatedRetellSetupRoute
+  '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -326,7 +317,6 @@ export interface FileRoutesById {
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
-  '/api/public/webhook/retell': typeof ApiPublicWebhookRetellRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -343,7 +333,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/why-bidpilot'
     | '/dashboard'
-    | '/retell-setup'
+    | '/ghl-setup'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -363,7 +353,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-payment'
-    | '/api/public/webhook/retell'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -378,7 +367,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/why-bidpilot'
     | '/dashboard'
-    | '/retell-setup'
+    | '/ghl-setup'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -398,7 +387,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-payment'
-    | '/api/public/webhook/retell'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -414,7 +402,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/why-bidpilot'
     | '/_authenticated/dashboard'
-    | '/_authenticated/retell-setup'
+    | '/_authenticated/ghl-setup'
     | '/_authenticated/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -434,7 +422,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-payment'
-    | '/api/public/webhook/retell'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -467,7 +454,6 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessFollowupsRoute: typeof ApiPublicHooksProcessFollowupsRoute
   ApiPublicWebhookGhlRoute: typeof ApiPublicWebhookGhlRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
-  ApiPublicWebhookRetellRoute: typeof ApiPublicWebhookRetellRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -580,11 +566,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/retell-setup': {
-      id: '/_authenticated/retell-setup'
-      path: '/retell-setup'
-      fullPath: '/retell-setup'
-      preLoaderRoute: typeof AuthenticatedRetellSetupRouteImport
+    '/_authenticated/ghl-setup': {
+      id: '/_authenticated/ghl-setup'
+      path: '/ghl-setup'
+      fullPath: '/ghl-setup'
+      preLoaderRoute: typeof AuthenticatedGhlSetupRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -685,13 +671,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhook/retell': {
-      id: '/api/public/webhook/retell'
-      path: '/api/public/webhook/retell'
-      fullPath: '/api/public/webhook/retell'
-      preLoaderRoute: typeof ApiPublicWebhookRetellRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/webhook/ghl-payment': {
       id: '/api/public/webhook/ghl-payment'
       path: '/api/public/webhook/ghl-payment'
@@ -718,14 +697,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedRetellSetupRoute: typeof AuthenticatedRetellSetupRoute
+  AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedRetellSetupRoute: AuthenticatedRetellSetupRoute,
+  AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
@@ -761,7 +740,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessFollowupsRoute: ApiPublicHooksProcessFollowupsRoute,
   ApiPublicWebhookGhlRoute: ApiPublicWebhookGhlRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
-  ApiPublicWebhookRetellRoute: ApiPublicWebhookRetellRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
