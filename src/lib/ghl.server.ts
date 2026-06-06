@@ -44,24 +44,24 @@ function clean(value?: string | null) {
 function resolveGhlConfig(credentials?: GhlCredentials | null): GhlRuntimeConfig | null {
   const platformToken = clean(process.env.GHL_API_TOKEN);
   const platformLocationId = clean(process.env.GHL_LOCATION_ID);
+  const contractorToken = clean(credentials?.apiToken);
+  const contractorLocationId = clean(credentials?.locationId);
 
   // Production emergency safety: prefer the centrally managed Vercel token when
   // it is present. Contractor rows can contain stale private-integration tokens,
   // while the environment token can be rotated immediately without direct DB
-  // access. If no platform token is configured, fall back to contractor-owned
-  // credentials as before.
-  if (platformToken && platformLocationId) {
+  // access. If GHL_LOCATION_ID is not configured in Vercel, pair the platform
+  // token with the contractor's existing location ID so delivery can be restored
+  // without waiting for a second secret update.
+  if (platformToken && (platformLocationId || contractorLocationId)) {
     return {
       token: platformToken,
-      locationId: platformLocationId,
+      locationId: platformLocationId || contractorLocationId!,
       fromNumber: clean(process.env.GHL_FROM_NUMBER) || clean(credentials?.fromNumber) || undefined,
       fromEmail: clean(process.env.GHL_EMAIL_FROM) || clean(process.env.GHL_FROM_EMAIL) || clean(credentials?.fromEmail) || undefined,
       source: "platform",
     };
   }
-
-  const contractorToken = clean(credentials?.apiToken);
-  const contractorLocationId = clean(credentials?.locationId);
 
   if (contractorToken && contractorLocationId) {
     return {
