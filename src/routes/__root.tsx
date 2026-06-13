@@ -114,6 +114,13 @@ function RootShell({ children }: { children: ReactNode }) {
       <body>
         {children}
         <Scripts />
+        {/* GoHighLevel Chat Widget */}
+        <script
+          src="https://widgets.leadconnectorhq.com/loader.js"
+          data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+          data-widget-id="6a2de0c2b48bf7b6a3b6b6aa"
+          data-source="WEB_USER"
+        />
       </body>
     </html>
   );
