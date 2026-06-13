@@ -39,7 +39,7 @@ async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-3-5-haiku-20241022",
+      model: "claude-3-opus-20240229",
       max_tokens: 4096,
       system: sys,
       messages: [{ role: "user", content: user }],
