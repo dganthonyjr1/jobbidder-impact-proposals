@@ -25,19 +25,24 @@ type AIProposalShape = {
 };
 
 async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("AI gateway not configured");
 
   const sys = `You are an expert contractor estimator for ${payload.trade_type || "general contracting"}. Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
   const user = `Job for ${payload.client_name} at ${payload.job_address || "TBD"} (state: ${payload.job_state || "n/a"}).\nDescription: ${payload.job_description}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [{ role: "system", content: sys }, { role: "user", content: user }],
-      response_format: { type: "json_object" },
+      model: "claude-3-5-haiku-20241022",
+      max_tokens: 4096,
+      system: sys,
+      messages: [{ role: "user", content: user }],
     }),
   });
   if (!res.ok) {
@@ -45,7 +50,10 @@ async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape
     throw new Error(`AI error ${res.status}: ${txt.slice(0, 200)}`);
   }
   const json = await res.json();
-  const content = json.choices?.[0]?.message?.content || "{}";
+  const rawContent = json.content?.[0]?.text || "{}";
+  // Extract JSON from the response (Claude may wrap it in markdown)
+  const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+  const content = jsonMatch ? jsonMatch[0] : rawContent;
   return JSON.parse(content) as AIProposalShape;
 }
 
