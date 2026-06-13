@@ -7,6 +7,9 @@ const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
+    // Skip session check on the server — localStorage is unavailable during SSR.
+    // The client-side onAuthStateChange listener in AuthLayout handles redirects.
+    if (typeof window === 'undefined') return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
   },
