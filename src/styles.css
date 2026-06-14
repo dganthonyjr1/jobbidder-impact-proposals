@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Bidpilot — Sudden Impact Agency brand system
+ * Jobbidder — Sudden Impact Agency brand system
  * Pure-black canvas, hot-pink primary CTA (#EC4899),
  * signature pink → purple → cyan gradient for headlines & accents.
  * Matches suddenimpactagency.io exactly.
@@ -62,7 +62,7 @@
 }
 
 :root {
-  /* Dark by default — Bidpilot is dark-first */
+  /* Dark by default — Jobbidder is dark-first */
   --radius: 0.5rem;
   --background: oklch(0 0 0);                   /* pure black — Sudden Impact Agency */
   --foreground: oklch(0.98 0 0);                /* near-white */
@@ -101,7 +101,7 @@
   --sidebar-ring: oklch(0.55 0.24 285);
 
   /* Brand gradients & effects */
-  /* Bidpilot signature gradient: violet → indigo → cyan (no pink) */
+  /* Jobbidder signature gradient: violet → indigo → cyan (no pink) */
   --gradient-sia: linear-gradient(90deg, #7C3AED 0%, #6366F1 50%, #22D3EE 100%);
   --gradient-primary: var(--gradient-sia);
   --gradient-hero: radial-gradient(circle at 12% 12%, oklch(0.50 0.24 285 / 0.28), transparent 55%), radial-gradient(circle at 88% 82%, oklch(0.55 0.20 210 / 0.22), transparent 55%), radial-gradient(circle at 50% 50%, oklch(0.45 0.22 260 / 0.18), transparent 60%);

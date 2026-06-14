@@ -7,7 +7,7 @@ from typing import Iterable
 
 import requests
 
-BASE = "https://bidpilot.suddenimpactagency.io"
+BASE = "https://www.jobbidder.io"
 CONTRACTOR_ID = "990c1ae6-b97a-44b8-a84f-283aeeaccbb6"
 DEFAULT_RECIPIENT_EMAIL = "don@suddenimpactagency.io"
 LANGUAGES = {

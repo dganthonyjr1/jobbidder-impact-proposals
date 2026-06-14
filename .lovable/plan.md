@@ -29,7 +29,7 @@ Single-page branded estimate. Contractor logo + brand color in header, then:
 - Three compact rows: Materials range, Labor range, **Total range** (highlighted)
 - One CTA button: **"Get the full proposal"** — calls a server fn that promotes the estimate into a full `proposal` row (copying contact/address/trade) and redirects to `/p/:newId`
 - Small print: "This is a non-binding ballpark. Final pricing requires site review."
-- Bidpilot footer (same as proposal page)
+- Jobbidder footer (same as proposal page)
 
 No signature block, no tier cards, no itemized tables.
 

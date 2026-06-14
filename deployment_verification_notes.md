@@ -1,6 +1,6 @@
 # Deployment Verification Notes
 
-The `impact-proposals-sia` Vercel project is now showing the latest commit message, **Fix Vercel server deployment output**, from branch `main` in the Vercel dashboard. The live production URL `https://impact-proposals-sia.vercel.app/` loads successfully and serves the Bidpilot landing page titled **Bidpilot — AI Proposals That Close**.
+The `impact-proposals-sia` Vercel project is now showing the latest commit message, **Fix Vercel server deployment output**, from branch `main` in the Vercel dashboard. The live production URL `https://impact-proposals-sia.vercel.app/` loads successfully and serves the Jobbidder landing page titled **Jobbidder — AI Proposals That Close**.
 
 The deployment fix committed to GitHub was commit `bd6f102857e45efa8b54f4f826fbbca46b10ed16`. The Vite/TanStack configuration was changed to force the Nitro `vercel` preset and standard Vercel Build Output API paths, producing `.vercel/output/config.json` and `.vercel/output/functions/__server.func/.vc-config.json` during local build verification.
 
@@ -104,7 +104,7 @@ Deployment build progress update: at approximately 53 seconds after creation, Ve
 Deployment completion: Vercel shows deployment `9T6noHT6MscMcSkfPyZ2qV7bSALP` as `Ready` and marked `Latest` for the `Production` environment. The deployment duration is approximately 58 seconds. Vercel lists the production domain `impact-proposals-sia.vercel.app`, the branch domain `impact-proposals-sia-git-main-don-anthony-s-projects.vercel.app`, and the immutable deployment URL `impact-proposals-78h7uq9ap-don-anthony-s-projects.vercel.app`. The deployment preview renders the application hero, confirming the deployed site is accessible at the Vercel layer.
 
 
-Live production verification result: the production homepage at `https://impact-proposals-sia.vercel.app/` loads successfully and renders the Bidpilot landing page. Clicking the primary `Get Your Proposal Now` call-to-action triggers a visible toast error: `Retell call failed (401): {"status":"error","message":"Invalid API Key."}`. This confirms the corrected Supabase variables are deployed, but the live intake call path is currently blocked by Retell authentication rather than Supabase connectivity.
+Live production verification result: the production homepage at `https://impact-proposals-sia.vercel.app/` loads successfully and renders the Jobbidder landing page. Clicking the primary `Get Your Proposal Now` call-to-action triggers a visible toast error: `Retell call failed (401): {"status":"error","message":"Invalid API Key."}`. This confirms the corrected Supabase variables are deployed, but the live intake call path is currently blocked by Retell authentication rather than Supabase connectivity.
 
 
 Authentication verification state: the production `/login` route loads successfully and displays the sign-in form. Switching to sign-up works in-browser and displays a `Create your account` form with fields for business name, email, and password. This indicates the frontend authentication routes are reachable; account creation still needs to be tested against Supabase.
@@ -230,7 +230,7 @@ Supabase Emails page confirms the project is using the **built-in email service*
 
 Applied immediate Supabase Auth workaround: **Confirm email** was toggled off and saved on the Sign In / Providers page. This avoids sending a confirmation email during sign-up, so account creation should no longer be blocked by the 2 emails/hour built-in sender rate limit. This is a temporary production unblocker; the permanent fix remains configuring custom SMTP and re-enabling email confirmation.
 
-Final real-email sign-up verification: after disabling Supabase Auth **Confirm email**, production sign-up with the user-provided email `donganthonyjr@gmail.com` and business name `Don Anthony` succeeded. The application redirected to `/dashboard`, displayed the authenticated email address, and showed the toast message **Account created!**. This confirms the production authentication path is working and the prior blocker was the Supabase built-in email sender rate limit. The temporary test password used was `BidpilotVerify!2026`; this should be changed/reset by the user if the account will be kept.
+Final real-email sign-up verification: after disabling Supabase Auth **Confirm email**, production sign-up with the user-provided email `donganthonyjr@gmail.com` and business name `Don Anthony` succeeded. The application redirected to `/dashboard`, displayed the authenticated email address, and showed the toast message **Account created!**. This confirms the production authentication path is working and the prior blocker was the Supabase built-in email sender rate limit. The temporary test password used was `JobbidderVerify!2026`; this should be changed/reset by the user if the account will be kept.
 
 ## 2026-05-31 Custom SMTP production email fix findings
 

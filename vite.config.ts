@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   vite: {
-    base: process.env.GITHUB_PAGES === "true" ? "/bidpilot-impact-proposals/" : "/",
+    base: process.env.GITHUB_PAGES === "true" ? "/jobbidder-impact-proposals/" : "/",
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
