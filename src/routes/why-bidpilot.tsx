@@ -2,16 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Check, X, Star, Phone, FileText, Clock, Zap, ArrowRight, TrendingDown, Shield, Mail, MessageSquare, Palette } from "lucide-react";
 
-export const Route = createFileRoute("/why-bidpilot")({
+export const Route = createFileRoute("/why-jobbidder")({
   head: () => ({
     meta: [
-      { title: "Why Bidpilot — The Only Contractor Tool That Pays You" },
-      { name: "description", content: "See why Bidpilot destroys Jobber, ServiceTitan, Housecall Pro, and every other contractor tool. AI voice intake, proposals in 60 seconds, wholesale materials savings." },
-      { property: "og:title", content: "Why Bidpilot — The Only Contractor Tool That Pays You" },
+      { title: "Why Jobbidder — The Only Contractor Tool That Pays You" },
+      { name: "description", content: "See why Jobbidder destroys Jobber, ServiceTitan, Housecall Pro, and every other contractor tool. AI voice intake, proposals in 60 seconds, wholesale materials savings." },
+      { property: "og:title", content: "Why Jobbidder — The Only Contractor Tool That Pays You" },
       { property: "og:description", content: "AI voice intake, proposals in 60 seconds, wholesale materials savings. See the comparison." },
     ],
   }),
-  component: WhyBidpilotPage,
+  component: WhyJobbidderPage,
 });
 
 const competitors = [
@@ -62,7 +62,7 @@ const competitors = [
   },
 ];
 
-const bidpilotFeatures = [
+const jobbidderFeatures = [
   { label: "AI voice intake", icon: Phone },
   { label: "Proposal in 60 seconds", icon: Zap },
   { label: "Wholesale materials savings", icon: TrendingDown },
@@ -80,8 +80,8 @@ function CostChart() {
     { label: "Housecall Pro", value: 11844, color: "#f97316" },
     { label: "Jobber", value: 10800, color: "#eab308" },
     { label: "Buildxact", value: 10764, color: "#84cc16" },
-    { label: "Bidpilot Journeyman", value: 10692, color: "#7c3aed" },
-    { label: "Bidpilot Principal", value: 6500, color: "#22d3ee" },
+    { label: "Jobbidder Journeyman", value: 10692, color: "#7c3aed" },
+    { label: "Jobbidder Principal", value: 6500, color: "#22d3ee" },
   ];
   const max = 20000;
   const w = 640;
@@ -111,17 +111,17 @@ function CostChart() {
         const barH = (d.value / max) * chartH;
         const x = pad.left + i * gap + (gap - barW) / 2;
         const y = pad.top + chartH - barH;
-        const isBidpilot = d.label.includes("Bidpilot");
+        const isJobbidder = d.label.includes("Jobbidder");
         return (
           <g key={d.label}>
             <rect
               x={x} y={y} width={barW} height={barH} rx={4}
               fill={d.color}
-              opacity={isBidpilot ? 1 : 0.55}
+              opacity={isJobbidder ? 1 : 0.55}
             />
             <text
               x={x + barW / 2} y={y - 6} textAnchor="middle"
-              fill={isBidpilot ? "#22d3ee" : "rgba(255,255,255,0.7)"}
+              fill={isJobbidder ? "#22d3ee" : "rgba(255,255,255,0.7)"}
               fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif"
             >
               ${(d.value / 1000).toFixed(1)}k
@@ -205,7 +205,7 @@ const testimonials = [
   {
     name: "Marcus Johnson",
     role: "HVAC Contractor, Atlanta",
-    quote: "I was paying ServiceTitan almost $500 a month and still writing every estimate by hand. Bidpilot generated my first proposal during the demo call. I closed the client before the meeting ended.",
+    quote: "I was paying ServiceTitan almost $500 a month and still writing every estimate by hand. Jobbidder generated my first proposal during the demo call. I closed the client before the meeting ended.",
   },
   {
     name: "Elena Rodriguez",
@@ -215,22 +215,22 @@ const testimonials = [
   {
     name: "David Chen",
     role: "General Contractor, Seattle",
-    quote: "The wholesale materials pricing alone paid for Bidpilot on my very first job. I saved $2,100 on a kitchen remodel and passed half to the client. They signed on the spot.",
+    quote: "The wholesale materials pricing alone paid for Jobbidder on my very first job. I saved $2,100 on a kitchen remodel and passed half to the client. They signed on the spot.",
   },
 ];
 
-function WhyBidpilotPage() {
+function WhyJobbidderPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* ── Header ── */}
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex flex-col leading-none">
-            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Bidpilot</span>
+            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
-            <Link to="/why-bidpilot" className="text-sm font-semibold text-foreground transition">Why Bidpilot</Link>
+            <Link to="/why-jobbidder" className="text-sm font-semibold text-foreground transition">Why Jobbidder</Link>
             <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
@@ -249,10 +249,10 @@ function WhyBidpilotPage() {
             <h1 className="font-display text-4xl sm:text-5xl md:text-7xl font-bold tracking-tighter leading-[1.05]">
               Every other tool is <span className="text-muted-foreground">renting you software.</span>
               <br />
-              <span className="text-gradient-sia">Bidpilot hands you a money machine.</span>
+              <span className="text-gradient-sia">Jobbidder hands you a money machine.</span>
             </h1>
             <p className="mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-2xl">
-              While your competitors are stuck manually writing estimates in Word docs, Bidpilot turns a 5-minute phone call into a professional proposal with wholesale pricing — before your client hangs up.
+              While your competitors are stuck manually writing estimates in Word docs, Jobbidder turns a 5-minute phone call into a professional proposal with wholesale pricing — before your client hangs up.
             </p>
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3">
               <Button asChild size="lg">
@@ -285,7 +285,7 @@ function WhyBidpilotPage() {
                 {competitors.map((c) => (
                   <th key={c.name} className="text-center py-4 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider min-w-[100px]">{c.name}</th>
                 ))}
-                <th className="text-center py-4 px-3 text-xs font-bold text-primary uppercase tracking-wider min-w-[120px]">Bidpilot</th>
+                <th className="text-center py-4 px-3 text-xs font-bold text-primary uppercase tracking-wider min-w-[120px]">Jobbidder</th>
               </tr>
             </thead>
             <tbody>
@@ -329,7 +329,7 @@ function WhyBidpilotPage() {
 
         {/* Feature cards below table */}
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {bidpilotFeatures.map((f) => (
+          {jobbidderFeatures.map((f) => (
             <div key={f.label} className="rounded-xl border border-border bg-card/60 p-5 flex items-start gap-3 shadow-card">
               <div className="rounded-lg bg-primary/10 p-2 shrink-0">
                 <f.icon className="h-5 w-5 text-primary" />
@@ -370,7 +370,7 @@ function WhyBidpilotPage() {
 
               <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-glow">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-primary">Bidpilot Principal — one time</span>
+                  <span className="text-sm font-bold text-primary">Jobbidder Principal — one time</span>
                   <span className="text-2xl font-bold text-primary">$6,500</span>
                 </div>
                 <p className="mt-1 text-xs text-primary/80 font-semibold">You never write another estimate again. Ever.</p>
@@ -447,11 +447,11 @@ function WhyBidpilotPage() {
             </div>
           </div>
 
-          {/* Bidpilot path */}
+          {/* Jobbidder path */}
           <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 sm:p-8 shadow-glow">
             <div className="flex items-center gap-2 mb-6">
               <Zap className="h-5 w-5 text-primary" />
-              <span className="font-display font-bold text-lg text-primary">You, with Bidpilot</span>
+              <span className="font-display font-bold text-lg text-primary">You, with Jobbidder</span>
             </div>
             <div className="space-y-0">
               {[
@@ -531,7 +531,7 @@ function WhyBidpilotPage() {
 
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Bidpilot · A product of{" "}
+        © {new Date().getFullYear()} Jobbidder · A product of{" "}
         <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
           Sudden Impact Agency
         </a>

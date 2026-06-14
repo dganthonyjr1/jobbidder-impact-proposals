@@ -146,7 +146,7 @@ function PublicEstimate() {
             className="h-12 w-12 rounded-md object-cover opacity-90"
           />
           <p className="text-center text-xs text-muted-foreground">
-            Powered by <span className="text-gradient-sia font-semibold">Bidpilot</span> · A product of{" "}
+            Powered by <span className="text-gradient-sia font-semibold">Jobbidder</span> · A product of{" "}
             <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="hover:text-foreground transition">
               Sudden Impact Agency
             </a>

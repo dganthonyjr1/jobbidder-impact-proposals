@@ -5,7 +5,7 @@ import { Check, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — Bidpilot" },
+      { title: "Pricing — Jobbidder" },
       { name: "description", content: "Simple, transparent pricing for AI-powered contractor proposals." },
     ],
   }),
@@ -18,7 +18,7 @@ const tiers = [
     tagline: "Learn the system. Zero risk.",
     price: "$0",
     period: "/mo",
-    description: "For contractors trying Bidpilot for the first time.",
+    description: "For contractors trying Jobbidder for the first time.",
     features: [
       "1 proposal trial",
       "AI-generated scope & labor",
@@ -92,11 +92,11 @@ function PricingPage() {
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex flex-col leading-none">
-            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Bidpilot</span>
+            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-foreground transition">Pricing</Link>
-            <Link to="/why-bidpilot" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Bidpilot</Link>
+            <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
             <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
@@ -175,7 +175,7 @@ function PricingPage() {
       </section>
 
       <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Bidpilot · A product of{" "}
+        © {new Date().getFullYear()} Jobbidder · A product of{" "}
         <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
           Sudden Impact Agency
         </a>

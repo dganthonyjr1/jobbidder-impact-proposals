@@ -9,7 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WhyBidpilotRouteImport } from './routes/why-bidpilot'
+import { Route as WhyJobbidderRouteImport } from './routes/why-jobbidder'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -43,9 +43,9 @@ import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/pub
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
 
-const WhyBidpilotRoute = WhyBidpilotRouteImport.update({
-  id: '/why-bidpilot',
-  path: '/why-bidpilot',
+const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
+  id: '/why-jobbidder',
+  path: '/why-jobbidder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UnsubscribeRoute = UnsubscribeRouteImport.update({
@@ -225,7 +225,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/why-bidpilot': typeof WhyBidpilotRoute
+  '/why-jobbidder': typeof WhyJobbidderRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -259,7 +259,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/why-bidpilot': typeof WhyBidpilotRoute
+  '/why-jobbidder': typeof WhyJobbidderRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -295,7 +295,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/why-bidpilot': typeof WhyBidpilotRoute
+  '/why-jobbidder': typeof WhyJobbidderRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -331,7 +331,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/unsubscribe'
-    | '/why-bidpilot'
+    | '/why-jobbidder'
     | '/dashboard'
     | '/ghl-setup'
     | '/settings'
@@ -365,7 +365,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/unsubscribe'
-    | '/why-bidpilot'
+    | '/why-jobbidder'
     | '/dashboard'
     | '/ghl-setup'
     | '/settings'
@@ -400,7 +400,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/unsubscribe'
-    | '/why-bidpilot'
+    | '/why-jobbidder'
     | '/_authenticated/dashboard'
     | '/_authenticated/ghl-setup'
     | '/_authenticated/settings'
@@ -436,7 +436,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
-  WhyBidpilotRoute: typeof WhyBidpilotRoute
+  WhyJobbidderRoute: typeof WhyJobbidderRoute
   EIdRoute: typeof EIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   IntakeSlugRoute: typeof IntakeSlugRoute
@@ -461,11 +461,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/why-bidpilot': {
-      id: '/why-bidpilot'
-      path: '/why-bidpilot'
-      fullPath: '/why-bidpilot'
-      preLoaderRoute: typeof WhyBidpilotRouteImport
+    '/why-jobbidder': {
+      id: '/why-jobbidder'
+      path: '/why-jobbidder'
+      fullPath: '/why-jobbidder'
+      preLoaderRoute: typeof WhyJobbidderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/unsubscribe': {
@@ -722,7 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
-  WhyBidpilotRoute: WhyBidpilotRoute,
+  WhyJobbidderRoute: WhyJobbidderRoute,
   EIdRoute: EIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   IntakeSlugRoute: IntakeSlugRoute,

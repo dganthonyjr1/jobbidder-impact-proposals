@@ -55,7 +55,7 @@ function UnsubscribePage() {
         {state === "loading" && <p className="text-muted-foreground">Checking your link…</p>}
         {state === "valid" && (
           <>
-            <p className="text-muted-foreground mb-6">Click the button below to stop receiving emails from Bidpilot.</p>
+            <p className="text-muted-foreground mb-6">Click the button below to stop receiving emails from Jobbidder.</p>
             <Button onClick={confirm} disabled={submitting} size="lg">
               {submitting ? "Working…" : "Confirm unsubscribe"}
             </Button>

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/ghl-setup")({
-  head: () => ({ meta: [{ title: "GoHighLevel setup — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "GoHighLevel setup — Jobbidder" }] }),
   component: GhlSetup,
 });
 
@@ -73,11 +73,11 @@ function GhlSetup() {
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">GoHighLevel setup</h1>
-        <p className="text-muted-foreground mt-1">Connect your GHL voice agent, SMS, and email workflow to Bidpilot so captured leads can become proposal records automatically.</p>
+        <p className="text-muted-foreground mt-1">Connect your GHL voice agent, SMS, and email workflow to Jobbidder so captured leads can become proposal records automatically.</p>
       </div>
 
       <Card className="p-6 space-y-3">
-        <Label>Bidpilot GHL webhook URL</Label>
+        <Label>Jobbidder GHL webhook URL</Label>
         <div className="flex gap-2">
           <Input readOnly value={webhookUrl} className="font-mono text-xs" />
           <Button variant="outline" onClick={() => copy(webhookUrl, "webhook URL")}><Copy className="h-4 w-4" /></Button>

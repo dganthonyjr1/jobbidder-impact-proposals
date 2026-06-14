@@ -94,7 +94,7 @@ const ProposalDecisionEmail = ({
           </Text>
 
           <Hr style={hr} />
-          <Text style={footer}>Bidpilot · automatic notification</Text>
+          <Text style={footer}>Jobbidder · automatic notification</Text>
         </Container>
       </Body>
     </Html>

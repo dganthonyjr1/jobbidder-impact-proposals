@@ -5,7 +5,7 @@ import { sendSmsViaGHL } from "@/lib/ghl.server";
 import { sendSms } from "@/lib/twilio.server";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
-const SITE_NAME = "Bidpilot";
+const SITE_NAME = "Jobbidder";
 const SENDER_DOMAIN = "notify.suddenimpactagency.io";
 const FROM_DOMAIN = "suddenimpactagency.io";
 

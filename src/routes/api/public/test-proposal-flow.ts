@@ -7,7 +7,7 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 import { computeTotals, fmt, generateProposalNumber, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { sendSmsViaGHL } from "@/lib/ghl.server";
 
-const SITE_NAME = "Bidpilot";
+const SITE_NAME = "Jobbidder";
 const SENDER_DOMAIN = "notify.suddenimpactagency.io";
 const FROM_DOMAIN = "suddenimpactagency.io";
 

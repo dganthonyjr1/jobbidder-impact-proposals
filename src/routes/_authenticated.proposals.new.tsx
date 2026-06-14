@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { STATE_LIST } from "@/lib/pricing";
 
 export const Route = createFileRoute("/_authenticated/proposals/new")({
-  head: () => ({ meta: [{ title: "New Proposal — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "New Proposal — Jobbidder" }] }),
   component: NewProposalPage,
 });
 

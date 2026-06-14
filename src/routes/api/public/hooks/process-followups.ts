@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { followupMessage } from "@/lib/followups.server";
 import { sendSmsViaGHL } from "@/lib/ghl.server";
 
-const SITE_NAME = "Bidpilot";
+const SITE_NAME = "Jobbidder";
 const SENDER_DOMAIN = "notify.suddenimpactagency.io";
 const FROM_DOMAIN = "suddenimpactagency.io";
 

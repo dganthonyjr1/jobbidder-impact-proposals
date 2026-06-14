@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "Reset password — Jobbidder" }] }),
   component: ResetPasswordPage,
 });
 
@@ -57,7 +57,7 @@ function ResetPasswordPage() {
     <div className="min-h-screen bg-background bg-hero flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <span className="font-display font-bold text-xl">Bidpilot</span>
+          <span className="font-display font-bold text-xl">Jobbidder</span>
         </Link>
         <Card className="p-8 bg-card border-border shadow-card">
           <h1 className="font-display text-2xl font-semibold mb-1">Set a new password</h1>

@@ -44,7 +44,7 @@ function AuthLayout() {
       <aside className="w-60 border-r border-border bg-sidebar flex flex-col">
         <Link to="/dashboard" className="flex items-center gap-2 p-5 border-b border-border">
           <div className="flex flex-col leading-none">
-            <span className="font-display font-bold text-sm">Bidpilot</span>
+            <span className="font-display font-bold text-sm">Jobbidder</span>
           </div>
         </Link>
         <nav className="flex-1 p-3 space-y-1">

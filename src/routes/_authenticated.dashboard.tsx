@@ -22,7 +22,7 @@ function timeAgo(iso: string | null): string {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Jobbidder" }] }),
   component: Dashboard,
 });
 

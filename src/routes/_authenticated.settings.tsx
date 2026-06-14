@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "Settings — Jobbidder" }] }),
   component: SettingsPage,
 });
 

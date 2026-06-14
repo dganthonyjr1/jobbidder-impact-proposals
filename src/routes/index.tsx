@@ -9,9 +9,9 @@ const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bidpilot AI Proposals That Close" },
+      { title: "Jobbidder AI Proposals That Close" },
       { name: "description", content: "AI proposal and estimate platform for contractors. Voice call to signed contract in minutes." },
-      { property: "og:title", content: "Bidpilot" },
+      { property: "og:title", content: "Jobbidder" },
       { property: "og:description", content: "AI proposal and estimate platform for contractors." },
     ],
   }),
@@ -25,12 +25,12 @@ function Index() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <div className="flex flex-col leading-none">
-              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Bidpilot</span>
+              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
             </div>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
-            <Link to="/why-bidpilot" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Bidpilot</Link>
+            <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
             <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
@@ -48,7 +48,7 @@ function Index() {
             From voice call to <span className="text-gradient-sia">signed proposal</span> in 60 seconds.
           </h1>
           <p className="mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-2xl">
-            Bidpilot turns your AI intake calls into professional Good, Better, Best proposals with itemized materials, labor, and one click client acceptance, in English, Spanish, French, Portuguese, and Haitian Creole.
+            Jobbidder turns your AI intake calls into professional Good, Better, Best proposals with itemized materials, labor, and one click client acceptance, in English, Spanish, French, Portuguese, and Haitian Creole.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             {["English", "Español", "Français", "Português", "Kreyòl Ayisyen"].map((lang) => (
@@ -83,7 +83,7 @@ function Index() {
 
       <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          <span>© {new Date().getFullYear()} Bidpilot · A product of{" "}
+          <span>© {new Date().getFullYear()} Jobbidder · A product of{" "}
             <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
               Sudden Impact Agency
             </a>

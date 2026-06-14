@@ -217,7 +217,7 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
         ) : null}
 
         <Text style={styles.footer} fixed>
-          {contractor?.business_name || "Contractor"} · Proposal {proposal.proposal_number} · Expires {expires.toLocaleDateString()} · Powered by Bidpilot
+          {contractor?.business_name || "Contractor"} · Proposal {proposal.proposal_number} · Expires {expires.toLocaleDateString()} · Powered by Jobbidder
         </Text>
       </Page>
     </Document>

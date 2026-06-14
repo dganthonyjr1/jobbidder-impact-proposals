@@ -10,7 +10,7 @@ import { toast } from "sonner";
 const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — Bidpilot" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Jobbidder" }] }),
   component: LoginPage,
 });
 
@@ -73,7 +73,7 @@ function LoginPage() {
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <div className="flex flex-col leading-none">
-            <span className="font-display font-bold text-xl">Bidpilot</span>
+            <span className="font-display font-bold text-xl">Jobbidder</span>
           </div>
         </Link>
         <Card className="p-8 bg-card border-border shadow-card">

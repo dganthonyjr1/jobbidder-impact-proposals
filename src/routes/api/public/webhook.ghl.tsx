@@ -151,12 +151,12 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         if (notify && clientEmail) {
           email = await sendEmailViaGHL({
             to: clientEmail,
-            subject: `Your Bidpilot proposal ${created.proposal_number}`,
+            subject: `Your Jobbidder proposal ${created.proposal_number}`,
             text: `Hi ${clientName}, your proposal ${created.proposal_number} is ready to review: ${proposalUrl}`,
             html: `<p>Hi ${clientName},</p><p>Your proposal <strong>${created.proposal_number}</strong> is ready to review.</p><p><a href="${proposalUrl}">Open proposal</a></p>`,
             contactName: clientName,
             contactPhone: clientPhone,
-            tags: ["bidpilot", "proposal-ready"],
+            tags: ["jobbidder", "proposal-ready"],
             credentials: ghlCredentials,
           });
         }
@@ -164,10 +164,10 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         if (notify && clientPhone && smsAllowed) {
           sms = await sendSmsViaGHL({
             to: clientPhone,
-            body: `Your Bidpilot proposal ${created.proposal_number} is ready: ${proposalUrl}`,
+            body: `Your Jobbidder proposal ${created.proposal_number} is ready: ${proposalUrl}`,
             contactName: clientName,
             contactEmail: clientEmail || undefined,
-            tags: ["bidpilot", "proposal-ready"],
+            tags: ["jobbidder", "proposal-ready"],
             credentials: ghlCredentials,
           });
         }
