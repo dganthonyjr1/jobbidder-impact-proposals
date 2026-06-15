@@ -33,6 +33,7 @@ import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/pub
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
+import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
@@ -164,6 +165,11 @@ const ApiPublicIntakeSubmitRoute = ApiPublicIntakeSubmitRouteImport.update({
   path: '/api/public/intake-submit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDefaultContractorRoute = ApiPublicDefaultContractorRouteImport.update({
+  id: '/api/public/default-contractor',
+  path: '/api/public/default-contractor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDeclineProposalRoute =
   ApiPublicDeclineProposalRouteImport.update({
     id: '/api/public/decline-proposal',
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
@@ -629,6 +636,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIntakeSubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/default-contractor': {
+      id: '/api/public/default-contractor'
+      path: '/api/public/default-contractor'
+      fullPath: '/api/public/default-contractor'
+      preLoaderRoute: typeof ApiPublicDefaultContractorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/decline-proposal': {
       id: '/api/public/decline-proposal'
       path: '/api/public/decline-proposal'
@@ -731,6 +745,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
   ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
+  ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,

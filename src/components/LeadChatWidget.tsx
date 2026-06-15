@@ -1,0 +1,271 @@
+import * as React from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { MessageCircle, X, Send, Loader2, CheckCircle2 } from 'lucide-react'
+
+type Step =
+  | 'greeting'
+  | 'name'
+  | 'phone'
+  | 'email'
+  | 'address'
+  | 'job_type'
+  | 'description'
+  | 'submitting'
+  | 'done'
+
+interface Message {
+  role: 'bot' | 'user'
+  text: string
+}
+
+interface Lead {
+  client_name: string
+  client_phone: string
+  client_email: string
+  job_address: string
+  trade_type: string
+  job_description: string
+}
+
+const QUESTIONS: Record<Step, string> = {
+  greeting: "Hi! 👋 I'm the Jobbidder AI. I can get you a free, detailed estimate in about 60 seconds. Ready to start?",
+  name: "What's your full name?",
+  phone: "What's the best phone number to reach you?",
+  email: "And your email address?",
+  address: "What's the job address? (City and state is fine if you don't have the full address yet)",
+  job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, painting…)",
+  description: "Describe what you need in as much detail as possible — the more you share, the more accurate your estimate.",
+  submitting: "Perfect! Generating your proposal now…",
+  done: '',
+}
+
+const STEP_ORDER: Step[] = ['greeting', 'name', 'phone', 'email', 'address', 'job_type', 'description', 'submitting', 'done']
+
+function nextStep(current: Step): Step {
+  const idx = STEP_ORDER.indexOf(current)
+  return STEP_ORDER[Math.min(idx + 1, STEP_ORDER.length - 1)]
+}
+
+export function LeadChatWidget() {
+  const [open, setOpen] = useState(false)
+  const [step, setStep] = useState<Step>('greeting')
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [lead, setLead] = useState<Partial<Lead>>({})
+  const [proposalUrl, setProposalUrl] = useState<string | null>(null)
+  const [slug, setSlug] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch default contractor slug on mount
+  useEffect(() => {
+    fetch('/api/public/default-contractor')
+      .then((r) => r.json())
+      .then((d) => { if (d.slug) setSlug(d.slug) })
+      .catch(() => {})
+  }, [])
+
+  // When chat opens, show greeting
+  useEffect(() => {
+    if (open && messages.length === 0) {
+      setMessages([{ role: 'bot', text: QUESTIONS.greeting }])
+      setStep('greeting')
+    }
+  }, [open])
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  // Focus input when open
+  useEffect(() => {
+    if (open && step !== 'submitting' && step !== 'done') {
+      setTimeout(() => inputRef.current?.focus(), 100)
+    }
+  }, [open, step])
+
+  function addBot(text: string) {
+    setMessages((m) => [...m, { role: 'bot', text }])
+  }
+
+  function addUser(text: string) {
+    setMessages((m) => [...m, { role: 'user', text }])
+  }
+
+  async function handleSend() {
+    const val = input.trim()
+    if (!val || step === 'submitting' || step === 'done') return
+    setInput('')
+
+    if (step === 'greeting') {
+      addUser(val)
+      const ns = nextStep('greeting')
+      setStep(ns)
+      setTimeout(() => addBot(QUESTIONS[ns]), 400)
+      return
+    }
+
+    addUser(val)
+
+    const updatedLead = { ...lead }
+
+    if (step === 'name') updatedLead.client_name = val
+    else if (step === 'phone') updatedLead.client_phone = val
+    else if (step === 'email') updatedLead.client_email = val
+    else if (step === 'address') updatedLead.job_address = val
+    else if (step === 'job_type') updatedLead.trade_type = val
+    else if (step === 'description') updatedLead.job_description = val
+
+    setLead(updatedLead)
+
+    const ns = nextStep(step)
+    setStep(ns)
+
+    if (ns === 'submitting') {
+      setTimeout(() => addBot(QUESTIONS.submitting), 400)
+      await submitLead(updatedLead as Lead)
+    } else {
+      setTimeout(() => addBot(QUESTIONS[ns]), 400)
+    }
+  }
+
+  async function submitLead(data: Lead) {
+    if (!slug) {
+      setError('Configuration error. Please call us directly.')
+      return
+    }
+    try {
+      const res = await fetch('/api/public/intake-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, ...data }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || 'Submission failed')
+      setProposalUrl(json.proposal_url)
+      setStep('done')
+      setTimeout(() => {
+        addBot(
+          `✅ Your proposal is ready, ${data.client_name.split(' ')[0]}! We've sent it to ${data.client_email} and ${data.client_phone}. You can also view it here:`
+        )
+        setMessages((m) => [...m, { role: 'bot', text: `__LINK__${json.proposal_url}` }])
+      }, 800)
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong. Please try again.')
+      setStep('description')
+      addBot('Sorry, something went wrong. Please try again or call us directly.')
+    }
+  }
+
+  function handleKey(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  const isInputDisabled = step === 'submitting' || step === 'done'
+
+  return (
+    <>
+      {/* Floating button */}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 focus:outline-none"
+        aria-label={open ? 'Close chat' : 'Open chat'}
+      >
+        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+      </button>
+
+      {/* Chat panel */}
+      {open && (
+        <div className="fixed bottom-24 right-6 z-50 flex w-[340px] max-w-[calc(100vw-2rem)] flex-col rounded-2xl border border-border bg-card shadow-2xl">
+          {/* Header */}
+          <div className="flex items-center gap-3 rounded-t-2xl bg-primary px-4 py-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20">
+              <MessageCircle className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">Jobbidder AI</p>
+              <p className="text-xs text-white/70">Get a free estimate in 60 seconds</p>
+            </div>
+          </div>
+
+          {/* Messages */}
+          <div className="flex flex-col gap-3 overflow-y-auto p-4" style={{ maxHeight: '340px', minHeight: '200px' }}>
+            {messages.map((m, i) => {
+              if (m.text.startsWith('__LINK__')) {
+                const url = m.text.replace('__LINK__', '')
+                return (
+                  <div key={i} className="flex justify-start">
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white underline shadow-sm"
+                    >
+                      View your proposal →
+                    </a>
+                  </div>
+                )
+              }
+              return (
+                <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                      m.role === 'user'
+                        ? 'bg-primary text-white'
+                        : 'bg-muted text-foreground'
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              )
+            })}
+            {step === 'submitting' && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-2 rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Building your proposal…
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Input */}
+          {!isInputDisabled && (
+            <div className="flex items-center gap-2 border-t border-border px-3 py-3">
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder={step === 'greeting' ? 'Type "yes" to start…' : 'Type your answer…'}
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white transition hover:bg-primary/90 disabled:opacity-40"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          {step === 'done' && (
+            <div className="flex items-center justify-center gap-2 border-t border-border px-4 py-3 text-sm text-green-500">
+              <CheckCircle2 className="h-4 w-4" />
+              Proposal sent to your email &amp; phone
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
