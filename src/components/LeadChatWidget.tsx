@@ -6,6 +6,7 @@ type Step =
   | 'greeting'
   | 'name'
   | 'phone'
+  | 'phone_consent'
   | 'email'
   | 'address'
   | 'job_type'
@@ -31,6 +32,7 @@ const QUESTIONS: Record<Step, string> = {
   greeting: "Hi! 👋 I'm the Jobbidder AI. I can get you a free, detailed estimate in about 60 seconds. Ready to start?",
   name: "What's your full name?",
   phone: "What's the best phone number to reach you?",
+  phone_consent: '',
   email: "And your email address?",
   address: "What's the job address? (City and state is fine if you don't have the full address yet)",
   job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, painting…)",
@@ -39,7 +41,7 @@ const QUESTIONS: Record<Step, string> = {
   done: '',
 }
 
-const STEP_ORDER: Step[] = ['greeting', 'name', 'phone', 'email', 'address', 'job_type', 'description', 'submitting', 'done']
+const STEP_ORDER: Step[] = ['greeting', 'name', 'phone', 'phone_consent', 'email', 'address', 'job_type', 'description', 'submitting', 'done']
 
 function nextStep(current: Step): Step {
   const idx = STEP_ORDER.indexOf(current)
@@ -55,6 +57,7 @@ export function LeadChatWidget() {
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
   const [slug, setSlug] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [smsConsent, setSmsConsent] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -81,7 +84,7 @@ export function LeadChatWidget() {
 
   // Focus input when open
   useEffect(() => {
-    if (open && step !== 'submitting' && step !== 'done') {
+    if (open && step !== 'submitting' && step !== 'done' && step !== 'phone_consent') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [open, step])
@@ -96,7 +99,7 @@ export function LeadChatWidget() {
 
   async function handleSend() {
     const val = input.trim()
-    if (!val || step === 'submitting' || step === 'done') return
+    if (!val || step === 'submitting' || step === 'done' || step === 'phone_consent') return
     setInput('')
 
     if (step === 'greeting') {
@@ -112,7 +115,13 @@ export function LeadChatWidget() {
     const updatedLead = { ...lead }
 
     if (step === 'name') updatedLead.client_name = val
-    else if (step === 'phone') updatedLead.client_phone = val
+    else if (step === 'phone') {
+      updatedLead.client_phone = val
+      setLead(updatedLead)
+      // Move to consent step
+      setStep('phone_consent')
+      return
+    }
     else if (step === 'email') updatedLead.client_email = val
     else if (step === 'address') updatedLead.job_address = val
     else if (step === 'job_type') updatedLead.trade_type = val
@@ -129,6 +138,13 @@ export function LeadChatWidget() {
     } else {
       setTimeout(() => addBot(QUESTIONS[ns]), 400)
     }
+  }
+
+  function handleConsentContinue() {
+    if (!smsConsent) return
+    const ns = nextStep('phone_consent')
+    setStep(ns)
+    setTimeout(() => addBot(QUESTIONS[ns]), 400)
   }
 
   async function submitLead(data: Lead) {
@@ -166,7 +182,7 @@ export function LeadChatWidget() {
     }
   }
 
-  const isInputDisabled = step === 'submitting' || step === 'done'
+  const isInputDisabled = step === 'submitting' || step === 'done' || step === 'phone_consent'
 
   return (
     <>
@@ -236,7 +252,34 @@ export function LeadChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
+          {/* SMS Consent step */}
+          {step === 'phone_consent' && (
+            <div className="flex flex-col gap-3 border-t border-border px-4 py-3">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={smsConsent}
+                  onChange={(e) => setSmsConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                />
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  By submitting, you authorize <strong>Sudden Impact Agency LLC</strong> to text/call the number above for informational/transactional messages, possibly using automated means. Msg/data rates may apply, msg frequency varies. Consent is not a condition of purchase.{' '}
+                  <a href="/terms" target="_blank" className="underline">See terms</a> and{' '}
+                  <a href="/privacy" target="_blank" className="underline">privacy policy</a>.{' '}
+                  Text HELP for help and STOP to unsubscribe.
+                </span>
+              </label>
+              <button
+                onClick={handleConsentContinue}
+                disabled={!smsConsent}
+                className="w-full rounded-xl bg-primary py-2 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-40"
+              >
+                Continue →
+              </button>
+            </div>
+          )}
+
+          {/* Normal input */}
           {!isInputDisabled && (
             <div className="flex items-center gap-2 border-t border-border px-3 py-3">
               <input
