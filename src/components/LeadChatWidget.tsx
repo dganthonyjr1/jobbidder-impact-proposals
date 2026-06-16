@@ -10,7 +10,10 @@ type Step =
   | 'email'
   | 'address'
   | 'job_type'
-  | 'description'
+  | 'scope'
+  | 'materials'
+  | 'timeline'
+  | 'terms'
   | 'submitting'
   | 'done'
 
@@ -29,19 +32,26 @@ interface Lead {
 }
 
 const QUESTIONS: Record<Step, string> = {
-  greeting: "Hi! 👋 I'm the Jobbidder AI. I can get you a free, detailed estimate in about 60 seconds. Ready to start?",
+  greeting: "Hi! 👋 I'm the Jobbidder AI. I can get you a free, detailed Good/Better/Best estimate in about 60 seconds. Ready to start?",
   name: "What's your full name?",
   phone: "What's the best phone number to reach you?",
   phone_consent: '',
-  email: "And your email address?",
-  address: "What's the job address? (City and state is fine if you don't have the full address yet)",
-  job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, painting…)",
-  description: "Describe what you need in as much detail as possible — the more you share, the more accurate your estimate.",
-  submitting: "Perfect! Generating your proposal now…",
+  email: "What's your email address? (Your proposal will be sent here)",
+  address: "What's the project address or location? (City and state is fine if you don't have the full address yet)",
+  job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, HVAC, painting…)",
+  scope: "Please describe the scope of work in detail. What services will be performed?",
+  materials: "What are the key materials or items needed for this project? (Or type 'standard' if you're not sure)",
+  timeline: "Do you have a deadline or preferred timeline for this project? (Or type 'flexible' if open)",
+  terms: "Any specific payment terms, conditions, or anything else you'd like included in the proposal? (Or type 'standard')",
+  submitting: "Perfect! Generating your Good/Better/Best proposal now…",
   done: '',
 }
 
-const STEP_ORDER: Step[] = ['greeting', 'name', 'phone', 'phone_consent', 'email', 'address', 'job_type', 'description', 'submitting', 'done']
+const STEP_ORDER: Step[] = [
+  'greeting', 'name', 'phone', 'phone_consent', 'email',
+  'address', 'job_type', 'scope', 'materials', 'timeline', 'terms',
+  'submitting', 'done'
+]
 
 function nextStep(current: Step): Step {
   const idx = STEP_ORDER.indexOf(current)
@@ -55,7 +65,7 @@ export function LeadChatWidget() {
   const [input, setInput] = useState('')
   const [lead, setLead] = useState<Partial<Lead>>({})
   const [proposalUrl, setProposalUrl] = useState<string | null>(null)
-  const [slug, setSlug] = useState<string | null>(null)
+  const [slug, setSlug] = useState<string>('mikes-roofing') // default fallback
   const [error, setError] = useState<string | null>(null)
   const [smsConsent, setSmsConsent] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -66,7 +76,7 @@ export function LeadChatWidget() {
     fetch('/api/public/default-contractor')
       .then((r) => r.json())
       .then((d) => { if (d.slug) setSlug(d.slug) })
-      .catch(() => {})
+      .catch(() => {}) // keep default fallback
   }, [])
 
   // When chat opens, show greeting
@@ -114,18 +124,35 @@ export function LeadChatWidget() {
 
     const updatedLead = { ...lead }
 
-    if (step === 'name') updatedLead.client_name = val
-    else if (step === 'phone') {
+    if (step === 'name') {
+      updatedLead.client_name = val
+    } else if (step === 'phone') {
       updatedLead.client_phone = val
       setLead(updatedLead)
-      // Move to consent step
       setStep('phone_consent')
       return
+    } else if (step === 'email') {
+      updatedLead.client_email = val
+    } else if (step === 'address') {
+      updatedLead.job_address = val
+    } else if (step === 'job_type') {
+      updatedLead.trade_type = val
+    } else if (step === 'scope') {
+      // Accumulate description
+      updatedLead.job_description = val
+    } else if (step === 'materials') {
+      if (val.toLowerCase() !== 'standard') {
+        updatedLead.job_description = (updatedLead.job_description || '') + `. Materials: ${val}`
+      }
+    } else if (step === 'timeline') {
+      if (val.toLowerCase() !== 'flexible') {
+        updatedLead.job_description = (updatedLead.job_description || '') + `. Timeline: ${val}`
+      }
+    } else if (step === 'terms') {
+      if (val.toLowerCase() !== 'standard') {
+        updatedLead.job_description = (updatedLead.job_description || '') + `. Terms: ${val}`
+      }
     }
-    else if (step === 'email') updatedLead.client_email = val
-    else if (step === 'address') updatedLead.job_address = val
-    else if (step === 'job_type') updatedLead.trade_type = val
-    else if (step === 'description') updatedLead.job_description = val
 
     setLead(updatedLead)
 
@@ -148,10 +175,6 @@ export function LeadChatWidget() {
   }
 
   async function submitLead(data: Lead) {
-    if (!slug) {
-      setError('Configuration error. Please call us directly.')
-      return
-    }
     try {
       const res = await fetch('/api/public/intake-submit', {
         method: 'POST',
@@ -164,14 +187,14 @@ export function LeadChatWidget() {
       setStep('done')
       setTimeout(() => {
         addBot(
-          `✅ Your proposal is ready, ${data.client_name.split(' ')[0]}! We've sent it to ${data.client_email} and ${data.client_phone}. You can also view it here:`
+          `✅ Your proposal is ready, ${data.client_name.split(' ')[0]}! We've sent it to ${data.client_email}. You can also view it here:`
         )
         setMessages((m) => [...m, { role: 'bot', text: `__LINK__${json.proposal_url}` }])
       }, 800)
     } catch (err: any) {
       setError(err?.message || 'Something went wrong. Please try again.')
-      setStep('description')
-      addBot('Sorry, something went wrong. Please try again or call us directly.')
+      setStep('terms')
+      addBot('Sorry, something went wrong generating your proposal. Please try again or call us at (310) 987-4997.')
     }
   }
 
@@ -210,7 +233,7 @@ export function LeadChatWidget() {
           </div>
 
           {/* Messages */}
-          <div className="flex flex-col gap-3 overflow-y-auto p-4" style={{ maxHeight: '340px', minHeight: '200px' }}>
+          <div className="flex flex-col gap-3 overflow-y-auto p-4" style={{ maxHeight: '380px', minHeight: '200px' }}>
             {messages.map((m, i) => {
               if (m.text.startsWith('__LINK__')) {
                 const url = m.text.replace('__LINK__', '')
@@ -245,7 +268,7 @@ export function LeadChatWidget() {
               <div className="flex justify-start">
                 <div className="flex items-center gap-2 rounded-2xl bg-muted px-3 py-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Building your proposal…
+                  Building your Good/Better/Best proposal…
                 </div>
               </div>
             )}
@@ -304,7 +327,7 @@ export function LeadChatWidget() {
           {step === 'done' && (
             <div className="flex items-center justify-center gap-2 border-t border-border px-4 py-3 text-sm text-green-500">
               <CheckCircle2 className="h-4 w-4" />
-              Proposal sent to your email &amp; phone
+              Proposal sent to your email
             </div>
           )}
         </div>

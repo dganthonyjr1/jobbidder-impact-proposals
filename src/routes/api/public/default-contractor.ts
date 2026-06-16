@@ -14,20 +14,51 @@ export const Route = createFileRoute('/api/public/default-contractor')({
           },
         }),
       GET: async () => {
-        // Return the first active contractor's slug and business name
+        // Try to find the contractor by the known slug first
         const { data, error } = await supabaseAdmin
           .from('contractors')
           .select('slug, business_name, logo_url, primary_color')
+          .eq('slug', 'mikes-roofing')
+          .maybeSingle()
+
+        // If found, return it
+        if (!error && data) {
+          return Response.json(
+            { slug: data.slug, business_name: data.business_name, logo_url: data.logo_url, primary_color: data.primary_color },
+            {
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age=60',
+              },
+            }
+          )
+        }
+
+        // Fallback: return first contractor with any slug
+        const { data: fallback, error: fallbackError } = await supabaseAdmin
+          .from('contractors')
+          .select('slug, business_name, logo_url, primary_color')
           .not('slug', 'is', null)
+          .neq('slug', '')
+          .order('created_at', { ascending: true })
           .limit(1)
           .maybeSingle()
 
-        if (error || !data) {
-          return Response.json({ error: 'No contractor found' }, { status: 404 })
+        if (fallbackError || !fallback) {
+          // Last resort: return hardcoded known-good values
+          return Response.json(
+            { slug: 'mikes-roofing', business_name: 'DGA Management LLC', logo_url: null, primary_color: '#ff6b00' },
+            {
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Cache-Control': 'public, max-age=60',
+              },
+            }
+          )
         }
 
         return Response.json(
-          { slug: data.slug, business_name: data.business_name, logo_url: data.logo_url, primary_color: data.primary_color },
+          { slug: fallback.slug, business_name: fallback.business_name, logo_url: fallback.logo_url, primary_color: fallback.primary_color },
           {
             headers: {
               'Access-Control-Allow-Origin': '*',
