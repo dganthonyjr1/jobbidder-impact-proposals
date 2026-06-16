@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
   ClientOnly,
@@ -75,23 +76,49 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+/**
+ * WidgetGate — renders the chat widget only on public marketing/landing pages.
+ * Suppressed on:
+ *  - /intake/*  — standalone intake form (has its own phone field)
+ *  - /p/*       — proposal view page
+ *  - /e/*       — proposal acceptance/e-sign page
+ *  - /dashboard, /proposals, /settings, /ghl-setup — authenticated contractor portal
+ *  - /sign-in, /sign-up — auth pages
+ *
+ * This satisfies the GHL A2P carrier requirement:
+ * "No forms collecting phone numbers or SMS opt-in consent exist on any page
+ *  where the chat widget is embedded."
+ */
+function WidgetGate() {
+  const { pathname } = useLocation();
+  const suppress =
+    pathname.startsWith('/intake/') ||
+    pathname.startsWith('/p/') ||
+    pathname.startsWith('/e/') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/proposals') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/ghl-setup') ||
+    pathname.startsWith('/sign-in') ||
+    pathname.startsWith('/sign-up');
+  if (suppress) return null;
+  return <LeadChatWidget />;
+}
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "AI-powered system generates contractor proposals from voice calls and enables online client acceptance." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "AI-powered system generates contractor proposals from voice calls and enables online client acceptance." },
+      { title: "Jobbidder — AI-Powered Contractor Proposals" },
+      { name: "description", content: "Get a free Good/Better/Best estimate from a local contractor in under 60 seconds." },
+      { name: "author", content: "Jobbidder" },
+      { property: "og:title", content: "Jobbidder — AI-Powered Contractor Proposals" },
+      { property: "og:description", content: "Get a free Good/Better/Best estimate from a local contractor in under 60 seconds." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "AI-powered system generates contractor proposals from voice calls and enables online client acceptance." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a265492f-4891-445a-b54c-06adca672c94/id-preview-5a08214e--6ccad525-78bb-4bee-a8cd-4001877c7a02.lovable.app-1780090424041.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/a265492f-4891-445a-b54c-06adca672c94/id-preview-5a08214e--6ccad525-78bb-4bee-a8cd-4001877c7a02.lovable.app-1780090424041.png" },
+      { name: "twitter:title", content: "Jobbidder — AI-Powered Contractor Proposals" },
+      { name: "twitter:description", content: "Get a free Good/Better/Best estimate from a local contractor in under 60 seconds." },
     ],
     links: [
       {
@@ -116,7 +143,7 @@ function RootShell({ children }: { children: ReactNode }) {
         {children}
         <Scripts />
         <ClientOnly fallback={null}>
-          <LeadChatWidget />
+          <WidgetGate />
         </ClientOnly>
       </body>
     </html>
