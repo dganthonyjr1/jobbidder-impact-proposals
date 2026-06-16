@@ -7,7 +7,7 @@ const Body = z.object({
   slug: z.string().min(1).max(120),
   client_name: z.string().trim().min(1).max(200),
   client_email: z.string().trim().email().max(254),
-  client_phone: z.string().trim().min(7).max(30),
+  client_phone: z.string().trim().max(30).optional().default(''),
   job_address: z.string().trim().max(500).optional().nullable(),
   trade_type: z.string().trim().max(100).optional().nullable(),
   job_description: z.string().trim().min(10).max(5000),

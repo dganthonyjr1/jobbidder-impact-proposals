@@ -2,11 +2,14 @@ import * as React from 'react'
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, X, Send, Loader2, CheckCircle2 } from 'lucide-react'
 
+// Phone number collection has been intentionally removed from this widget
+// to comply with GHL A2P carrier requirements. The widget collects:
+// name, email, address, job type, scope, materials, timeline, terms.
+// SMS delivery uses the email address to look up the contact in GHL.
+
 type Step =
   | 'greeting'
   | 'name'
-  | 'phone'
-  | 'phone_consent'
   | 'email'
   | 'address'
   | 'job_type'
@@ -24,7 +27,6 @@ interface Message {
 
 interface Lead {
   client_name: string
-  client_phone: string
   client_email: string
   job_address: string
   trade_type: string
@@ -34,21 +36,19 @@ interface Lead {
 const QUESTIONS: Record<Step, string> = {
   greeting: "Hi! 👋 I'm the Jobbidder AI. I can get you a free, detailed Good/Better/Best estimate in about 60 seconds. Ready to start?",
   name: "What's your full name?",
-  phone: "What's the best phone number to reach you?",
-  phone_consent: '',
   email: "What's your email address? (Your proposal will be sent here)",
   address: "What's the project address or location? (City and state is fine if you don't have the full address yet)",
   job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, HVAC, painting…)",
-  scope: "Please describe the scope of work in detail. What services will be performed?",
-  materials: "What are the key materials or items needed for this project? (Or type 'standard' if you're not sure)",
-  timeline: "Do you have a deadline or preferred timeline for this project? (Or type 'flexible' if open)",
-  terms: "Any specific payment terms, conditions, or anything else you'd like included in the proposal? (Or type 'standard')",
+  scope: "Please describe the scope of work in detail. What needs to be done?",
+  materials: "What are the key materials or items needed? (Or type 'standard' if you're not sure)",
+  timeline: "Do you have a deadline or preferred timeline? (Or type 'flexible' if open)",
+  terms: "Any specific payment terms or anything else to include? (Or type 'standard')",
   submitting: "Perfect! Generating your Good/Better/Best proposal now…",
   done: '',
 }
 
 const STEP_ORDER: Step[] = [
-  'greeting', 'name', 'phone', 'phone_consent', 'email',
+  'greeting', 'name', 'email',
   'address', 'job_type', 'scope', 'materials', 'timeline', 'terms',
   'submitting', 'done'
 ]
@@ -64,10 +64,7 @@ export function LeadChatWidget() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [lead, setLead] = useState<Partial<Lead>>({})
-  const [proposalUrl, setProposalUrl] = useState<string | null>(null)
   const [slug, setSlug] = useState<string>('mikes-roofing') // default fallback
-  const [error, setError] = useState<string | null>(null)
-  const [smsConsent, setSmsConsent] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -94,7 +91,7 @@ export function LeadChatWidget() {
 
   // Focus input when open
   useEffect(() => {
-    if (open && step !== 'submitting' && step !== 'done' && step !== 'phone_consent') {
+    if (open && step !== 'submitting' && step !== 'done') {
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [open, step])
@@ -109,7 +106,7 @@ export function LeadChatWidget() {
 
   async function handleSend() {
     const val = input.trim()
-    if (!val || step === 'submitting' || step === 'done' || step === 'phone_consent') return
+    if (!val || step === 'submitting' || step === 'done') return
     setInput('')
 
     if (step === 'greeting') {
@@ -126,11 +123,6 @@ export function LeadChatWidget() {
 
     if (step === 'name') {
       updatedLead.client_name = val
-    } else if (step === 'phone') {
-      updatedLead.client_phone = val
-      setLead(updatedLead)
-      setStep('phone_consent')
-      return
     } else if (step === 'email') {
       updatedLead.client_email = val
     } else if (step === 'address') {
@@ -138,7 +130,6 @@ export function LeadChatWidget() {
     } else if (step === 'job_type') {
       updatedLead.trade_type = val
     } else if (step === 'scope') {
-      // Accumulate description
       updatedLead.job_description = val
     } else if (step === 'materials') {
       if (val.toLowerCase() !== 'standard') {
@@ -167,23 +158,23 @@ export function LeadChatWidget() {
     }
   }
 
-  function handleConsentContinue() {
-    if (!smsConsent) return
-    const ns = nextStep('phone_consent')
-    setStep(ns)
-    setTimeout(() => addBot(QUESTIONS[ns]), 400)
-  }
-
   async function submitLead(data: Lead) {
     try {
       const res = await fetch('/api/public/intake-submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, ...data }),
+        body: JSON.stringify({
+          slug,
+          client_name: data.client_name,
+          client_email: data.client_email,
+          client_phone: '', // not collected in widget — A2P compliant
+          job_address: data.job_address,
+          trade_type: data.trade_type,
+          job_description: data.job_description,
+        }),
       })
       const json = await res.json()
       if (!res.ok || !json.success) throw new Error(json.error || 'Submission failed')
-      setProposalUrl(json.proposal_url)
       setStep('done')
       setTimeout(() => {
         addBot(
@@ -192,7 +183,6 @@ export function LeadChatWidget() {
         setMessages((m) => [...m, { role: 'bot', text: `__LINK__${json.proposal_url}` }])
       }, 800)
     } catch (err: any) {
-      setError(err?.message || 'Something went wrong. Please try again.')
       setStep('terms')
       addBot('Sorry, something went wrong generating your proposal. Please try again or call us at (310) 987-4997.')
     }
@@ -205,7 +195,7 @@ export function LeadChatWidget() {
     }
   }
 
-  const isInputDisabled = step === 'submitting' || step === 'done' || step === 'phone_consent'
+  const isInputDisabled = step === 'submitting' || step === 'done'
 
   return (
     <>
@@ -275,34 +265,7 @@ export function LeadChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          {/* SMS Consent step */}
-          {step === 'phone_consent' && (
-            <div className="flex flex-col gap-3 border-t border-border px-4 py-3">
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={smsConsent}
-                  onChange={(e) => setSmsConsent(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-                />
-                <span className="text-xs text-muted-foreground leading-relaxed">
-                  By checking this box, you authorize <strong>Sudden Impact Agency LLC</strong> (Jobbidder) to send you transactional/informational text messages at the number above, possibly using automated technology. Msg &amp; data rates may apply. Message frequency varies (up to 4 msgs per request). Consent is not a condition of purchase.{' '}
-                  Reply <strong>STOP</strong> to cancel, <strong>HELP</strong> for help.{' '}
-                  <a href="/sms-terms" target="_blank" className="underline">SMS Terms</a>{' '}·{' '}
-                  <a href="/privacy" target="_blank" className="underline">Privacy Policy</a>
-                </span>
-              </label>
-              <button
-                onClick={handleConsentContinue}
-                disabled={!smsConsent}
-                className="w-full rounded-xl bg-primary py-2 text-sm font-semibold text-white transition hover:bg-primary/90 disabled:opacity-40"
-              >
-                Continue →
-              </button>
-            </div>
-          )}
-
-          {/* Normal input */}
+          {/* Input */}
           {!isInputDisabled && (
             <div className="flex items-center gap-2 border-t border-border px-3 py-3">
               <input
