@@ -119,10 +119,17 @@ function IntakeForm() {
               <Label>Describe what you need *</Label>
               <Textarea required rows={5} value={form.job_description} onChange={(e) => set("job_description", e.target.value)} placeholder="The more detail you share, the more accurate your estimate." />
             </div>
-            <Button type="submit" size="lg" disabled={submitting} className="text-white w-full sm:w-auto" style={{ background: brand }}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              {submitting ? "Submitting…" : "Get my estimate"}
-            </Button>
+            <div className="space-y-3">
+              <Button type="submit" size="lg" disabled={submitting} className="text-white w-full sm:w-auto" style={{ background: brand }}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                {submitting ? "Submitting…" : "Get my estimate"}
+              </Button>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                By submitting, you authorize <strong>{contractor.business_name}</strong> (powered by Jobbidder / Sudden Impact Agency LLC) to send you transactional text messages and emails about your estimate at the contact info above, possibly using automated technology. Msg &amp; data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply <strong>STOP</strong> to cancel, <strong>HELP</strong> for help.{' '}
+                <a href="/sms-terms" target="_blank" className="underline">SMS Terms</a>{' '}·{' '}
+                <a href="/privacy" target="_blank" className="underline">Privacy Policy</a>
+              </p>
+            </div>
           </form>
         </Card>
       </div>

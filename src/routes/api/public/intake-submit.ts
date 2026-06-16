@@ -24,25 +24,44 @@ type AIShape = {
   tiers: Record<string, { label: string; description: string }>;
 };
 
-async function callLovableAI(payload: z.infer<typeof Body>, business: string): Promise<AIShape | null> {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) return null;
-  const sys = `You are an expert estimator for ${business} (${payload.trade_type || "general contracting"}). Produce a realistic, professional proposal with itemized materials and labor in USD. Apply a 10% waste factor on flooring/tile/paint/drywall. Return ONLY valid JSON.`;
+async function callAnthropicAI(payload: z.infer<typeof Body>, business: string): Promise<AIShape | null> {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    console.warn("[intake-submit] ANTHROPIC_API_KEY not set — skipping AI generation");
+    return null;
+  }
+  const sys = `You are an expert estimator for ${business} (${payload.trade_type || "general contracting"}). Produce a realistic, professional proposal with itemized materials and labor in USD. Apply a 10% waste factor on flooring/tile/paint/drywall. Return ONLY valid JSON with no markdown fences.`;
   const user = `CLIENT: ${payload.client_name}\nADDRESS: ${payload.job_address || "TBD"}\nDESCRIPTION: ${payload.job_description}\n\nReturn JSON: {"scope_of_work":string,"timeline":string,"warranty":string,"exclusions":string[],"materials":[{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}],"labor":[{"task":string,"description":string,"hours":number,"rate":number}],"tiers":{"good":{"label":"Good","description":string},"better":{"label":"Better","description":string},"best":{"label":"Best","description":string}}}`;
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [{ role: "system", content: sys }, { role: "user", content: user }],
-      response_format: { type: "json_object" },
-    }),
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
+
   try {
-    return JSON.parse(json.choices?.[0]?.message?.content || "{}") as AIShape;
-  } catch { return null; }
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5",
+        max_tokens: 4096,
+        system: sys,
+        messages: [{ role: "user", content: user }],
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[intake-submit] Anthropic API error:", res.status, errText);
+      return null;
+    }
+    const json = await res.json();
+    const raw = json?.content?.[0]?.text || "{}";
+    // Strip markdown fences if present
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    return JSON.parse(cleaned) as AIShape;
+  } catch (e) {
+    console.error("[intake-submit] Anthropic call failed:", (e as Error).message);
+    return null;
+  }
 }
 
 export const Route = createFileRoute("/api/public/intake-submit")({
@@ -68,7 +87,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           .maybeSingle();
         if (!contractor) return Response.json({ success: false, error: "Contractor not found" }, { status: 404 });
 
-        const ai = await callLovableAI(input, contractor.business_name);
+        const ai = await callAnthropicAI(input, contractor.business_name);
 
         const validThrough = new Date(); validThrough.setDate(validThrough.getDate() + 30);
         const { data: created, error } = await supabaseAdmin.from("proposals").insert({

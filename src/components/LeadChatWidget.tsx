@@ -286,10 +286,10 @@ export function LeadChatWidget() {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                 />
                 <span className="text-xs text-muted-foreground leading-relaxed">
-                  By submitting, you authorize <strong>Sudden Impact Agency LLC</strong> to text/call the number above for informational/transactional messages, possibly using automated means. Msg/data rates may apply, msg frequency varies. Consent is not a condition of purchase.{' '}
-                  <a href="/terms" target="_blank" className="underline">See terms</a> and{' '}
-                  <a href="/privacy" target="_blank" className="underline">privacy policy</a>.{' '}
-                  Text HELP for help and STOP to unsubscribe.
+                  By checking this box, you authorize <strong>Sudden Impact Agency LLC</strong> (Jobbidder) to send you transactional/informational text messages at the number above, possibly using automated technology. Msg &amp; data rates may apply. Message frequency varies (up to 4 msgs per request). Consent is not a condition of purchase.{' '}
+                  Reply <strong>STOP</strong> to cancel, <strong>HELP</strong> for help.{' '}
+                  <a href="/sms-terms" target="_blank" className="underline">SMS Terms</a>{' '}·{' '}
+                  <a href="/privacy" target="_blank" className="underline">Privacy Policy</a>
                 </span>
               </label>
               <button
