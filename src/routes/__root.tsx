@@ -138,6 +138,14 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {/* GHL Lead Connector widget — required for A2P SMS compliance verification */}
+        <script
+          src="https://widgets.leadconnectorhq.com/loader.js"
+          data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
+          data-widget-id="6a307915612788283cd21674"
+          data-source="WEB_USER"
+          async
+        />
       </head>
       <body>
         {children}
