@@ -13,6 +13,7 @@ const Body = z.object({
   trade_type: z.string().trim().max(100).optional().nullable(),
   job_description: z.string().trim().min(10).max(5000),
   photos: z.array(z.string().url()).max(8).optional().default([]),
+  language: z.enum(['en', 'es', 'fr', 'pt', 'ht']).optional().default('en'),
 });
 
 type AIShape = {
@@ -89,7 +90,12 @@ function buildPrompt(
   const rate = resolveTradeRate(pricing, payload.trade_type);
   const { tier_spread, tax_rate, payment_terms, warranty_default } = pricing;
 
+  const LANG_NAMES: Record<string, string> = { en: 'English', es: 'Spanish', fr: 'French', pt: 'Portuguese', ht: 'Haitian Creole' };
+  const langName = LANG_NAMES[payload.language || 'en'] || 'English';
+
   const system = `You are an expert estimator for ${business} (${payload.trade_type || "general contracting"}).
+
+LANGUAGE: Write ALL text fields (scope_of_work, timeline, warranty, exclusions, tier descriptions, payment_terms, item names, task names, descriptions) in ${langName}. Numbers and JSON keys stay in English/numeric format.
 
 PRICING PARAMETERS — use these exact numbers, do not estimate:
 - Labor rate: $${rate.labor_rate}/hr
@@ -132,6 +138,7 @@ Return JSON:
     "better": {"label": "Better", "description": string},
     "best": {"label": "Best", "description": string}
   },
+  // Note: label values must stay as "Good", "Better", "Best" (English) — only description should be in ${langName}
   "tax_rate": ${tax_rate},
   "payment_terms": "${payment_terms}"
 }`;
@@ -226,6 +233,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           tax_rate: (ai?.tax_rate ?? pricing.tax_rate) / 100,
           payment_terms: ai?.payment_terms || pricing.payment_terms,
           photos: input.photos || [],
+          language: input.language || 'en',
           valid_through: validThrough.toISOString().slice(0, 10),
           raw_input: {
             source: "public-intake",

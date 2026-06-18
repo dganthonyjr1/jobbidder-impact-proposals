@@ -98,6 +98,8 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         const origin = new URL(request.url).origin
         const proposalUrl = `${origin}/p/${proposal.id}`
 
+        const proposalLang = (proposal as any).language || 'en'
+
         const templateData = {
           clientName: proposal.client_name,
           businessName: contractor?.business_name,
@@ -106,6 +108,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           tradeType: proposal.trade_type,
           totalAmount: fmt(totals.grandTotal),
           proposalUrl,
+          language: proposalLang,
         }
 
         // 4. Render email template
@@ -172,9 +175,18 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         }
 
         // 8. Send SMS with the proposal link if client phone is on file
+        const SMS_TEMPLATES: Record<string, (b: string, n: string, a: string, u: string) => string> = {
+          en: (b, n, a, u) => `${b} sent your proposal ${n}${a ? ` (${a})` : ''}: ${u} — Reply STOP to opt out`,
+          es: (b, n, a, u) => `${b} envió tu propuesta ${n}${a ? ` (${a})` : ''}: ${u} — Responde STOP para cancelar`,
+          fr: (b, n, a, u) => `${b} vous a envoyé la proposition ${n}${a ? ` (${a})` : ''}: ${u} — Répondez STOP pour vous désabonner`,
+          pt: (b, n, a, u) => `${b} enviou sua proposta ${n}${a ? ` (${a})` : ''}: ${u} — Responda STOP para cancelar`,
+          ht: (b, n, a, u) => `${b} voye pwopozisyon ${n} pou ou${a ? ` (${a})` : ''}: ${u} — Reponn STOP pou kanpe`,
+        }
+        const smsTpl = SMS_TEMPLATES[proposalLang] || SMS_TEMPLATES.en
+
         let smsRes: any = { skipped: 'no client phone' }
         if (proposal.client_phone) {
-          const smsBody = `${businessName} sent your proposal ${proposal.proposal_number}${totals.grandTotal ? ` (${fmt(totals.grandTotal)})` : ''}: ${proposalUrl} — Reply STOP to opt out`
+          const smsBody = smsTpl(businessName, proposal.proposal_number, totals.grandTotal ? fmt(totals.grandTotal) : '', proposalUrl)
           // Use contractor's own phone as the from number if no GHL-specific number is configured
           const smsCredentials: GhlCredentials | null = ghlCredentials
             ? ghlCredentials
