@@ -6,12 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Sparkles, CheckCircle2, FileText } from "lucide-react";
+import { Calculator, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/intake/$slug")({
-  head: () => ({ meta: [{ title: "Request your estimate" }] }),
-  component: IntakeForm,
+export const Route = createFileRoute("/intake/$slug/estimate")({
+  head: () => ({ meta: [{ title: "Get a free estimate" }] }),
+  component: EstimateIntakeForm,
 });
 
 type Lang = "en" | "es" | "fr" | "pt" | "ht";
@@ -38,125 +38,131 @@ type LangUI = {
   submitBtn: string;
   submitting: string;
   successHeading: string;
-  successBody: (business: string) => string;
-  viewProposal: string;
-  consent: (business: string) => string;
+  successBody: (b: string) => string;
+  viewEstimate: string;
+  freeEstimateFrom: string;
+  consent: (b: string) => string;
   smsTerms: string;
   privacy: string;
-  freeEstimateFrom: string;
+  wantFullProposal: string;
 };
 
 const UI: Record<Lang, LangUI> = {
   en: {
-    heading: "Request a detailed proposal",
-    subheading: "Get a Good / Better / Best breakdown with itemized costs, payment terms, and a signature line — delivered in minutes.",
-    nameLabel: "Your name *",
-    phoneLabel: "Phone *",
-    emailLabel: "Email *",
-    addressLabel: "Job address",
-    jobTypeLabel: "Job type",
+    heading: "Get a free ballpark estimate",
+    subheading: "Tell us about your project and we'll send you a quick price range — no commitment required.",
+    nameLabel: "Your name",
+    phoneLabel: "Phone number",
+    emailLabel: "Email address",
+    addressLabel: "Job address (optional)",
+    jobTypeLabel: "Type of work",
     jobTypePh: "Roof replacement, kitchen remodel…",
-    descLabel: "Describe what you need *",
+    descLabel: "Describe your project",
     descPh: "The more detail you share, the more accurate your estimate.",
-    submitBtn: "Request my proposal",
-    submitting: "Submitting…",
-    successHeading: "Thanks — we're on it",
-    successBody: (b) => `${b} just received your request. Your detailed proposal will arrive by email and text within a few minutes.`,
-    viewProposal: "View your proposal",
+    submitBtn: "Get my free estimate",
+    submitting: "Generating estimate…",
+    successHeading: "Your estimate is on its way!",
+    successBody: (b) => `${b} just received your request. Your free estimate will arrive by email and text within a few minutes.`,
+    viewEstimate: "View your estimate",
+    freeEstimateFrom: "Free estimate from",
     consent: (b) => `By submitting, you authorize ${b} (powered by Jobbidder / Sudden Impact Agency LLC) to send you transactional text messages and emails about your estimate at the contact info above, possibly using automated technology. Msg & data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to cancel, HELP for help.`,
     smsTerms: "SMS Terms",
     privacy: "Privacy Policy",
-    freeEstimateFrom: "Detailed proposal from",
+    wantFullProposal: "Want a detailed proposal instead?",
   },
   es: {
-    heading: "Cuéntanos sobre tu proyecto",
-    subheading: "Te enviaremos una propuesta detallada en pocos minutos.",
-    nameLabel: "Tu nombre *",
-    phoneLabel: "Teléfono *",
-    emailLabel: "Correo electrónico *",
-    addressLabel: "Dirección del trabajo",
+    heading: "Obtén un presupuesto gratuito",
+    subheading: "Cuéntanos sobre tu proyecto y te enviaremos un rango de precios rápido — sin compromiso.",
+    nameLabel: "Tu nombre",
+    phoneLabel: "Número de teléfono",
+    emailLabel: "Correo electrónico",
+    addressLabel: "Dirección del trabajo (opcional)",
     jobTypeLabel: "Tipo de trabajo",
     jobTypePh: "Reemplazo de techo, remodelación de cocina…",
-    descLabel: "Describe lo que necesitas *",
+    descLabel: "Describe tu proyecto",
     descPh: "Cuantos más detalles compartas, más preciso será tu presupuesto.",
-    submitBtn: "Solicitar mi propuesta",
-    submitting: "Enviando…",
-    successHeading: "Gracias — ya estamos en ello",
-    successBody: (b) => `${b} acaba de recibir tu solicitud. Estamos preparando tu presupuesto y lo recibirás por correo y mensaje de texto en pocos minutos.`,
-    viewProposal: "Ver tu propuesta",
-    consent: (b) => `Al enviar, autorizas a ${b} (con tecnología de Jobbidder / Sudden Impact Agency LLC) a enviarte mensajes de texto y correos transaccionales sobre tu presupuesto. Pueden aplicar tarifas de mensajes y datos. Responde STOP para cancelar, HELP para ayuda.`,
+    submitBtn: "Obtener mi presupuesto gratuito",
+    submitting: "Generando presupuesto…",
+    successHeading: "¡Tu presupuesto está en camino!",
+    successBody: (b) => `${b} acaba de recibir tu solicitud. Tu presupuesto gratuito llegará por correo y mensaje de texto en unos minutos.`,
+    viewEstimate: "Ver tu presupuesto",
+    freeEstimateFrom: "Presupuesto gratuito de",
+    consent: (b) => `Al enviar, autorizas a ${b} (impulsado por Jobbidder / Sudden Impact Agency LLC) a enviarte mensajes de texto y correos transaccionales sobre tu presupuesto, posiblemente usando tecnología automatizada. Pueden aplicar tarifas de mensajes y datos. Responde STOP para cancelar, HELP para ayuda.`,
     smsTerms: "Términos SMS",
     privacy: "Política de privacidad",
-    freeEstimateFrom: "Propuesta detallada de",
+    wantFullProposal: "¿Quieres una propuesta detallada?",
   },
   fr: {
-    heading: "Parlez-nous de votre projet",
-    subheading: "Nous vous enverrons une proposition détaillée en quelques minutes.",
-    nameLabel: "Votre nom *",
-    phoneLabel: "Téléphone *",
-    emailLabel: "Courriel *",
-    addressLabel: "Adresse du chantier",
+    heading: "Obtenez une estimation gratuite",
+    subheading: "Parlez-nous de votre projet et nous vous enverrons une fourchette de prix rapide — sans engagement.",
+    nameLabel: "Votre nom",
+    phoneLabel: "Numéro de téléphone",
+    emailLabel: "Adresse e-mail",
+    addressLabel: "Adresse du chantier (optionnel)",
     jobTypeLabel: "Type de travaux",
-    jobTypePh: "Remplacement de toiture, rénovation de cuisine…",
-    descLabel: "Décrivez ce dont vous avez besoin *",
-    descPh: "Plus vous donnez de détails, plus votre estimation sera précise.",
-    submitBtn: "Demander ma proposition",
-    submitting: "Envoi…",
-    successHeading: "Merci — nous nous en occupons",
-    successBody: (b) => `${b} vient de recevoir votre demande. Nous préparons votre estimation et vous la recevrez par courriel et SMS dans quelques minutes.`,
-    viewProposal: "Voir votre proposition",
-    consent: (b) => `En soumettant, vous autorisez ${b} (propulsé par Jobbidder / Sudden Impact Agency LLC) à vous envoyer des messages transactionnels par SMS et courriel concernant votre estimation. Des frais peuvent s'appliquer. Répondez STOP pour annuler, HELP pour de l'aide.`,
+    jobTypePh: "Remplacement de toiture, rénovation cuisine…",
+    descLabel: "Décrivez votre projet",
+    descPh: "Plus vous partagez de détails, plus votre estimation sera précise.",
+    submitBtn: "Obtenir mon estimation gratuite",
+    submitting: "Génération en cours…",
+    successHeading: "Votre estimation est en route !",
+    successBody: (b) => `${b} vient de recevoir votre demande. Votre estimation gratuite arrivera par e-mail et SMS dans quelques minutes.`,
+    viewEstimate: "Voir votre estimation",
+    freeEstimateFrom: "Estimation gratuite de",
+    consent: (b) => `En soumettant, vous autorisez ${b} (propulsé par Jobbidder / Sudden Impact Agency LLC) à vous envoyer des messages transactionnels par SMS et e-mail concernant votre estimation, éventuellement via une technologie automatisée. Des frais de message et de données peuvent s'appliquer. Répondez STOP pour annuler, HELP pour de l'aide.`,
     smsTerms: "Conditions SMS",
     privacy: "Politique de confidentialité",
-    freeEstimateFrom: "Proposition détaillée de",
+    wantFullProposal: "Vous voulez une proposition détaillée ?",
   },
   pt: {
-    heading: "Fale sobre o seu projeto",
-    subheading: "Enviaremos uma proposta detalhada em poucos minutos.",
-    nameLabel: "Seu nome *",
-    phoneLabel: "Telefone *",
-    emailLabel: "E-mail *",
-    addressLabel: "Endereço do serviço",
+    heading: "Obtenha um orçamento gratuito",
+    subheading: "Conte-nos sobre seu projeto e enviaremos uma faixa de preço rápida — sem compromisso.",
+    nameLabel: "Seu nome",
+    phoneLabel: "Número de telefone",
+    emailLabel: "Endereço de e-mail",
+    addressLabel: "Endereço do serviço (opcional)",
     jobTypeLabel: "Tipo de serviço",
     jobTypePh: "Substituição de telhado, reforma de cozinha…",
-    descLabel: "Descreva o que você precisa *",
-    descPh: "Quanto mais detalhes você compartilhar, mais preciso será o orçamento.",
-    submitBtn: "Solicitar minha proposta",
-    submitting: "Enviando…",
-    successHeading: "Obrigado — já estamos nisso",
-    successBody: (b) => `${b} acabou de receber sua solicitação. Estamos preparando seu orçamento e você o receberá por e-mail e SMS em poucos minutos.`,
-    viewProposal: "Ver sua proposta",
-    consent: (b) => `Ao enviar, você autoriza ${b} (com tecnologia Jobbidder / Sudden Impact Agency LLC) a enviar mensagens de texto e e-mails transacionais sobre seu orçamento. Tarifas podem ser aplicadas. Responda STOP para cancelar, HELP para ajuda.`,
+    descLabel: "Descreva seu projeto",
+    descPh: "Quanto mais detalhes você compartilhar, mais preciso será seu orçamento.",
+    submitBtn: "Obter meu orçamento gratuito",
+    submitting: "Gerando orçamento…",
+    successHeading: "Seu orçamento está a caminho!",
+    successBody: (b) => `${b} acabou de receber sua solicitação. Seu orçamento gratuito chegará por e-mail e mensagem de texto em alguns minutos.`,
+    viewEstimate: "Ver seu orçamento",
+    freeEstimateFrom: "Orçamento gratuito de",
+    consent: (b) => `Ao enviar, você autoriza ${b} (desenvolvido por Jobbidder / Sudden Impact Agency LLC) a enviar mensagens de texto e e-mails transacionais sobre seu orçamento, possivelmente usando tecnologia automatizada. Taxas de mensagens e dados podem ser aplicadas. Responda STOP para cancelar, HELP para ajuda.`,
     smsTerms: "Termos de SMS",
     privacy: "Política de privacidade",
-    freeEstimateFrom: "Proposta detalhada de",
+    wantFullProposal: "Quer uma proposta detalhada?",
   },
   ht: {
-    heading: "Pale nou sou pwojè ou",
-    subheading: "Nou pral voye yon pwopozisyon detaye nan kèk minit.",
-    nameLabel: "Non ou *",
-    phoneLabel: "Telefòn *",
-    emailLabel: "Imèl *",
-    addressLabel: "Adrès travay la",
+    heading: "Jwenn yon estimasyon gratis",
+    subheading: "Di nou sou pwojè ou a epi nou pral voye yon ranje pri rapid — san angajman.",
+    nameLabel: "Non ou",
+    phoneLabel: "Nimewo telefòn",
+    emailLabel: "Adrès imèl",
+    addressLabel: "Adrès travay la (opsyonèl)",
     jobTypeLabel: "Kalite travay",
     jobTypePh: "Ranplasman do kay, renovasyon kwizin…",
-    descLabel: "Dekri sa ou bezwen *",
-    descPh: "Plis detay ou pataje, plis estimasyon ou an pral egzak.",
-    submitBtn: "Mande pwopozisyon mwen",
-    submitting: "K ap voye…",
-    successHeading: "Mèsi — nou okipe sa",
-    successBody: (b) => `${b} fèk resevwa demann ou. Nou ap prepare estimasyon ou epi ou pral resevwa li pa imèl ak mesaj tèks nan kèk minit.`,
-    viewProposal: "Wè pwopozisyon ou an",
-    consent: (b) => `Lè ou soumèt, ou otorize ${b} (alimante pa Jobbidder / Sudden Impact Agency LLC) pou voye mesaj tèks ak imèl transaksyonèl sou estimasyon ou. Frè ka aplike. Reponn STOP pou kanpe, HELP pou èd.`,
+    descLabel: "Dekri pwojè ou a",
+    descPh: "Plis detay ou pataje, plis estimasyon ou a pral egzak.",
+    submitBtn: "Jwenn estimasyon gratis mwen",
+    submitting: "K ap jenere estimasyon…",
+    successHeading: "Estimasyon ou a ap vini!",
+    successBody: (b) => `${b} fèk resevwa demann ou a. Estimasyon gratis ou a pral rive pa imèl ak mesaj tèks nan kèk minit.`,
+    viewEstimate: "Wè estimasyon ou a",
+    freeEstimateFrom: "Estimasyon gratis de",
+    consent: (b) => `Lè ou soumèt, ou otorize ${b} (alimante pa Jobbidder / Sudden Impact Agency LLC) pou voye mesaj tèks ak imèl transaksyonèl sou estimasyon ou a, posibleman itilize teknoloji otomatik. Frè mesaj ak done ka aplike. Reponn STOP pou anile, HELP pou èd.`,
     smsTerms: "Tèm SMS",
-    privacy: "Politik konfidansyalite",
-    freeEstimateFrom: "Pwopozisyon detaye de",
+    privacy: "Politik Konfidansyalite",
+    wantFullProposal: "Ou vle yon pwopozisyon detaye?",
   },
 };
 
 function detectLang(): Lang {
   if (typeof navigator === "undefined") return "en";
-  const nav = navigator.language || "";
+  const nav = navigator.language?.toLowerCase() || "";
   if (nav.startsWith("es")) return "es";
   if (nav.startsWith("fr")) return "fr";
   if (nav.startsWith("pt")) return "pt";
@@ -164,7 +170,7 @@ function detectLang(): Lang {
   return "en";
 }
 
-function IntakeForm() {
+function EstimateIntakeForm() {
   const { slug } = Route.useParams();
   const [contractor, setContractor] = useState<{ business_name: string; primary_color: string | null; logo_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,14 +201,14 @@ function IntakeForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await fetch("/api/public/intake-submit", {
+      const res = await fetch("/api/public/estimate-submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug, ...form, language: lang }),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || "Submission failed");
-      setDone({ url: json.proposal_url });
+      if (!res.ok || !json.ok) throw new Error(json.error || "Submission failed");
+      setDone({ url: json.estimate_url });
     } catch (err: any) {
       toast.error(err?.message || "Submission failed");
     } finally {
@@ -216,13 +222,13 @@ function IntakeForm() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="p-8 max-w-md text-center">
           <h1 className="font-display text-2xl font-bold">Not found</h1>
-          <p className="text-muted-foreground mt-2">This intake link isn't active.</p>
+          <p className="text-muted-foreground mt-2">This estimate link isn't active.</p>
         </Card>
       </div>
     );
   }
 
-  const brand = contractor.primary_color || "#EC4899";
+  const brand = contractor.primary_color || "#FF6B00";
   const t = UI[lang];
 
   if (done) {
@@ -234,7 +240,13 @@ function IntakeForm() {
           <p className="text-muted-foreground mt-3">
             {t.successBody(contractor.business_name)}
           </p>
-          <a href={done.url} className="inline-block mt-6 text-sm underline">{t.viewProposal}</a>
+          <a href={done.url} className="inline-block mt-6 text-sm underline">{t.viewEstimate}</a>
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs text-muted-foreground">{t.wantFullProposal}</p>
+            <a href={`/intake/${slug}`} className="inline-block mt-2 text-sm font-semibold underline" style={{ color: brand }}>
+              Request a detailed proposal →
+            </a>
+          </div>
         </Card>
       </div>
     );
@@ -249,7 +261,7 @@ function IntakeForm() {
               <img src={contractor.logo_url} alt="" className="h-12 w-auto" />
             ) : (
               <div className="h-12 w-12 rounded-md flex items-center justify-center" style={{ background: brand }}>
-                <Sparkles className="h-6 w-6 text-white" />
+                <Calculator className="h-6 w-6 text-white" />
               </div>
             )}
             <div>
@@ -275,11 +287,11 @@ function IntakeForm() {
         </div>
 
         {/* Estimate vs Proposal distinction banner */}
-        <div className="mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-sm text-blue-800 flex items-start gap-2">
-          <FileText className="h-4 w-4 mt-0.5 flex-shrink-0" />
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800 flex items-start gap-2">
+          <Calculator className="h-4 w-4 mt-0.5 flex-shrink-0" />
           <span>
-            This form requests a <strong>detailed proposal</strong> with Good/Better/Best pricing and a signature line.
-            {" "}<a href={`/intake/${slug}/estimate`} className="underline font-semibold">Click here for a quick ballpark estimate</a> instead.
+            This form gives you a <strong>quick ballpark estimate</strong> with price ranges.
+            {" "}<a href={`/intake/${slug}`} className="underline font-semibold">Click here for a detailed proposal</a> with itemized costs, Good/Better/Best options, and a signature line.
           </span>
         </div>
 
@@ -300,7 +312,7 @@ function IntakeForm() {
             </div>
             <div className="space-y-3">
               <Button type="submit" size="lg" disabled={submitting} className="text-white w-full sm:w-auto" style={{ background: brand }}>
-                <Sparkles className="h-4 w-4 mr-2" />
+                <Calculator className="h-4 w-4 mr-2" />
                 {submitting ? t.submitting : t.submitBtn}
               </Button>
               <p className="text-xs text-muted-foreground leading-relaxed">
