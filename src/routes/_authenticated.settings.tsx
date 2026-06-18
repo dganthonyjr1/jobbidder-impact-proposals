@@ -186,14 +186,36 @@ function SettingsPage() {
             <div><Label>Email</Label><Input value={contractor.email || ""} onChange={(e) => set("email", e.target.value)} /></div>
             <div><Label>License #</Label><Input value={contractor.license_number || ""} onChange={(e) => set("license_number", e.target.value)} /></div>
             <div><Label>Brand color</Label><Input type="color" value={contractor.primary_color || "#EC4899"} onChange={(e) => set("primary_color", e.target.value)} /></div>
-            <div className="col-span-2"><Label>Logo URL</Label><Input value={contractor.logo_url || ""} onChange={(e) => set("logo_url", e.target.value)} placeholder="https://…" /></div>
+            <div className="col-span-2">
+              <Label>Business Logo</Label>
+              <div className="flex items-center gap-4 mt-1">
+                {contractor.logo_url && (
+                  <img src={contractor.logo_url} alt="Logo" className="h-12 w-auto rounded border border-border object-contain bg-white p-1" />
+                )}
+                <div className="flex-1 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className="cursor-pointer"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const ext = file.name.split(".").pop();
+                      const path = `logos/${contractor.id}.${ext}`;
+                      const { error } = await supabase.storage.from("job-photos").upload(path, file, { upsert: true, contentType: file.type });
+                      if (error) { toast.error("Upload failed: " + error.message); return; }
+                      const { data: pub } = supabase.storage.from("job-photos").getPublicUrl(path);
+                      set("logo_url", pub.publicUrl);
+                      toast.success("Logo uploaded — click Save to apply");
+                    }}
+                  />
+                  <Input value={contractor.logo_url || ""} onChange={(e) => set("logo_url", e.target.value)} placeholder="Or paste a logo URL: https://…" className="text-xs" />
+                </div>
+              </div>
+            </div>
             <div className="col-span-2"><Label>Business address (shown on PDF)</Label><Input value={contractor.business_address || ""} onChange={(e) => set("business_address", e.target.value)} placeholder="123 Main St, Wildwood NJ 08260" /></div>
           </div>
-          <div className="pt-2">
-            <h3 className="font-display font-semibold mb-2">Anthropic API Key</h3>
-            <p className="text-sm text-muted-foreground mb-2">Bring your own Anthropic key for Claude-powered proposals (optional). Otherwise the platform uses its built-in AI gateway.</p>
-            <Input type="password" value={contractor.anthropic_api_key || ""} onChange={(e) => set("anthropic_api_key", e.target.value)} placeholder="sk-ant-…" />
-          </div>
+
         </Card>
       )}
 
