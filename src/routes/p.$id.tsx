@@ -52,9 +52,23 @@ function PublicProposal() {
         const json = await res.json();
         if (!res.ok || !json.success) throw new Error(json.error || "Proposal not found");
         setProposal(json.proposal);
-        setTier((json.proposal.selected_tier as any) || "better");
+        const loadedTier = (json.proposal.selected_tier as "good" | "better" | "best") || "better";
+        setTier(loadedTier);
         if (json.proposal.client_email) setSendEmail(json.proposal.client_email);
         setContractor(json.contractor);
+        // If proposal is already accepted, pre-populate deposit state from DB data
+        if (json.proposal.status === "accepted") {
+          setAccepted(true);
+          setAcceptedTierForDeposit(loadedTier);
+          setSignedName(json.proposal.client_name || "");
+          setSignedEmail(json.proposal.client_email || "");
+          // Compute the accepted total from stored materials/labor
+          const mats = (json.proposal.materials || []) as MaterialLine[];
+          const labs = (json.proposal.labor || []) as LaborLine[];
+          const t = computeTotals(mats, labs, loadedTier, Number(json.proposal.tax_rate) || 0.07);
+          setAcceptedTotal(t.grandTotal);
+          setDepositAmount(Math.round(t.grandTotal * 0.5 * 100) / 100);
+        }
         const { data: { user } } = await supabase.auth.getUser();
         const owner = !!user && json.contractor?.user_id === user.id;
         if (owner) setIsOwner(true);
@@ -140,6 +154,7 @@ function PublicProposal() {
       setAccepted(true);
       setAcceptedTierForDeposit(tier);
       setAcceptedTotal(totals.grandTotal);
+      setDepositAmount(Math.round(totals.grandTotal * 0.5 * 100) / 100);
       setShowSignModal(false);
       setSignedName(signatureName);
       setSignedEmail(signatureEmail || "");
