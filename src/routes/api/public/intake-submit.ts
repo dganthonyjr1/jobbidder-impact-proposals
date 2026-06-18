@@ -22,16 +22,134 @@ type AIShape = {
   materials: { item: string; description?: string; qty: number; unit: string; retail_price: number; sia_price?: number | null }[];
   labor: { task: string; description?: string; hours: number; rate: number }[];
   tiers: Record<string, { label: string; description: string }>;
+  tax_rate: number;
+  payment_terms: string;
 };
 
-async function callAnthropicAI(payload: z.infer<typeof Body>, business: string): Promise<AIShape | null> {
+interface TradeRate {
+  labor_rate: number;
+  material_markup: number;
+  overhead: number;
+  profit_margin: number;
+}
+
+interface PricingSettings {
+  trades: Record<string, TradeRate>;
+  tier_spread: { good: number; better: number; best: number };
+  tax_rate: number;
+  payment_terms: string;
+  warranty_default: string;
+}
+
+const DEFAULT_PRICING: PricingSettings = {
+  trades: {
+    default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
+  },
+  tier_spread: { good: 0, better: 18, best: 38 },
+  tax_rate: 7,
+  payment_terms: "50% deposit, 50% on completion",
+  warranty_default: "1-year workmanship warranty on all labor",
+};
+
+/**
+ * Resolve the best trade rate for the given trade type string.
+ * Tries an exact key match, then a fuzzy keyword match, then falls back to default.
+ */
+function resolveTradeRate(pricing: PricingSettings, tradeType: string | null | undefined): TradeRate {
+  if (!tradeType) return pricing.trades.default || DEFAULT_PRICING.trades.default;
+  const lower = tradeType.toLowerCase();
+  // Exact key match
+  if (pricing.trades[lower]) return pricing.trades[lower];
+  // Fuzzy keyword match
+  const keywords: Record<string, string> = {
+    roof: "roofing", hvac: "hvac", heat: "hvac", cool: "hvac", air: "hvac",
+    plumb: "plumbing", water: "plumbing", drain: "plumbing",
+    electric: "electrical", wiring: "electrical",
+    remodel: "remodeling", general: "remodeling", kitchen: "remodeling", bath: "remodeling",
+    paint: "painting",
+    floor: "flooring", tile: "flooring", carpet: "flooring",
+    landscape: "landscaping", lawn: "landscaping", yard: "landscaping",
+  };
+  for (const [kw, tradeKey] of Object.entries(keywords)) {
+    if (lower.includes(kw) && pricing.trades[tradeKey]) return pricing.trades[tradeKey];
+  }
+  return pricing.trades.default || DEFAULT_PRICING.trades.default;
+}
+
+/**
+ * Build the system and user prompts for Claude, injecting the contractor's
+ * actual pricing parameters so the AI uses real numbers instead of estimates.
+ */
+function buildPrompt(
+  payload: z.infer<typeof Body>,
+  business: string,
+  pricing: PricingSettings
+): { system: string; user: string } {
+  const rate = resolveTradeRate(pricing, payload.trade_type);
+  const { tier_spread, tax_rate, payment_terms, warranty_default } = pricing;
+
+  const system = `You are an expert estimator for ${business} (${payload.trade_type || "general contracting"}).
+
+PRICING PARAMETERS — use these exact numbers, do not estimate:
+- Labor rate: $${rate.labor_rate}/hr
+- Material markup over wholesale cost: ${rate.material_markup}%
+- Overhead factor: ${rate.overhead}% of (materials + labor)
+- Profit margin: ${rate.profit_margin}% applied after overhead
+- Tax rate: ${tax_rate}%
+- Payment terms: ${payment_terms}
+- Default warranty: ${warranty_default}
+
+TIER PRICING RULES:
+- Good tier: base price (0% premium) — standard materials, meets code
+- Better tier: base price + ${tier_spread.better}% — upgraded materials, enhanced scope
+- Best tier: base price + ${tier_spread.best}% — premium materials, full-service scope
+
+CALCULATION METHOD:
+1. List all materials with wholesale (sia_price) and retail price. Apply ${rate.material_markup}% markup to get the billed material cost.
+2. List all labor tasks with hours and rate of $${rate.labor_rate}/hr.
+3. The AI does NOT calculate totals — the frontend calculates totals from the line items.
+4. Apply a 10% waste factor on flooring, tile, paint, and drywall quantities.
+5. The tiers field describes what changes between Good/Better/Best — the frontend applies the tier spread percentages to the base total.
+
+Return ONLY valid JSON with no markdown fences.`;
+
+  const user = `CLIENT: ${payload.client_name}
+ADDRESS: ${payload.job_address || "TBD"}
+TRADE: ${payload.trade_type || "General Contracting"}
+DESCRIPTION: ${payload.job_description}
+
+Return JSON:
+{
+  "scope_of_work": string,
+  "timeline": string,
+  "warranty": string,
+  "exclusions": string[],
+  "materials": [{"item": string, "description": string, "qty": number, "unit": string, "retail_price": number, "sia_price": number}],
+  "labor": [{"task": string, "description": string, "hours": number, "rate": number}],
+  "tiers": {
+    "good": {"label": "Good", "description": string},
+    "better": {"label": "Better", "description": string},
+    "best": {"label": "Best", "description": string}
+  },
+  "tax_rate": ${tax_rate},
+  "payment_terms": "${payment_terms}"
+}`;
+
+  return { system, user };
+}
+
+async function callAnthropicAI(
+  payload: z.infer<typeof Body>,
+  business: string,
+  pricing: PricingSettings
+): Promise<AIShape | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.warn("[intake-submit] ANTHROPIC_API_KEY not set — skipping AI generation");
     return null;
   }
-  const sys = `You are an expert estimator for ${business} (${payload.trade_type || "general contracting"}). Produce a realistic, professional proposal with itemized materials and labor in USD. Apply a 10% waste factor on flooring/tile/paint/drywall. Return ONLY valid JSON with no markdown fences.`;
-  const user = `CLIENT: ${payload.client_name}\nADDRESS: ${payload.job_address || "TBD"}\nDESCRIPTION: ${payload.job_description}\n\nReturn JSON: {"scope_of_work":string,"timeline":string,"warranty":string,"exclusions":string[],"materials":[{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}],"labor":[{"task":string,"description":string,"hours":number,"rate":number}],"tiers":{"good":{"label":"Good","description":string},"better":{"label":"Better","description":string},"best":{"label":"Best","description":string}}}`;
+
+  const { system, user } = buildPrompt(payload, business, pricing);
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -44,7 +162,7 @@ async function callAnthropicAI(payload: z.infer<typeof Body>, business: string):
       body: JSON.stringify({
         model: "claude-haiku-4-5",
         max_tokens: 4096,
-        system: sys,
+        system,
         messages: [{ role: "user", content: user }],
       }),
     });
@@ -80,14 +198,20 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           return Response.json({ success: false, error: "Invalid form", details: (e as Error).message }, { status: 400 });
         }
 
+        // Fetch contractor including pricing_settings
         const { data: contractor } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, email")
+          .select("id, business_name, email, pricing_settings")
           .eq("slug", input.slug)
           .maybeSingle();
         if (!contractor) return Response.json({ success: false, error: "Contractor not found" }, { status: 404 });
 
-        const ai = await callAnthropicAI(input, contractor.business_name);
+        // Merge contractor pricing with defaults
+        const pricing: PricingSettings = contractor.pricing_settings
+          ? { ...DEFAULT_PRICING, ...contractor.pricing_settings, trades: { ...DEFAULT_PRICING.trades, ...contractor.pricing_settings.trades } }
+          : DEFAULT_PRICING;
+
+        const ai = await callAnthropicAI(input, contractor.business_name, pricing);
 
         const validThrough = new Date(); validThrough.setDate(validThrough.getDate() + 30);
         const { data: created, error } = await supabaseAdmin.from("proposals").insert({
@@ -103,18 +227,34 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           job_description: input.job_description,
           scope_of_work: ai?.scope_of_work || input.job_description,
           timeline: ai?.timeline || null,
-          warranty: ai?.warranty || null,
+          warranty: ai?.warranty || pricing.warranty_default,
           exclusions: ai?.exclusions || [],
           materials: ai?.materials || [],
           labor: ai?.labor || [],
           tiers: ai?.tiers || {},
+          tax_rate: (ai?.tax_rate ?? pricing.tax_rate) / 100,
+          payment_terms: ai?.payment_terms || pricing.payment_terms,
           photos: input.photos || [],
           valid_through: validThrough.toISOString().slice(0, 10),
-          raw_input: { source: "public-intake", slug: input.slug },
+          raw_input: {
+            source: "public-intake",
+            slug: input.slug,
+            pricing_used: {
+              labor_rate: resolveTradeRate(pricing, input.trade_type).labor_rate,
+              material_markup: resolveTradeRate(pricing, input.trade_type).material_markup,
+              overhead: resolveTradeRate(pricing, input.trade_type).overhead,
+              profit_margin: resolveTradeRate(pricing, input.trade_type).profit_margin,
+              tier_spread: pricing.tier_spread,
+              tax_rate: pricing.tax_rate,
+            },
+          },
         }).select("id, proposal_number").single();
         if (error) return Response.json({ success: false, error: error.message }, { status: 500 });
 
-        // Auto-send to client (this also schedules follow-ups via the email route)
+        // Update proposal status to sent
+        await supabaseAdmin.from("proposals").update({ status: "sent" }).eq("id", created.id);
+
+        // Auto-send to client
         const origin = new URL(request.url).origin;
         try {
           await fetch(`${origin}/api/public/send-proposal-email`, {
