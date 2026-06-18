@@ -39,6 +39,7 @@ function PublicProposal() {
   const [savingPhotos, setSavingPhotos] = useState(false);
   const [showClientUpload, setShowClientUpload] = useState(false);
   const [savingClientPhotos, setSavingClientPhotos] = useState(false);
+  const [clientSession, setClientSession] = useState<any>(null);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositPaid, setDepositPaid] = useState(false);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
@@ -74,6 +75,7 @@ function PublicProposal() {
         const { data: { user } } = await supabase.auth.getUser();
         const owner = !!user && json.contractor?.user_id === user.id;
         if (owner) setIsOwner(true);
+        if (user && !owner) setClientSession(user);
         // Track view only for non-owner visitors
         if (!owner) {
           fetch("/api/public/proposal-view", {
@@ -303,7 +305,7 @@ function PublicProposal() {
           </Card>
         )}
 
-        {!isOwner && (
+        {!isOwner && clientSession && (
           <Card className="p-5 mb-6 print:hidden">
             <button
               type="button"
