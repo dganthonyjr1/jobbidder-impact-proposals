@@ -116,11 +116,11 @@ export const Route = createFileRoute("/api/public/estimate-submit")({
         // Look up contractor by slug
         const { data: contractor, error: cErr } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, trade_type, phone, email, pricing_settings, ghl_location_id")
+          .select("id, business_name, trade_type, phone, email, pricing_settings")
           .eq("slug", input.slug)
           .maybeSingle();
         if (cErr || !contractor) {
-          return Response.json({ ok: false, error: "Contractor not found" }, { status: 404 });
+          return Response.json({ ok: false, error: `Contractor not found: ${cErr?.message || 'no row'}` }, { status: 404 });
         }
 
         // Generate estimate via Groq (with fallback)
