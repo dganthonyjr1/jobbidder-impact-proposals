@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
+import Groq from "groq-sdk";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -138,46 +139,36 @@ Return JSON:
   return { system, user };
 }
 
-async function callAnthropicAI(
+async function callGroqAI(
   payload: z.infer<typeof Body>,
   business: string,
   pricing: PricingSettings
 ): Promise<AIShape | null> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    console.warn("[intake-submit] ANTHROPIC_API_KEY not set — skipping AI generation");
+    console.warn("[intake-submit] GROQ_API_KEY not set — skipping AI generation");
     return null;
   }
 
   const { system, user } = buildPrompt(payload, business, pricing);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5",
-        max_tokens: 4096,
-        system,
-        messages: [{ role: "user", content: user }],
-      }),
+    const groq = new Groq({ apiKey });
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      max_tokens: 4096,
+      temperature: 0.3,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("[intake-submit] Anthropic API error:", res.status, errText);
-      return null;
-    }
-    const json = await res.json();
-    const raw = json?.content?.[0]?.text || "{}";
+    const raw = completion.choices?.[0]?.message?.content || "{}";
     // Strip markdown fences if present
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     return JSON.parse(cleaned) as AIShape;
   } catch (e) {
-    console.error("[intake-submit] Anthropic call failed:", (e as Error).message);
+    console.error("[intake-submit] Groq call failed:", (e as Error).message);
     return null;
   }
 }
@@ -211,7 +202,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           ? { ...DEFAULT_PRICING, ...contractor.pricing_settings, trades: { ...DEFAULT_PRICING.trades, ...contractor.pricing_settings.trades } }
           : DEFAULT_PRICING;
 
-        const ai = await callAnthropicAI(input, contractor.business_name, pricing);
+        const ai = await callGroqAI(input, contractor.business_name, pricing);
 
         const validThrough = new Date(); validThrough.setDate(validThrough.getDate() + 30);
         const { data: created, error } = await supabaseAdmin.from("proposals").insert({
