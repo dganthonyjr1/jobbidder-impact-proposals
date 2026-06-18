@@ -5,6 +5,8 @@ import { generateEstimateNumber, buildFallbackEstimate } from "@/lib/estimates.s
 import { sendSmsViaGHL, sendEmailViaGHL } from "@/lib/ghl.server";
 import Groq from "groq-sdk";
 
+const SITE_NAME = 'Jobbidder';
+
 const Body = z.object({
   slug: z.string().trim().min(1),
   client_name: z.string().trim().min(1).max(120),
@@ -43,7 +45,7 @@ async function callGroqForEstimate(opts: {
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const langName = languageName(opts.language);
 
-  const system = `You are a senior estimator for ${opts.contractor.business_name} (${opts.contractor.trade_type || opts.job.trade_type || "general contracting"}). Produce a quick, realistic BALLPARK ESTIMATE with price RANGES in USD. This is not a binding proposal — give honest low/high ranges that account for site unknowns. Write ALL human-readable text fields (scope_summary, timeline_text) in ${langName}. Numeric fields stay as numbers. Return ONLY valid JSON, no markdown, no explanation.`;
+  const system = `You are a senior estimator for ${opts.contractor.business_name || SITE_NAME} (${opts.contractor.trade_type || opts.job.trade_type || "general contracting"}). Produce a quick, realistic BALLPARK ESTIMATE with price RANGES in USD. This is not a binding proposal — give honest low/high ranges that account for site unknowns. Write ALL human-readable text fields (scope_summary, timeline_text) in ${langName}. Numeric fields stay as numbers. Return ONLY valid JSON, no markdown, no explanation.`;
 
   const user = `CLIENT: ${opts.job.client_name}
 ADDRESS: ${opts.job.job_address || "TBD"}${opts.job.job_state ? ", " + opts.job.job_state : ""}
@@ -196,7 +198,7 @@ export const Route = createFileRoute("/api/public/estimate-submit")({
           const phone = toE164(input.client_phone);
           const smsBody = estimateSmsBody(input.language, {
             clientName: input.client_name,
-            business: contractor.business_name,
+            business: contractor.business_name || SITE_NAME,
             url: estimateUrl,
           });
           try {
@@ -211,18 +213,18 @@ export const Route = createFileRoute("/api/public/estimate-submit")({
           try {
             // sendEmailViaGHL imported at top
             const emailSubjects: Record<string, string> = {
-              en: `Your free estimate from ${contractor.business_name} is ready`,
-              es: `Tu presupuesto gratuito de ${contractor.business_name} está listo`,
-              fr: `Votre estimation gratuite de ${contractor.business_name} est prête`,
-              pt: `Seu orçamento gratuito de ${contractor.business_name} está pronto`,
-              ht: `Estimasyon gratis ou nan men ${contractor.business_name} pare`,
+              en: `Your free estimate from ${contractor.business_name || SITE_NAME} is ready`,
+              es: `Tu presupuesto gratuito de ${contractor.business_name || SITE_NAME} está listo`,
+              fr: `Votre estimation gratuite de ${contractor.business_name || SITE_NAME} est prête`,
+              pt: `Seu orçamento gratuito de ${contractor.business_name || SITE_NAME} está pronto`,
+              ht: `Estimasyon gratis ou nan men ${contractor.business_name || SITE_NAME} pare`,
             };
             const emailBodies: Record<string, string> = {
-              en: `<p>Hi ${input.client_name},</p><p>Your free estimate from <strong>${contractor.business_name}</strong> is ready. View it here:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">View My Estimate</a></p><p>This estimate is valid for 7 days. Want a detailed proposal with itemized costs and a signature line? Click "Get the full proposal" on your estimate page.</p>`,
-              es: `<p>Hola ${input.client_name},</p><p>Tu presupuesto gratuito de <strong>${contractor.business_name}</strong> está listo. Véalo aquí:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Ver Mi Presupuesto</a></p><p>Este presupuesto es válido por 7 días.</p>`,
-              fr: `<p>Bonjour ${input.client_name},</p><p>Votre estimation gratuite de <strong>${contractor.business_name}</strong> est prête. Consultez-la ici :</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Voir Mon Estimation</a></p><p>Cette estimation est valable 7 jours.</p>`,
-              pt: `<p>Olá ${input.client_name},</p><p>Seu orçamento gratuito de <strong>${contractor.business_name}</strong> está pronto. Veja aqui:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Ver Meu Orçamento</a></p><p>Este orçamento é válido por 7 dias.</p>`,
-              ht: `<p>Bonjou ${input.client_name},</p><p>Estimasyon gratis ou nan men <strong>${contractor.business_name}</strong> pare. Gade li isit la:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Wè Estimasyon Mwen</a></p><p>Estimasyon sa a valid pou 7 jou.</p>`,
+              en: `<p>Hi ${input.client_name},</p><p>Your free estimate from <strong>${contractor.business_name || SITE_NAME}</strong> is ready. View it here:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">View My Estimate</a></p><p>This estimate is valid for 7 days. Want a detailed proposal with itemized costs and a signature line? Click "Get the full proposal" on your estimate page.</p>`,
+              es: `<p>Hola ${input.client_name},</p><p>Tu presupuesto gratuito de <strong>${contractor.business_name || SITE_NAME}</strong> está listo. Véalo aquí:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Ver Mi Presupuesto</a></p><p>Este presupuesto es válido por 7 días.</p>`,
+              fr: `<p>Bonjour ${input.client_name},</p><p>Votre estimation gratuite de <strong>${contractor.business_name || SITE_NAME}</strong> est prête. Consultez-la ici :</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Voir Mon Estimation</a></p><p>Cette estimation est valable 7 jours.</p>`,
+              pt: `<p>Olá ${input.client_name},</p><p>Seu orçamento gratuito de <strong>${contractor.business_name || SITE_NAME}</strong> está pronto. Veja aqui:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Ver Meu Orçamento</a></p><p>Este orçamento é válido por 7 dias.</p>`,
+              ht: `<p>Bonjou ${input.client_name},</p><p>Estimasyon gratis ou nan men <strong>${contractor.business_name || SITE_NAME}</strong> pare. Gade li isit la:</p><p><a href="${estimateUrl}" style="background:#FF6B00;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block;">Wè Estimasyon Mwen</a></p><p>Estimasyon sa a valid pou 7 jou.</p>`,
             };
             await sendEmailViaGHL({
               to: input.client_email,

@@ -198,7 +198,7 @@ function PublicProposal() {
               </div>
             )}
             <div>
-              <div className="font-display font-bold">{contractor?.business_name || "Contractor"}</div>
+              <div className="font-display font-bold">{contractor?.business_name || "Jobbidder"}</div>
               <div className="text-xs text-muted-foreground">{contractor?.phone} {contractor?.email && `· ${contractor.email}`}</div>
             </div>
           </div>
