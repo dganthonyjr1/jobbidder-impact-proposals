@@ -28,12 +28,14 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as IntakeSlugEstimateRouteImport } from './routes/intake.$slug_.estimate'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
+import { Route as ApiPublicEstimateSubmitRouteImport } from './routes/api/public/estimate-submit'
 import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
 import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
@@ -140,6 +142,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IntakeSlugEstimateRoute = IntakeSlugEstimateRouteImport.update({
+  id: '/intake/$slug_/estimate',
+  path: '/intake/$slug/estimate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTestSmsGhlRoute = ApiPublicTestSmsGhlRouteImport.update({
   id: '/api/public/test-sms-ghl',
   path: '/api/public/test-sms-ghl',
@@ -170,6 +177,11 @@ const ApiPublicProposalRoute = ApiPublicProposalRouteImport.update({
 const ApiPublicIntakeSubmitRoute = ApiPublicIntakeSubmitRouteImport.update({
   id: '/api/public/intake-submit',
   path: '/api/public/intake-submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEstimateSubmitRoute = ApiPublicEstimateSubmitRouteImport.update({
+  id: '/api/public/estimate-submit',
+  path: '/api/public/estimate-submit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicDefaultContractorRoute =
@@ -260,12 +272,14 @@ export interface FileRoutesByFullPath {
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate-submit': typeof ApiPublicEstimateSubmitRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
+  '/intake/$slug/estimate': typeof IntakeSlugEstimateRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
@@ -297,12 +311,14 @@ export interface FileRoutesByTo {
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate-submit': typeof ApiPublicEstimateSubmitRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
+  '/intake/$slug/estimate': typeof IntakeSlugEstimateRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
@@ -336,12 +352,14 @@ export interface FileRoutesById {
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate-submit': typeof ApiPublicEstimateSubmitRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
+  '/intake/$slug_/estimate': typeof IntakeSlugEstimateRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
@@ -375,12 +393,14 @@ export interface FileRouteTypes {
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate-submit'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
+    | '/intake/$slug/estimate'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
@@ -412,12 +432,14 @@ export interface FileRouteTypes {
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate-submit'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
+    | '/intake/$slug/estimate'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
@@ -450,12 +472,14 @@ export interface FileRouteTypes {
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate-submit'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
+    | '/intake/$slug_/estimate'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/webhook/ghl'
@@ -485,12 +509,14 @@ export interface RootRouteChildren {
   ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
   ApiPublicDefaultContractorRoute: typeof ApiPublicDefaultContractorRoute
+  ApiPublicEstimateSubmitRoute: typeof ApiPublicEstimateSubmitRoute
   ApiPublicIntakeSubmitRoute: typeof ApiPublicIntakeSubmitRoute
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
   ApiPublicTestProposalFlowRoute: typeof ApiPublicTestProposalFlowRoute
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
+  IntakeSlugEstimateRoute: typeof IntakeSlugEstimateRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessFollowupsRoute: typeof ApiPublicHooksProcessFollowupsRoute
   ApiPublicWebhookGhlRoute: typeof ApiPublicWebhookGhlRoute
@@ -635,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/intake/$slug_/estimate': {
+      id: '/intake/$slug_/estimate'
+      path: '/intake/$slug/estimate'
+      fullPath: '/intake/$slug/estimate'
+      preLoaderRoute: typeof IntakeSlugEstimateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/test-sms-ghl': {
       id: '/api/public/test-sms-ghl'
       path: '/api/public/test-sms-ghl'
@@ -675,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/intake-submit'
       fullPath: '/api/public/intake-submit'
       preLoaderRoute: typeof ApiPublicIntakeSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/estimate-submit': {
+      id: '/api/public/estimate-submit'
+      path: '/api/public/estimate-submit'
+      fullPath: '/api/public/estimate-submit'
+      preLoaderRoute: typeof ApiPublicEstimateSubmitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/default-contractor': {
@@ -795,12 +835,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
   ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
+  ApiPublicEstimateSubmitRoute: ApiPublicEstimateSubmitRoute,
   ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
   ApiPublicTestProposalFlowRoute: ApiPublicTestProposalFlowRoute,
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,
+  IntakeSlugEstimateRoute: IntakeSlugEstimateRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksProcessFollowupsRoute: ApiPublicHooksProcessFollowupsRoute,
   ApiPublicWebhookGhlRoute: ApiPublicWebhookGhlRoute,

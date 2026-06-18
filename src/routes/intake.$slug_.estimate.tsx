@@ -10,7 +10,7 @@ import { Calculator, CheckCircle2 } from "lucide-react";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/intake/$slug/estimate")({
+export const Route = createFileRoute("/intake/$slug_/estimate")({
   head: () => ({ meta: [{ title: "Get a free estimate" }] }),
   component: EstimateIntakeForm,
 });
