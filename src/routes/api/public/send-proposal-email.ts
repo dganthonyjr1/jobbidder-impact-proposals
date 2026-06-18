@@ -122,13 +122,16 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
             : template.subject
 
         // 5. Send email via GHL
+        // For SIA-backed contractors: use their GHL from_email (their own domain/address)
+        // For all others: send from support@jobbidder.io with contractor's email as reply-to
         const businessName = contractor?.business_name || SITE_NAME
-        const fromEmail =
-          integration?.ghl_from_email ||
-          contractor?.email ||
-          process.env.GHL_FROM_EMAIL ||
-          process.env.GHL_EMAIL_FROM ||
-          `noreply@${FROM_DOMAIN}`
+        const isSiaClient = !!(integration?.ghl_api_token && integration?.ghl_location_id)
+        const fromEmail = isSiaClient
+          ? (integration?.ghl_from_email || `support@${FROM_DOMAIN}`)
+          : `support@${FROM_DOMAIN}`
+        const replyTo = isSiaClient
+          ? null
+          : (contractor?.email || null)
 
         const emailRes = await sendEmailViaGHL({
           to: normalizedEmail,
@@ -136,6 +139,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           html,
           text: plainText,
           fromEmail,
+          replyTo,
           contactName: proposal.client_name,
           contactPhone: proposal.client_phone,
           tags: ['jobbidder', 'proposal'],

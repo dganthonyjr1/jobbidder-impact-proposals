@@ -226,6 +226,7 @@ export async function sendEmailViaGHL(opts: {
   html?: string;
   text?: string;
   fromEmail?: string;
+  replyTo?: string | null;
   contactName?: string;
   contactPhone?: string | null;
   language?: string;
@@ -266,6 +267,7 @@ export async function sendEmailViaGHL(opts: {
         subject: opts.subject,
         html: opts.html,
         message: opts.text || opts.subject,
+        ...(opts.replyTo ? { emailReplyTo: opts.replyTo } : {}),
       }),
     });
     const msgJson: any = await msgRes.json().catch(() => ({}));
