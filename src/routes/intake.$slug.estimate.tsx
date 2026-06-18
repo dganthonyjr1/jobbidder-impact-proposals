@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Calculator, CheckCircle2 } from "lucide-react";
+import { PhotoUploader } from "@/components/PhotoUploader";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/intake/$slug/estimate")({
@@ -177,6 +178,7 @@ function EstimateIntakeForm() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ url: string } | null>(null);
   const [lang, setLang] = useState<Lang>("en");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
     job_address: "", trade_type: "", job_description: "",
@@ -204,7 +206,7 @@ function EstimateIntakeForm() {
       const res = await fetch("/api/public/estimate-submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug, ...form, language: lang }),
+        body: JSON.stringify({ slug, ...form, language: lang, photos }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error(json.error || "Submission failed");
@@ -305,6 +307,10 @@ function EstimateIntakeForm() {
             <div>
               <Label>{t.descLabel}</Label>
               <Textarea required rows={5} value={form.job_description} onChange={(e) => set("job_description", e.target.value)} placeholder={t.descPh} />
+            </div>
+            <div>
+              <Label className="mb-2 block">Job Site Photos / Videos <span className="text-muted-foreground font-normal text-xs">(optional)</span></Label>
+              <PhotoUploader value={photos} onChange={setPhotos} prefix="estimate" max={8} />
             </div>
             <div className="space-y-3">
               <Button type="submit" size="lg" disabled={submitting} className="text-white w-full sm:w-auto" style={{ background: brand }}>

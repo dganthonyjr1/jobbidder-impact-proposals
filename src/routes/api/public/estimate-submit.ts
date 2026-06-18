@@ -17,6 +17,7 @@ const Body = z.object({
   trade_type: z.string().trim().max(100).optional().nullable(),
   job_description: z.string().trim().min(10).max(3000),
   language: z.enum(["en", "es", "fr", "pt", "ht"]).default("en"),
+  photos: z.array(z.string().url()).max(8).optional().default([]),
 });
 
 function languageName(lang: string) {
@@ -170,7 +171,7 @@ export const Route = createFileRoute("/api/public/estimate-submit")({
             job_address: input.job_address || null,
             job_state: input.job_state || null,
             trade_type: input.trade_type || null,
-            raw_input: { job_description: input.job_description } as any,
+            raw_input: { job_description: input.job_description, photos: input.photos || [] } as any,
             language: input.language,
             scope_summary: aiData.scope_summary,
             material_low: aiData.material_low,

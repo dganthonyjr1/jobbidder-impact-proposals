@@ -104,6 +104,24 @@ function PublicEstimate() {
           </Card>
         )}
 
+        {estimate.raw_input?.photos?.length > 0 && (
+          <Card className="p-6 mb-6">
+            <h2 className="font-display font-semibold text-xl mb-4">Job Site Photos / Videos</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {(estimate.raw_input.photos as string[]).map((url: string, i: number) => {
+                const isVideo = /\.(mp4|mov|webm)$/i.test(url);
+                return isVideo ? (
+                  <video key={i} src={url} controls className="w-full rounded-lg aspect-video object-cover bg-black" />
+                ) : (
+                  <a key={i} href={url} target="_blank" rel="noreferrer">
+                    <img src={url} alt={`Job site photo ${i + 1}`} className="w-full rounded-lg aspect-video object-cover hover:opacity-90 transition" />
+                  </a>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
         <Card className="p-6 mb-6">
           <h2 className="font-display font-semibold text-xl mb-4">Ballpark range</h2>
           <div className="space-y-3">
