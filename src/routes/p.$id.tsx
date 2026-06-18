@@ -5,7 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Check, FileText, PlayCircle, Sparkles } from "lucide-react";
+import { Check, FileText, PlayCircle, Sparkles, PenLine } from "lucide-react";
+import { SignatureModal } from "@/components/SignatureModal";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { getT, fmtMoney } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
@@ -24,10 +25,9 @@ function PublicProposal() {
   const [contractor, setContractor] = useState<any>(null);
   const [tier, setTier] = useState<"good" | "better" | "best">("better");
   const [loading, setLoading] = useState(true);
-  const [signName, setSignName] = useState("");
-  const [signEmail, setSignEmail] = useState("");
   const [signing, setSigning] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [showSignModal, setShowSignModal] = useState(false);
   const [declined, setDeclined] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [showDecline, setShowDecline] = useState(false);
@@ -114,8 +114,7 @@ function PublicProposal() {
   const mediaUrls: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
   const isVideoUrl = (url: string) => /\.(mp4|mov|webm)(\?|#|$)/i.test(url);
 
-  async function sign() {
-    if (!signName.trim()) { toast.error("Please enter your name"); return; }
+  async function sign({ signatureName, signatureEmail }: { signatureName: string; signatureEmail: string; signatureDataUrl: string | null }) {
     setSigning(true);
     try {
       const res = await fetch("/api/public/accept-proposal", {
@@ -123,8 +122,8 @@ function PublicProposal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposalId: id,
-          signatureName: signName.trim(),
-          signatureEmail: signEmail.trim() || null,
+          signatureName,
+          signatureEmail: signatureEmail || null,
           acceptedTier: tier,
         }),
       });
@@ -132,7 +131,8 @@ function PublicProposal() {
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to accept proposal");
       setProposal((current: any) => current ? { ...current, status: "accepted", selected_tier: tier } : current);
       setAccepted(true);
-      toast.success("Proposal accepted!");
+      setShowSignModal(false);
+      toast.success("Proposal accepted! You'll receive a confirmation email shortly.");
     } catch (e: any) {
       toast.error(e?.message || "Failed to accept proposal");
     }
@@ -358,13 +358,10 @@ function PublicProposal() {
             <>
               <h3 className="font-display text-2xl font-bold mb-2">{t.acceptThisProposal}</h3>
               <p className="text-sm text-muted-foreground mb-5">{t.selectedTier(TIER_LABELS[tier].name, fmt(totals.grandTotal))}</p>
-              <div className="grid md:grid-cols-2 gap-4 mb-4">
-                <div><Label>{t.fullName}</Label><Input value={signName} onChange={(e) => setSignName(e.target.value)} /></div>
-                <div><Label>{t.emailOptional}</Label><Input type="email" value={signEmail} onChange={(e) => setSignEmail(e.target.value)} /></div>
-              </div>
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="shadow-glow text-white" style={{ background: brand }} onClick={sign} disabled={signing}>
-                  {signing ? t.submitting : t.acceptAndSign(fmt(totals.grandTotal))}
+                <Button size="lg" className="shadow-glow text-white font-semibold" style={{ background: brand }} onClick={() => setShowSignModal(true)} disabled={signing}>
+                  <PenLine className="h-4 w-4 mr-2" />
+                  {t.acceptAndSign(fmt(totals.grandTotal))}
                 </Button>
                 {!showDecline ? (
                   <Button size="lg" variant="outline" onClick={() => setShowDecline(true)} disabled={signing}>
@@ -394,6 +391,19 @@ function PublicProposal() {
             </>
           )}
         </Card>
+
+        <SignatureModal
+          open={showSignModal}
+          onClose={() => setShowSignModal(false)}
+          onSign={sign}
+          tier={tier}
+          tierLabel={TIER_LABELS[tier].name}
+          totalAmount={fmt(totals.grandTotal)}
+          proposalNumber={proposal.proposal_number}
+          brand={brand}
+          clientEmail={proposal.client_email || ""}
+          signing={signing}
+        />
 
         <Card className="p-6 mt-6 print:hidden">
           <h3 className="font-display text-lg font-bold mb-2">{t.sendToClient}</h3>

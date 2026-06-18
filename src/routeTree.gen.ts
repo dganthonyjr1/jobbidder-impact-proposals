@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhyJobbidderRouteImport } from './routes/why-jobbidder'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SmsTermsRouteImport } from './routes/sms-terms'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -34,7 +35,6 @@ import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/p
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
 import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
-import { Route as ApiPublicDebugContractorsRouteImport } from './routes/api/public/debug-contractors'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
@@ -58,6 +58,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SmsTermsRoute = SmsTermsRouteImport.update({
+  id: '/sms-terms',
+  path: '/sms-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -166,16 +171,12 @@ const ApiPublicIntakeSubmitRoute = ApiPublicIntakeSubmitRouteImport.update({
   path: '/api/public/intake-submit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicDefaultContractorRoute = ApiPublicDefaultContractorRouteImport.update({
-  id: '/api/public/default-contractor',
-  path: '/api/public/default-contractor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicDebugContractorsRoute = ApiPublicDebugContractorsRouteImport.update({
-  id: '/api/public/debug-contractors',
-  path: '/api/public/debug-contractors',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicDefaultContractorRoute =
+  ApiPublicDefaultContractorRouteImport.update({
+    id: '/api/public/default-contractor',
+    path: '/api/public/default-contractor',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDeclineProposalRoute =
   ApiPublicDeclineProposalRouteImport.update({
     id: '/api/public/decline-proposal',
@@ -235,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sms-terms': typeof SmsTermsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
@@ -249,9 +251,8 @@ export interface FileRoutesByFullPath {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
-  '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
-  '/api/public/debug-contractors': typeof ApiPublicDebugContractorsRoute
+  '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
@@ -271,6 +272,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sms-terms': typeof SmsTermsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
@@ -285,6 +287,7 @@ export interface FileRoutesByTo {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
+  '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
@@ -307,6 +310,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/sms-terms': typeof SmsTermsRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
@@ -321,6 +325,7 @@ export interface FileRoutesById {
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
+  '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
@@ -343,6 +348,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/sms-terms'
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
@@ -357,6 +363,7 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/decline-proposal'
+    | '/api/public/default-contractor'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
@@ -377,6 +384,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/sms-terms'
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
@@ -391,6 +399,7 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/decline-proposal'
+    | '/api/public/default-contractor'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
@@ -412,6 +421,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/reset-password'
+    | '/sms-terms'
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
@@ -426,6 +436,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/decline-proposal'
+    | '/api/public/default-contractor'
     | '/api/public/intake-submit'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
@@ -448,6 +459,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SmsTermsRoute: typeof SmsTermsRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   WhyJobbidderRoute: typeof WhyJobbidderRoute
@@ -458,6 +470,7 @@ export interface RootRouteChildren {
   ProposalIdRoute: typeof ProposalIdRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
+  ApiPublicDefaultContractorRoute: typeof ApiPublicDefaultContractorRoute
   ApiPublicIntakeSubmitRoute: typeof ApiPublicIntakeSubmitRoute
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
@@ -494,6 +507,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sms-terms': {
+      id: '/sms-terms'
+      path: '/sms-terms'
+      fullPath: '/sms-terms'
+      preLoaderRoute: typeof SmsTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -650,13 +670,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDefaultContractorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/debug-contractors': {
-      id: '/api/public/debug-contractors'
-      path: '/api/public/debug-contractors'
-      fullPath: '/api/public/debug-contractors'
-      preLoaderRoute: typeof ApiPublicDebugContractorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/decline-proposal': {
       id: '/api/public/decline-proposal'
       path: '/api/public/decline-proposal'
@@ -748,6 +761,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SmsTermsRoute: SmsTermsRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   WhyJobbidderRoute: WhyJobbidderRoute,
@@ -758,9 +772,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProposalIdRoute: ProposalIdRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
-  ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
   ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
-  ApiPublicDebugContractorsRoute: ApiPublicDebugContractorsRoute,
+  ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
