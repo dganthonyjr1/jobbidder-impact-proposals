@@ -83,16 +83,26 @@ export const Route = createFileRoute("/api/public/create-deposit-invoice")({
         const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
         const tierLabel = input.acceptedTier.charAt(0).toUpperCase() + input.acceptedTier.slice(1);
 
+        // Helper: normalize phone to E.164 format (+1XXXXXXXXXX for US numbers)
+        function toE164(phone: string | null | undefined): string | null {
+          if (!phone) return null;
+          const digits = phone.replace(/\D/g, "");
+          if (digits.length === 10) return `+1${digits}`;
+          if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+          if (phone.startsWith("+")) return phone; // already E.164
+          return null; // can't normalize
+        }
+
         // First, upsert the contact in GHL to get a contactId
+        const rawPhone = input.signerPhone || proposal.client_phone || null;
+        const e164Phone = toE164(rawPhone);
         const contactPayload: Record<string, any> = {
           firstName: input.signerName.split(" ")[0] || input.signerName,
           lastName: input.signerName.split(" ").slice(1).join(" ") || "",
           locationId,
         };
         if (input.signerEmail) contactPayload.email = input.signerEmail;
-        if (input.signerPhone || proposal.client_phone) {
-          contactPayload.phone = input.signerPhone || proposal.client_phone;
-        }
+        if (e164Phone) contactPayload.phone = e164Phone;
 
         let contactId: string | null = null;
         try {
@@ -143,15 +153,11 @@ export const Route = createFileRoute("/api/public/create-deposit-invoice")({
             ...(contactId ? { id: contactId } : {}),
             name: input.signerName,
             ...(input.signerEmail ? { email: input.signerEmail } : {}),
-            ...(input.signerPhone || proposal.client_phone
-              ? { phoneNo: input.signerPhone || proposal.client_phone }
-              : {}),
+            ...(e164Phone ? { phoneNo: e164Phone } : {}),
           };
           invoicePayload.sentTo = {
             ...(input.signerEmail ? { email: [input.signerEmail] } : {}),
-            ...(input.signerPhone || proposal.client_phone
-              ? { phoneNo: [input.signerPhone || proposal.client_phone] }
-              : {}),
+            ...(e164Phone ? { phoneNo: [e164Phone] } : {}),
           };
         }
 
