@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Check, FileText, PlayCircle, Sparkles, PenLine } from "lucide-react";
+import { Check, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, ChevronUp } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { getT, fmtMoney } from "@/lib/proposal-i18n";
@@ -37,6 +37,8 @@ function PublicProposal() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [savingPhotos, setSavingPhotos] = useState(false);
+  const [showClientUpload, setShowClientUpload] = useState(false);
+  const [savingClientPhotos, setSavingClientPhotos] = useState(false);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositPaid, setDepositPaid] = useState(false);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
@@ -97,6 +99,15 @@ function PublicProposal() {
     else toast.success("Photos saved");
   }
 
+  async function saveClientPhotos(next: string[]) {
+    setProposal((p: any) => ({ ...p, client_photos: next }));
+    setSavingClientPhotos(true);
+    const { error } = await supabase.from("proposals").update({ client_photos: next }).eq("id", id);
+    setSavingClientPhotos(false);
+    if (error) toast.error(error.message);
+    else toast.success("Photos uploaded — your contractor has been notified.");
+  }
+
   async function sendToClient() {
     if (!sendEmail.trim()) { toast.error("Enter the client's email"); return; }
     setSending(true);
@@ -133,6 +144,7 @@ function PublicProposal() {
   const TIER_LABELS = t.tiers;
   const taxPct = `${Math.round((Number(proposal.tax_rate) || 0.07) * 100)}%`;
   const mediaUrls: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
+  const clientMediaUrls: string[] = Array.isArray(proposal.client_photos) ? proposal.client_photos : [];
   const isVideoUrl = (url: string) => /\.(mp4|mov|webm)(\?|#|$)/i.test(url);
 
   async function sign({ signatureName, signatureEmail }: { signatureName: string; signatureEmail: string; signatureDataUrl: string | null }) {
@@ -288,6 +300,47 @@ function PublicProposal() {
                 );
               })}
             </div>
+          </Card>
+        )}
+
+        {!isOwner && (
+          <Card className="p-5 mb-6 print:hidden">
+            <button
+              type="button"
+              onClick={() => setShowClientUpload((v) => !v)}
+              className="flex items-center justify-between w-full text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Camera className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium text-sm">
+                  {clientMediaUrls.length > 0
+                    ? `Job-site photos / videos (${clientMediaUrls.length})`
+                    : "Add job-site photos or video"}
+                </span>
+                {clientMediaUrls.length === 0 && (
+                  <span className="text-xs text-muted-foreground">(optional)</span>
+                )}
+              </div>
+              {showClientUpload ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+            {showClientUpload && (
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-3">
+                  Help your contractor see the space. Upload photos or a short video of the room or area — they'll be added to your project file.
+                </p>
+                {savingClientPhotos && <p className="text-xs text-muted-foreground mb-2">Saving…</p>}
+                <PhotoUploader
+                  value={clientMediaUrls}
+                  onChange={saveClientPhotos}
+                  prefix="client"
+                  max={8}
+                />
+              </div>
+            )}
           </Card>
         )}
 
