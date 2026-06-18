@@ -54,10 +54,10 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         const { data: contractor } = proposal.contractor_id
           ? await supabaseAdmin
               .from('contractors')
-              .select('business_name')
+              .select('business_name, phone, email')
               .eq('id', proposal.contractor_id)
               .maybeSingle()
-          : { data: null as { business_name: string | null } | null }
+          : { data: null as { business_name: string | null; phone: string | null; email: string | null } | null }
 
         const { data: integration, error: integrationError } = proposal.contractor_id
           ? await supabaseAdmin
@@ -125,6 +125,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         const businessName = contractor?.business_name || SITE_NAME
         const fromEmail =
           integration?.ghl_from_email ||
+          contractor?.email ||
           process.env.GHL_FROM_EMAIL ||
           process.env.GHL_EMAIL_FROM ||
           `noreply@${FROM_DOMAIN}`
@@ -170,13 +171,19 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         let smsRes: any = { skipped: 'no client phone' }
         if (proposal.client_phone) {
           const smsBody = `${businessName} sent your proposal ${proposal.proposal_number}${totals.grandTotal ? ` (${fmt(totals.grandTotal)})` : ''}: ${proposalUrl} — Reply STOP to opt out`
+          // Use contractor's own phone as the from number if no GHL-specific number is configured
+          const smsCredentials: GhlCredentials | null = ghlCredentials
+            ? ghlCredentials
+            : contractor?.phone
+              ? { fromNumber: contractor.phone }
+              : null
           smsRes = await sendSmsViaGHL({
             to: proposal.client_phone,
             body: smsBody,
             contactName: proposal.client_name,
             contactEmail: normalizedEmail,
             tags: ['jobbidder', 'proposal'],
-            credentials: ghlCredentials,
+            credentials: smsCredentials,
           })
           if (!smsRes.ok) {
             console.warn('GHL SMS send failed:', smsRes.error)
