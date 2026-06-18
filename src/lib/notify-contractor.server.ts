@@ -85,6 +85,7 @@ export async function notifyContractorOfDecision(opts: {
         businessName: business,
         clientName: proposal.client_name,
         proposalNumber: proposal.proposal_number,
+        proposalId: proposal.id,
         jobAddress: proposal.job_address,
         totalAmount: totalStr,
         signerName: opts.signerName,
