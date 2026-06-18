@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import Groq from "groq-sdk";
 
 export type EstimateAIShape = {
   scope_summary: string;
@@ -12,7 +13,7 @@ export type EstimateAIShape = {
 };
 
 export async function callClaudeForEstimate(opts: {
-  apiKey: string;
+  apiKey?: string;
   contractor: { business_name: string; trade_type: string | null };
   job: {
     client_name: string;
@@ -49,26 +50,19 @@ Rules:
 - high should typically be 20-40% above low for an honest range
 - Use realistic pricing for the trade and region`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": opts.apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      system,
-      messages: [{ role: "user", content: user }],
-    }),
+  const groqKey = process.env.GROQ_API_KEY || opts.apiKey;
+  if (!groqKey) throw new Error("GROQ_API_KEY not configured");
+  const groq = new Groq({ apiKey: groqKey });
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    max_tokens: 1024,
+    temperature: 0.3,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`Claude API ${res.status}: ${txt.slice(0, 400)}`);
-  }
-  const json: any = await res.json();
-  const text: string = json?.content?.[0]?.text || "{}";
+  const text: string = completion.choices?.[0]?.message?.content || "{}";
   const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");

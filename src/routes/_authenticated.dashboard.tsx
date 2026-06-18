@@ -184,7 +184,7 @@ function Dashboard() {
                 <p className="text-sm text-muted-foreground mt-1">
                   {search || statusFilter !== "all"
                     ? "Try adjusting your search or filter."
-                    : "Share your intake link to start receiving proposals."}
+                    : "Your Voice AI handles all intake — proposals appear here automatically after each qualified call."}
                 </p>
                 {!search && statusFilter === "all" && (
                   <Button asChild className="mt-4"><Link to="/proposals/new">Create proposal</Link></Button>

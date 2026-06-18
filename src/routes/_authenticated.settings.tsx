@@ -65,7 +65,6 @@ function SettingsPage() {
   const [integration, setIntegration] = useState<any>({ contractor_sms_notifications_enabled: false });
   const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const [intakeUrl, setIntakeUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"business" | "pricing" | "integrations">("business");
 
   useEffect(() => {
@@ -76,7 +75,6 @@ function SettingsPage() {
       setContractor(data);
       setLoading(false);
       setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data?.id}`);
-      if (data?.slug) setIntakeUrl(`${window.location.origin}/intake/${data.slug}`);
 
       // Load pricing settings if they exist
       if (data?.pricing_settings) {
@@ -128,7 +126,6 @@ function SettingsPage() {
       toast.error(error?.message || integrationError?.message);
     } else {
       toast.success("Settings saved");
-      if (contractor.slug) setIntakeUrl(`${window.location.origin}/intake/${contractor.slug}`);
     }
   }
 
@@ -422,25 +419,7 @@ function SettingsPage() {
       {activeTab === "integrations" && (
         <Card className="p-6 space-y-4">
           <h2 className="font-display font-semibold text-lg">Integrations</h2>
-          <div>
-            <Label>Public intake URL slug</Label>
-            <div className="flex gap-2 items-center">
-              <span className="text-xs text-muted-foreground font-mono shrink-0">/intake/</span>
-              <Input
-                value={contractor.slug || ""}
-                onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))}
-                placeholder="mikes-roofing"
-                className="font-mono text-sm"
-              />
-            </div>
-            {intakeUrl && (
-              <p className="text-xs mt-2">
-                Share this link with leads:&nbsp;
-                <a href={intakeUrl} target="_blank" rel="noreferrer" className="font-mono underline break-all">{intakeUrl}</a>
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">Save changes after editing the slug to update your public intake URL.</p>
-          </div>
+
           <div>
             <Label>GoHighLevel workflow webhook URL</Label>
             <Input readOnly value={webhookUrl} className="font-mono text-xs" />

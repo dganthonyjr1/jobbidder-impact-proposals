@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 import { generateProposalNumber } from "@/lib/pricing";
+import Groq from "groq-sdk";
 
 const aiInput = z.object({
   client_name: z.string().min(1).max(200),
@@ -25,35 +26,27 @@ type AIProposalShape = {
 };
 
 async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("AI gateway not configured");
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("AI gateway not configured — GROQ_API_KEY missing");
 
   const sys = `You are an expert contractor estimator for ${payload.trade_type || "general contracting"}. Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
   const user = `Job for ${payload.client_name} at ${payload.job_address || "TBD"} (state: ${payload.job_state || "n/a"}).\nDescription: ${payload.job_description}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
-      system: sys,
-      messages: [{ role: "user", content: user }],
-    }),
+  const groq = new Groq({ apiKey });
+  const completion = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    max_tokens: 4096,
+    temperature: 0.3,
+    messages: [
+      { role: "system", content: sys },
+      { role: "user", content: user },
+    ],
   });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`AI error ${res.status}: ${txt.slice(0, 200)}`);
-  }
-  const json = await res.json();
-  const rawContent = json.content?.[0]?.text || "{}";
-  // Extract JSON from the response (Claude may wrap it in markdown)
-  const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
-  const content = jsonMatch ? jsonMatch[0] : rawContent;
+
+  const raw = completion.choices?.[0]?.message?.content || "{}";
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  const content = jsonMatch ? jsonMatch[0] : cleaned;
   return JSON.parse(content) as AIProposalShape;
 }
 
