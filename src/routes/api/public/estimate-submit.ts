@@ -168,7 +168,7 @@ export const Route = createFileRoute("/api/public/estimate-submit")({
             job_address: input.job_address || null,
             job_state: input.job_state || null,
             trade_type: input.trade_type || null,
-            job_description: input.job_description,
+            raw_input: { job_description: input.job_description } as any,
             language: input.language,
             scope_summary: aiData.scope_summary,
             material_low: aiData.material_low,
