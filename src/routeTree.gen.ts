@@ -36,6 +36,7 @@ import { Route as ApiPublicProposalRouteImport } from './routes/api/public/propo
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
 import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
+import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -183,6 +184,12 @@ const ApiPublicDeclineProposalRoute =
     path: '/api/public/decline-proposal',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCreateDepositInvoiceRoute =
+  ApiPublicCreateDepositInvoiceRouteImport.update({
+    id: '/api/public/create-deposit-invoice',
+    path: '/api/public/create-deposit-invoice',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAcceptProposalRoute = ApiPublicAcceptProposalRouteImport.update({
   id: '/api/public/accept-proposal',
   path: '/api/public/accept-proposal',
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
@@ -286,6 +294,7 @@ export interface FileRoutesByTo {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
@@ -324,6 +333,7 @@ export interface FileRoutesById {
   '/proposal/$id': typeof ProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
@@ -362,6 +372,7 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
@@ -435,6 +447,7 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
@@ -469,6 +482,7 @@ export interface RootRouteChildren {
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
+  ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
   ApiPublicDefaultContractorRoute: typeof ApiPublicDefaultContractorRoute
   ApiPublicIntakeSubmitRoute: typeof ApiPublicIntakeSubmitRoute
@@ -677,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDeclineProposalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/create-deposit-invoice': {
+      id: '/api/public/create-deposit-invoice'
+      path: '/api/public/create-deposit-invoice'
+      fullPath: '/api/public/create-deposit-invoice'
+      preLoaderRoute: typeof ApiPublicCreateDepositInvoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/accept-proposal': {
       id: '/api/public/accept-proposal'
       path: '/api/public/accept-proposal'
@@ -771,6 +792,7 @@ const rootRouteChildren: RootRouteChildren = {
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
+  ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
   ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
   ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,

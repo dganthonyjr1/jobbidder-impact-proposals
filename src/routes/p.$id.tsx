@@ -37,6 +37,13 @@ function PublicProposal() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [savingPhotos, setSavingPhotos] = useState(false);
+  const [depositLoading, setDepositLoading] = useState(false);
+  const [depositPaid, setDepositPaid] = useState(false);
+  const [depositAmount, setDepositAmount] = useState<number | null>(null);
+  const [signedName, setSignedName] = useState<string>("");
+  const [signedEmail, setSignedEmail] = useState<string>("");
+  const [acceptedTierForDeposit, setAcceptedTierForDeposit] = useState<"good" | "better" | "best">("better");
+  const [acceptedTotal, setAcceptedTotal] = useState<number>(0);
 
   useEffect(() => {
     (async () => {
@@ -131,7 +138,11 @@ function PublicProposal() {
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to accept proposal");
       setProposal((current: any) => current ? { ...current, status: "accepted", selected_tier: tier } : current);
       setAccepted(true);
+      setAcceptedTierForDeposit(tier);
+      setAcceptedTotal(totals.grandTotal);
       setShowSignModal(false);
+      setSignedName(signatureName);
+      setSignedEmail(signatureEmail || "");
       toast.success("Proposal accepted! You'll receive a confirmation email shortly.");
     } catch (e: any) {
       toast.error(e?.message || "Failed to accept proposal");
@@ -348,6 +359,58 @@ function PublicProposal() {
               <div className="h-14 w-14 rounded-full bg-green-500/20 mx-auto flex items-center justify-center"><Check className="h-7 w-7 text-green-400" /></div>
               <h3 className="font-display text-2xl font-bold mt-4">{t.accepted}</h3>
               <p className="text-muted-foreground mt-2">{t.acceptedSub}</p>
+              {depositPaid ? (
+                <div className="mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
+                  <p className="text-green-400 font-semibold text-lg">✅ Deposit paid — you're all set!</p>
+                  <p className="text-muted-foreground text-sm mt-1">Your contractor will be in touch shortly to confirm your start date.</p>
+                </div>
+              ) : (
+                <div className="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                  <p className="font-semibold text-base mb-1">Secure your project start date</p>
+                  <p className="text-muted-foreground text-sm mb-4">Pay your 50% deposit now to lock in your schedule. The remaining balance is due upon completion.</p>
+                  {depositAmount && (
+                    <p className="text-2xl font-bold mb-4" style={{ color: brand }}>
+                      Deposit: {fmt(depositAmount)}
+                    </p>
+                  )}
+                  <Button
+                    size="lg"
+                    className="w-full text-white font-semibold shadow-glow"
+                    style={{ background: brand }}
+                    disabled={depositLoading}
+                    onClick={async () => {
+                      setDepositLoading(true);
+                      try {
+                        const res = await fetch("/api/public/create-deposit-invoice", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            proposalId: proposal.id,
+                            acceptedTier: acceptedTierForDeposit || proposal.selected_tier || tier,
+                            totalAmount: acceptedTotal || totals.grandTotal,
+                            signerName: signedName || proposal.client_name || "",
+                            signerEmail: signedEmail || proposal.client_email || null,
+                            signerPhone: proposal.client_phone || null,
+                          }),
+                        });
+                        const json = await res.json();
+                        if (!res.ok || !json.success) throw new Error(json.error || "Could not create deposit invoice");
+                        setDepositAmount(json.depositAmount);
+                        // Redirect to GHL hosted payment page
+                        window.open(json.paymentUrl, "_blank");
+                        setDepositPaid(true);
+                      } catch (e: any) {
+                        toast.error(e.message || "Could not create deposit invoice. Please contact your contractor.");
+                      } finally {
+                        setDepositLoading(false);
+                      }
+                    }}
+                  >
+                    {depositLoading ? "Creating invoice..." : `Pay 50% Deposit${depositAmount ? ` — ${fmt(depositAmount)}` : ""}`}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-3">Secure payment powered by Stripe. You will be redirected to a hosted payment page.</p>
+                </div>
+              )}
             </div>
           ) : declined || proposal.status === "declined" ? (
             <div className="text-center py-6">
