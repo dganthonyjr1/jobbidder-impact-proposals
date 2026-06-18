@@ -238,7 +238,7 @@ function EstimateIntakeForm() {
           <CheckCircle2 className="h-14 w-14 mx-auto text-green-400" />
           <h1 className="font-display text-3xl font-bold mt-4">{t.successHeading}</h1>
           <p className="text-muted-foreground mt-3">
-            {t.successBody(contractor.business_name)}
+            {t.successBody("Jobbidder")}
           </p>
           <a href={done.url} className="inline-block mt-6 text-sm underline">{t.viewEstimate}</a>
           <div className="mt-4 border-t border-border pt-4">
@@ -257,16 +257,12 @@ function EstimateIntakeForm() {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            {contractor.logo_url ? (
-              <img src={contractor.logo_url} alt="" className="h-12 w-auto" />
-            ) : (
-              <div className="h-12 w-12 rounded-md flex items-center justify-center" style={{ background: brand }}>
-                <Calculator className="h-6 w-6 text-white" />
-              </div>
-            )}
+            <div className="h-10 w-10 rounded-md flex items-center justify-center bg-primary">
+              <Calculator className="h-5 w-5 text-white" />
+            </div>
             <div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">{t.freeEstimateFrom}</div>
-              <h1 className="font-display text-2xl font-bold">{contractor.business_name}</h1>
+              <h1 className="font-display text-2xl font-bold text-gradient-sia">Jobbidder</h1>
+              <div className="text-xs text-muted-foreground">AI Estimates · Powered by Sudden Impact Agency</div>
             </div>
           </div>
           {/* Language selector */}
@@ -316,7 +312,7 @@ function EstimateIntakeForm() {
                 {submitting ? t.submitting : t.submitBtn}
               </Button>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {t.consent(contractor.business_name)}{' '}
+                {t.consent("Jobbidder / Sudden Impact Agency LLC")}{' '}
                 <a href="/sms-terms" target="_blank" className="underline">{t.smsTerms}</a>{' '}·{' '}
                 <a href="/privacy" target="_blank" className="underline">{t.privacy}</a>
               </p>
