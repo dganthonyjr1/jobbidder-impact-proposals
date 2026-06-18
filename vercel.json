@@ -1,4 +1,9 @@
 {
+  "redirects": [
+    { "source": "/intake", "destination": "/intake/don-anthony", "permanent": false },
+    { "source": "/estimate", "destination": "/intake/don-anthony/estimate", "permanent": false },
+    { "source": "/get-started", "destination": "/intake/don-anthony", "permanent": false }
+  ],
   "crons": [
     {
       "path": "/api/public/hooks/process-followups",
