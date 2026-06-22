@@ -3,8 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages } from "lucide-react";
 import { VoiceCallButton } from "@/components/VoiceCallButton";
-
-const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,11 +22,7 @@ function Index() {
     <div className="min-h-screen bg-background bg-hero">
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="flex flex-col leading-none">
-              <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
-            </div>
-          </Link>
+          <Link to="/"><JobbidderLogo size="sm" /></Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
