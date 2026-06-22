@@ -46,6 +46,8 @@ import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/web
 import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
 import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
+import { Route as ContractorApplyRouteImport } from './routes/contractor-apply'
+import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
 
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
@@ -244,6 +246,16 @@ const ApiPublicHooksProcessJessicaFollowupsRoute =
     path: '/api/public/hooks/process-jessica-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ContractorApplyRoute = ContractorApplyRouteImport.update({
+  id: '/contractor-apply',
+  path: '/contractor-apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicContractorApplyRoute = ApiPublicContractorApplyRouteImport.update({
+  id: '/api/public/contractor-apply',
+  path: '/api/public/contractor-apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -282,6 +294,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/contractor-apply': typeof ContractorApplyRoute
+  '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -320,6 +334,8 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/contractor-apply': typeof ContractorApplyRoute
+  '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -360,6 +376,8 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/contractor-apply': typeof ContractorApplyRoute
+  '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -400,6 +418,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/contractor-apply'
+    | '/api/public/contractor-apply'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -438,6 +458,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/contractor-apply'
+    | '/api/public/contractor-apply'
   id:
     | '__root__'
     | '/'
@@ -477,6 +499,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/contractor-apply'
+    | '/api/public/contractor-apply'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -513,6 +537,8 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  ContractorApplyRoute: typeof ContractorApplyRoute
+  ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -776,6 +802,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessJessicaFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contractor-apply': {
+      id: '/contractor-apply'
+      path: '/contractor-apply'
+      fullPath: '/contractor-apply'
+      preLoaderRoute: typeof ContractorApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/contractor-apply': {
+      id: '/api/public/contractor-apply'
+      path: '/api/public/contractor-apply'
+      fullPath: '/api/public/contractor-apply'
+      preLoaderRoute: typeof ApiPublicContractorApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -831,6 +871,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ContractorApplyRoute: ContractorApplyRoute,
+  ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
