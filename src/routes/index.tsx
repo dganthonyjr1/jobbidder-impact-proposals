@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages } from "lucide-react";
+import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat, Phone } from "lucide-react";
 import { VoiceCallButton } from "@/components/VoiceCallButton";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
@@ -26,6 +26,7 @@ function Index() {
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
+            <Link to="/contractor-apply" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">For Contractors</Link>
             <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
@@ -73,6 +74,49 @@ function Index() {
               <p className="mt-2 text-sm font-medium text-muted-foreground">{f.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="border-t border-border/40 bg-card/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-6">
+              <HardHat className="h-3 w-3" />
+              Now accepting licensed contractors
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
+              Are you a <span className="text-gradient-sia">licensed contractor</span>?
+            </h2>
+            <p className="mt-5 text-base sm:text-lg font-medium text-muted-foreground max-w-xl mx-auto">
+              Join the Jobbidder contractor network. Our AI qualifies jobs, generates proposals, and delivers signed contracts to your inbox — no chasing leads, no paperwork.
+            </p>
+            <div className="mt-4 grid sm:grid-cols-3 gap-4 text-left max-w-xl mx-auto">
+              {[
+                { icon: ShieldCheck, text: "License & insurance verified" },
+                { icon: DollarSign, text: "Transparent, wholesale pricing" },
+                { icon: FileText, text: "Contracts ready to sign" },
+              ].map((item) => (
+                <div key={item.text} className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <item.icon className="h-4 w-4 text-primary shrink-0" />
+                  {item.text}
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+              <Button size="lg" asChild className="shadow-glow w-full sm:w-auto">
+                <a href="tel:+13109874997">
+                  <Phone className="mr-2 h-4 w-4" />
+                  Call to apply: (310) 987-4997
+                </a>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                <Link to="/contractor-apply">Apply online <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Licensed and insured contractors only · Contractor's license &amp; COI required to complete application
+            </p>
+          </div>
         </div>
       </section>
 
