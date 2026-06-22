@@ -20,19 +20,19 @@ function firstString(...values: any[]): string | null {
   return null;
 }
 
-// Returns 0-23 in America/Los_Angeles timezone
-function pacificHour(): number {
+// Returns 0-23 in America/New_York timezone
+function easternHour(): number {
   const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Los_Angeles",
+    timeZone: "America/New_York",
     hour: "numeric",
     hour12: false,
   });
   return parseInt(fmt.format(new Date()), 10);
 }
 
-// 9:00 AM – 9:59 AM Pacific
+// 9:00 AM – 9:59 AM Eastern
 function isInCallWindow(): boolean {
-  const h = pacificHour();
+  const h = easternHour();
   return h >= 9 && h < 10;
 }
 
@@ -40,6 +40,8 @@ export const Route = createFileRoute("/api/public/webhook/ghl-jessica-followup")
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const url = new URL(request.url);
+        const testMode = url.searchParams.get("test") === "true";
         const body: JsonRecord = await request.json().catch(() => ({}));
 
         const contactId = firstString(
@@ -102,7 +104,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-jessica-followup")
           );
         }
 
-        if (isInCallWindow()) {
+        if (testMode || isInCallWindow()) {
           const result = await triggerGhlWorkflow({ contactId, workflowId });
 
           await supabaseAdmin.from("jessica_followup_queue").insert({

@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { triggerGhlWorkflow } from "@/lib/ghl.server";
 
-// 9:00 AM – 9:59 AM America/Los_Angeles
+// 9:00 AM – 9:59 AM America/New_York
 function isInCallWindow(): boolean {
   const fmt = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Los_Angeles",
+    timeZone: "America/New_York",
     hour: "numeric",
     hour12: false,
   });
