@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { UploadCloud, FileCheck2, X } from "lucide-react";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 const ALLOWED_TYPES = new Set([
   "application/pdf",
@@ -211,9 +212,9 @@ function ContractorApplyPage() {
     <div className="min-h-screen bg-background py-10 px-4">
       <div className="mx-auto w-full max-w-xl space-y-6">
         <div className="text-center">
-          <Link to="/" className="inline-block mb-4">
-            <span className="font-display font-bold text-2xl">Jobbidder</span>
-          </Link>
+          <div className="flex justify-center mb-5">
+            <Link to="/"><JobbidderLogo size="md" /></Link>
+          </div>
           <h1 className="font-display text-2xl font-bold">Contractor Application</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Complete the form below to get onboarded as a certified contractor. All documents are
