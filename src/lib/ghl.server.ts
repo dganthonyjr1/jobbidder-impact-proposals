@@ -214,6 +214,75 @@ export async function sendSmsViaGHL(opts: {
   }
 }
 
+export async function addGhlContactTags(opts: {
+  contactId: string;
+  tags: string[];
+  credentials?: GhlCredentials | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  const config = resolveGhlConfig(opts.credentials);
+  if (!config) return { ok: false, error: "GHL not configured" };
+
+  const res = await fetch(
+    `https://services.leadconnectorhq.com/contacts/${opts.contactId}/tags`,
+    {
+      method: "POST",
+      headers: { ...ghlHeaders(config.token), Version: "2021-07-28" },
+      body: JSON.stringify({ tags: opts.tags }),
+    },
+  );
+  if (!res.ok) {
+    const json: any = await res.json().catch(() => ({}));
+    return { ok: false, error: json?.message || `GHL add tags failed (${res.status})` };
+  }
+  return { ok: true };
+}
+
+export async function removeGhlContactTags(opts: {
+  contactId: string;
+  tags: string[];
+  credentials?: GhlCredentials | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  const config = resolveGhlConfig(opts.credentials);
+  if (!config) return { ok: false, error: "GHL not configured" };
+
+  const res = await fetch(
+    `https://services.leadconnectorhq.com/contacts/${opts.contactId}/tags`,
+    {
+      method: "DELETE",
+      headers: { ...ghlHeaders(config.token), Version: "2021-07-28" },
+      body: JSON.stringify({ tags: opts.tags }),
+    },
+  );
+  if (!res.ok) {
+    const json: any = await res.json().catch(() => ({}));
+    return { ok: false, error: json?.message || `GHL remove tags failed (${res.status})` };
+  }
+  return { ok: true };
+}
+
+export async function triggerGhlWorkflow(opts: {
+  contactId: string;
+  workflowId: string;
+  credentials?: GhlCredentials | null;
+}): Promise<{ ok: boolean; error?: string }> {
+  const config = resolveGhlConfig(opts.credentials);
+  if (!config) return { ok: false, error: "GHL not configured" };
+
+  const res = await fetch(
+    `https://services.leadconnectorhq.com/contacts/${opts.contactId}/workflow/${opts.workflowId}`,
+    {
+      method: "POST",
+      headers: { ...ghlHeaders(config.token), Version: "2021-07-28" },
+      body: JSON.stringify({ eventStartTime: new Date().toISOString() }),
+    },
+  );
+  if (!res.ok) {
+    const json: any = await res.json().catch(() => ({}));
+    return { ok: false, error: json?.message || `GHL workflow trigger failed (${res.status})` };
+  }
+  return { ok: true };
+}
+
 /**
  * Send an email via GoHighLevel's Conversations API. Production first uses the
  * centrally managed GHL environment token when configured, allowing an invalid

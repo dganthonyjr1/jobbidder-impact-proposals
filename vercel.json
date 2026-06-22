@@ -8,6 +8,10 @@
     {
       "path": "/api/public/hooks/process-followups",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/public/hooks/process-jessica-followups",
+      "schedule": "*/15 * * * *"
     }
   ]
 }
