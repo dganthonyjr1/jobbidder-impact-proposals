@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { UploadCloud, FileCheck2, X } from "lucide-react";
-
-const LOGO_URL =
-  "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
 
 const ALLOWED_TYPES = new Set([
   "application/pdf",
@@ -34,9 +31,9 @@ const TRADE_OPTIONS = [
 export const Route = createFileRoute("/contractor-apply")({
   head: () => ({ meta: [{ title: "Contractor Application — Jobbidder" }] }),
   validateSearch: (s: Record<string, unknown>) => ({
-    phone: typeof s.phone === "string" ? s.phone : "",
-    email: typeof s.email === "string" ? s.email : "",
-    name: typeof s.name === "string" ? s.name : "",
+    phone: typeof s.phone === "string" ? decodeURIComponent(s.phone) : "",
+    email: typeof s.email === "string" ? decodeURIComponent(s.email) : "",
+    name: typeof s.name === "string" ? decodeURIComponent(s.name) : "",
     ghl_id: typeof s.ghl_id === "string" ? s.ghl_id : "",
   }),
   component: ContractorApplyPage,
@@ -214,7 +211,9 @@ function ContractorApplyPage() {
     <div className="min-h-screen bg-background py-10 px-4">
       <div className="mx-auto w-full max-w-xl space-y-6">
         <div className="text-center">
-          <img src={LOGO_URL} alt="Sudden Impact Agency" className="mx-auto h-12 w-auto object-contain mb-4" />
+          <Link to="/" className="inline-block mb-4">
+            <span className="font-display font-bold text-2xl">Jobbidder</span>
+          </Link>
           <h1 className="font-display text-2xl font-bold">Contractor Application</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Complete the form below to get onboarded as a certified contractor. All documents are
