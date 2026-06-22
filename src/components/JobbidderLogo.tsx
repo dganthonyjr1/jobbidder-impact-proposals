@@ -4,18 +4,18 @@ type Props = {
 };
 
 const sizes = {
-  sm: { h: 32  },
-  md: { h: 46  },
-  lg: { h: 62  },
+  sm: { h: 40  },
+  md: { h: 58  },
+  lg: { h: 78  },
 };
 
 export function JobbidderLogo({ className = "", size = "md" }: Props) {
   const { h } = sizes[size];
-  const w = Math.round(h * 3.6);
+  const w = Math.round(h * 3.76);
 
   return (
     <svg
-      viewBox="0 0 180 50"
+      viewBox="-8 0 188 50"
       height={h}
       width={w}
       fill="none"
