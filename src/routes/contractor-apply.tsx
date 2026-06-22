@@ -137,6 +137,7 @@ function ContractorApplyPage() {
   const [licenseDoc, setLicenseDoc] = useState<UploadedDoc | null>(null);
   const [insuranceDoc, setInsuranceDoc] = useState<UploadedDoc | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [smsConsent, setSmsConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -159,6 +160,10 @@ function ContractorApplyPage() {
       toast.error("Please agree to the terms to continue.");
       return;
     }
+    if (!smsConsent) {
+      toast.error("Please agree to receive SMS updates to continue.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -177,6 +182,7 @@ function ContractorApplyPage() {
           license_url: licenseDoc.url,
           insurance_url: insuranceDoc.url,
           agrees_to_terms: agreedToTerms,
+          sms_opted_in: smsConsent,
         }),
       });
       const data = await res.json();
@@ -336,8 +342,15 @@ function ContractorApplyPage() {
             />
           </Card>
 
-          {/* Agreement */}
-          <Card className="p-6">
+          {/* Agreement & Consent */}
+          <Card className="p-6 space-y-5">
+            <div>
+              <h2 className="font-semibold text-base">Agreement &amp; Consent</h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Both boxes must be checked to submit.
+              </p>
+            </div>
+
             <label className="flex items-start gap-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -346,9 +359,31 @@ function ContractorApplyPage() {
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
               />
               <span className="text-sm text-muted-foreground leading-relaxed">
-                I confirm that all information and documents provided are accurate and current. I
-                understand that submitting this application does not guarantee placement and that my
-                documents will be reviewed by the team before any follow-up contact.
+                I confirm that all information and documents I have provided are accurate and current.
+                I understand that submitting this application does not guarantee placement and that my
+                documents will be reviewed before any follow-up contact is made. I agree to
+                Jobbidder's{" "}
+                <Link to="/terms" className="underline hover:text-foreground">Terms of Service</Link>
+                {" "}and{" "}
+                <Link to="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+              </span>
+            </label>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-border"
+                checked={smsConsent}
+                onChange={(e) => setSmsConsent(e.target.checked)}
+              />
+              <span className="text-sm text-muted-foreground leading-relaxed">
+                I agree to receive automated SMS/text messages and AI-assisted voice calls from
+                Jobbidder (operated by Sudden Impact Agency LLC) at the phone number provided above,
+                regarding my application status, onboarding steps, and job opportunities. Message
+                frequency varies. Message &amp; data rates may apply.{" "}
+                <strong className="text-foreground/80">Consent is not a condition of any purchase or service.</strong>{" "}
+                Reply <strong className="text-foreground/80">STOP</strong> to any text to opt out at any time. See{" "}
+                <Link to="/sms-terms" className="underline hover:text-foreground">SMS Terms</Link>.
               </span>
             </label>
           </Card>

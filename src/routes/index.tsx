@@ -114,7 +114,13 @@ function Index() {
               </Button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">
-              Licensed and insured contractors only · Contractor's license &amp; COI required to complete application
+              Licensed and insured contractors only · Contractor's license &amp; COI required
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground/70 max-w-md mx-auto">
+              By calling or applying you agree to receive automated SMS and AI-assisted voice calls from Jobbidder
+              (Sudden Impact Agency LLC). Consent is not required to receive services. Msg &amp; data rates may apply.
+              Reply STOP to opt out.{" "}
+              <Link to="/sms-terms" className="underline hover:text-muted-foreground">SMS Terms</Link>
             </p>
           </div>
         </div>
