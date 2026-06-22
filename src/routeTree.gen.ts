@@ -43,7 +43,9 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
+import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
+import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
 
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
@@ -224,10 +226,22 @@ const ApiPublicWebhookGhlRoute = ApiPublicWebhookGhlRouteImport.update({
   path: '/api/public/webhook/ghl',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWebhookGhlJessicaFollowupRoute =
+  ApiPublicWebhookGhlJessicaFollowupRouteImport.update({
+    id: '/api/public/webhook/ghl-jessica-followup',
+    path: '/api/public/webhook/ghl-jessica-followup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessFollowupsRoute =
   ApiPublicHooksProcessFollowupsRouteImport.update({
     id: '/api/public/hooks/process-followups',
     path: '/api/public/hooks/process-followups',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksProcessJessicaFollowupsRoute =
+  ApiPublicHooksProcessJessicaFollowupsRouteImport.update({
+    id: '/api/public/hooks/process-jessica-followups',
+    path: '/api/public/hooks/process-jessica-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -261,7 +275,9 @@ export interface FileRoutesByFullPath {
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
+  '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
+  '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -297,7 +313,9 @@ export interface FileRoutesByTo {
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
+  '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
+  '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -335,7 +353,9 @@ export interface FileRoutesById {
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
+  '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
+  '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -373,7 +393,9 @@ export interface FileRouteTypes {
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
+    | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
+    | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -409,7 +431,9 @@ export interface FileRouteTypes {
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
+    | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
+    | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -446,7 +470,9 @@ export interface FileRouteTypes {
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
+    | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
+    | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -480,7 +506,9 @@ export interface RootRouteChildren {
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessFollowupsRoute: typeof ApiPublicHooksProcessFollowupsRoute
+  ApiPublicHooksProcessJessicaFollowupsRoute: typeof ApiPublicHooksProcessJessicaFollowupsRoute
   ApiPublicWebhookGhlRoute: typeof ApiPublicWebhookGhlRoute
+  ApiPublicWebhookGhlJessicaFollowupRoute: typeof ApiPublicWebhookGhlJessicaFollowupRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -727,11 +755,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookGhlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/ghl-jessica-followup': {
+      id: '/api/public/webhook/ghl-jessica-followup'
+      path: '/api/public/webhook/ghl-jessica-followup'
+      fullPath: '/api/public/webhook/ghl-jessica-followup'
+      preLoaderRoute: typeof ApiPublicWebhookGhlJessicaFollowupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-followups': {
       id: '/api/public/hooks/process-followups'
       path: '/api/public/hooks/process-followups'
       fullPath: '/api/public/hooks/process-followups'
       preLoaderRoute: typeof ApiPublicHooksProcessFollowupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-jessica-followups': {
+      id: '/api/public/hooks/process-jessica-followups'
+      path: '/api/public/hooks/process-jessica-followups'
+      fullPath: '/api/public/hooks/process-jessica-followups'
+      preLoaderRoute: typeof ApiPublicHooksProcessJessicaFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -782,7 +824,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicHooksProcessFollowupsRoute: ApiPublicHooksProcessFollowupsRoute,
+  ApiPublicHooksProcessJessicaFollowupsRoute: ApiPublicHooksProcessJessicaFollowupsRoute,
   ApiPublicWebhookGhlRoute: ApiPublicWebhookGhlRoute,
+  ApiPublicWebhookGhlJessicaFollowupRoute: ApiPublicWebhookGhlJessicaFollowupRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
