@@ -34,9 +34,6 @@ function Index() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 sm:pt-24 pb-16 sm:pb-32 bg-grid">
         <div className="max-w-4xl">
-          <div className="mb-8">
-            <JobbidderLogo size="lg" />
-          </div>
           <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/50 px-3 py-1 text-xs font-semibold text-muted-foreground mb-6">
             <Sparkles className="h-3 w-3 text-primary" />
             <span className="hidden sm:inline">A Sudden Impact Agency product built for contractors</span>
