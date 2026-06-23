@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { calculateContractorScore, type ContractorSurveyData } from "@/lib/contractor-scoring";
+import { sendSmsViaGHL, type GhlCredentials } from "@/lib/ghl.server";
 
 type JsonRecord = Record<string, any>;
 
@@ -210,6 +211,39 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
             status: scoringResult.status,
           });
 
+          // Send SMS notification to contractor
+          let smsResult: any = { skipped: true, reason: "No phone number" };
+          if (contactPhone) {
+            try {
+              const ghlToken = process.env.GHL_API_TOKEN;
+              const ghlLocationId = process.env.GHL_LOCATION_ID;
+              
+              if (ghlToken && ghlLocationId) {
+                const ghlCredentials: GhlCredentials = {
+                  apiToken: ghlToken,
+                  locationId: ghlLocationId,
+                  fromNumber: process.env.GHL_SMS_FROM_NUMBER,
+                };
+
+                const statusMessage = scoringResult.status === "APPROVED" 
+                  ? "✅ APPROVED! Your contractor profile qualifies. Next: Review and sign agreement."
+                  : "⏳ PENDING REVIEW. Your profile scored " + scoringResult.totalScore + "/120. We'll follow up shortly.";
+
+                smsResult = await sendSmsViaGHL({
+                  to: contactPhone,
+                  body: `Jobbidder NGS Survey Complete - Score: ${scoringResult.totalScore}/120 (${Math.round(scoringResult.percentage)}%). ${statusMessage}`,
+                  contactName: contactName || "Contractor",
+                  contactEmail: contactEmail,
+                  tags: ["jobbidder", "ngs-survey", `score-${scoringResult.status.toLowerCase()}`],
+                  credentials: ghlCredentials,
+                });
+              }
+            } catch (smsError) {
+              console.error("[webhook.ghl-contractor-survey] SMS send failed:", smsError);
+              smsResult = { error: smsError instanceof Error ? smsError.message : "Unknown error" };
+            }
+          }
+
           return Response.json(
             {
               ok: true,
@@ -217,6 +251,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
               score: scoringResult.totalScore,
               percentage: scoringResult.percentage,
               status: scoringResult.status,
+              sms: smsResult,
             },
             { status: 200, headers: cors() }
           );
