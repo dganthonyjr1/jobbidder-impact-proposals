@@ -9,7 +9,7 @@ export const uploadMediaFile = createServerFn({ method: "POST" })
       fileName: z.string().min(1),
       fileType: z.enum(["photo", "video"]),
       mimeType: z.string(),
-      fileSize: z.number().positive().max(104857600), // 100MB
+      fileSize: z.number().positive().max(943718400), // 900MB (2 hours max per account)
       proposalId: z.string().uuid().optional(),
       contractorId: z.string().uuid().optional(),
       title: z.string().optional(),

@@ -17,7 +17,7 @@ export function MediaUpload({
   proposalId,
   contractorId,
   acceptedFileTypes = "both",
-  maxFileSize = 104857600, // 100MB
+  maxFileSize = 943718400, // 900MB (2 hours)
 }: MediaUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
