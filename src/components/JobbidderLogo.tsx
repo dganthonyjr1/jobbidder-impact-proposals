@@ -5,7 +5,7 @@ interface Props {
   size?: "sm" | "md" | "lg";
 }
 
-const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663141074869/aoVDwGIUbpLpetKx.webp";
+const LOGO_URL = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663141074869/zdjCpFJwpCUgcrKP.png";
 
 export function JobbidderLogo({ className = "", size = "md" }: Props) {
   const sizeClasses = {
