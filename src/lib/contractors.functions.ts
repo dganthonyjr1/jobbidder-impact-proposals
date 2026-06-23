@@ -18,13 +18,11 @@ export const listContractorApplications = createServerFn({ method: "GET" })
 
 export const updateContractorStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(
-    z.object({
-      id: z.string().uuid(),
-      status: z.enum(["submitted", "approved", "rejected", "pending_docs"]),
-      notes: z.string().optional(),
-    })
-  )
+  .inputValidator((input: unknown) => z.object({
+    id: z.string().uuid(),
+    status: z.enum(["submitted", "approved", "rejected", "pending_docs"]),
+    notes: z.string().optional(),
+  }).parse(input))
   .handler(async ({ context, data }) => {
     const { supabase } = context;
     const { error } = await supabase
