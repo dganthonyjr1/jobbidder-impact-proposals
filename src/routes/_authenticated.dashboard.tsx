@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2 } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
 import { useState } from "react";
 import { toast } from "sonner";
+import { listUserMedia, deleteMedia } from "@/lib/media.functions";
+import { MediaUpload } from "@/components/media-upload";
+import { MediaGallery } from "@/components/media-gallery";
 
 function timeAgo(iso: string | null): string {
   if (!iso) return "Not yet";
@@ -57,6 +60,9 @@ function Dashboard() {
   const { data: estimates, isLoading: estLoading } = useQuery({ queryKey: ["estimates"], queryFn: () => fetchEstimates() });
   const fetchContractors = useServerFn(listContractorApplications);
   const { data: contractors, isLoading: contractorsLoading } = useQuery({ queryKey: ["contractors"], queryFn: () => fetchContractors() });
+  const fetchMedia = useServerFn(listUserMedia);
+  const { data: media, isLoading: mediaLoading, refetch: refetchMedia } = useQuery({ queryKey: ["media"], queryFn: () => fetchMedia() });
+  const doDeleteMedia = useServerFn(deleteMedia);
   const doUpdateStatus = useServerFn(updateContractorStatus);
   const queryClient = useQueryClient();
 
@@ -167,6 +173,10 @@ function Dashboard() {
         <TabsList className="mb-4">
           <TabsTrigger value="proposals">Proposals {data ? `(${data.length})` : ""}</TabsTrigger>
           <TabsTrigger value="estimates">Estimates {estimates ? `(${estimates.length})` : ""}</TabsTrigger>
+          <TabsTrigger value="media">
+            <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+            Media {media ? `(${media.length})` : ""}
+          </TabsTrigger>
           <TabsTrigger value="contractors">
             <HardHat className="h-3.5 w-3.5 mr-1.5" />
             Contractors {contractors ? `(${contractors.length})` : ""}
@@ -366,6 +376,36 @@ function Dashboard() {
             )}
           </div>
         </TabsContent>
+
+        <TabsContent value="media">
+          <div className="space-y-6">
+            {/* Upload section */}
+            <div className="rounded-xl border border-border bg-card shadow-card p-6">
+              <h3 className="font-semibold mb-4">Upload Photos & Videos</h3>
+              <MediaUpload
+                onUploadComplete={() => {
+                  refetchMedia();
+                  toast.success("Media uploaded successfully");
+                }}
+              />
+            </div>
+
+            {/* Gallery section */}
+            <div className="rounded-xl border border-border bg-card shadow-card p-6">
+              <h3 className="font-semibold mb-4">Your Media Library</h3>
+              <MediaGallery
+                media={media || []}
+                isLoading={mediaLoading}
+                editable={true}
+                onDelete={async (mediaId) => {
+                  await doDeleteMedia({ mediaId });
+                  refetchMedia();
+                }}
+              />
+            </div>
+          </div>
+        </TabsContent>
+
         <TabsContent value="contractors">
           <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
             {contractorsLoading ? (
