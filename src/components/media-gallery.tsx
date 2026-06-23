@@ -3,6 +3,7 @@ import { Trash2, Download, Eye, EyeOff, Tag, MapPin, Calendar } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { MobileVideoPlayer } from "./mobile-video-player";
 
 interface MediaItem {
   id: string;
@@ -207,10 +208,11 @@ export function MediaGallery({
                 className="max-w-full max-h-[70vh] object-contain rounded-lg"
               />
             ) : (
-              <video
+              <MobileVideoPlayer
                 src={selectedMedia.storage_url}
-                controls
-                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                title={selectedMedia.title || selectedMedia.file_name}
+                controls={true}
+                onDownload={() => handleDownload(selectedMedia.storage_url, selectedMedia.file_name)}
               />
             )}
 
