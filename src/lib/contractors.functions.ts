@@ -1,4 +1,20 @@
-import { createServerFn } from "@tanstack/react-start";
+/**
+ * ============================================================================
+ * JOBBIDDER.IO - PROPRIETARY AND CONFIDENTIAL
+ * ============================================================================
+ * Copyright (c) 2026 [Your Company Name]. All rights reserved.
+ * 
+ * This file contains proprietary contractor matching and hiring logic
+ * protected by:
+ * - U.S. Patent Application (Provisional) - June 23, 2026
+ * - Copyright Law
+ * - Trade Secret Protection
+ * 
+ * Unauthorized access, use, or distribution is strictly prohibited.
+ * ============================================================================
+ */
+
+import { createServerFn } from "@tanstack/start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 

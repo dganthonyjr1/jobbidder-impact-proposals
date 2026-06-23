@@ -1,4 +1,19 @@
 /**
+ * ============================================================================
+ * JOBBIDDER.IO - PROPRIETARY AND CONFIDENTIAL
+ * ============================================================================
+ * Copyright (c) 2026 [Your Company Name]. All rights reserved.
+ * 
+ * This file contains proprietary algorithms and trade secrets protected by:
+ * - U.S. Patent Application (Provisional) - June 23, 2026
+ * - Copyright Law
+ * - Trade Secret Protection
+ * 
+ * Unauthorized access, use, or distribution is strictly prohibited.
+ * ============================================================================
+ */
+
+/*
  * NGS Contractor Qualification Scoring System
  * 10-question survey with 120-point maximum score
  */

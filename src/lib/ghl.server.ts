@@ -1,5 +1,21 @@
 import { toE164US } from "./twilio.server";
 
+/**
+ * ============================================================================
+ * JOBBIDDER.IO - PROPRIETARY AND CONFIDENTIAL
+ * ============================================================================
+ * Copyright (c) 2026 [Your Company Name]. All rights reserved.
+ * 
+ * This file contains proprietary GHL integration logic and trade secrets
+ * protected by:
+ * - U.S. Patent Application (Provisional) - June 23, 2026
+ * - Copyright Law
+ * - Trade Secret Protection
+ * 
+ * Unauthorized access, use, or distribution is strictly prohibited.
+ * ============================================================================
+ */
+
 export type GhlSmsResult =
   | { ok: true; messageId?: string; conversationId?: string; to: string }
   | { ok: false; error: string; status?: number };

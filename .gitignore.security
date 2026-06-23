@@ -1,0 +1,99 @@
+# ============================================================================
+# SECURITY - SENSITIVE FILES AND SECRETS
+# ============================================================================
+# Never commit these files to the repository
+
+# Environment Variables and Secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# API Keys and Tokens
+*.key
+*.pem
+*.pub
+secrets.json
+credentials.json
+
+# Database Credentials
+db.config.js
+database.config.ts
+
+# GHL Integration Secrets
+ghl.credentials.ts
+ghl.secrets.json
+
+# AWS/S3 Credentials
+aws.config.json
+s3.credentials.ts
+
+# Contractor Performance Data (Sensitive)
+contractor-performance-data.json
+contractor-performance-*.csv
+contractor-performance-*.xlsx
+
+# Client Information (Sensitive)
+client-data.json
+client-information.csv
+client-contacts.xlsx
+
+# Financial Data (Sensitive)
+financial-data.json
+pricing-models.json
+cost-estimates.xlsx
+
+# Insurance Information (Sensitive)
+insurance-data.json
+insurance-verification.csv
+
+# License Information (Sensitive)
+license-data.json
+license-verification.csv
+
+# Compliance Audit Trails (Sensitive)
+compliance-audit-*.json
+compliance-audit-*.csv
+audit-trail.xlsx
+
+# Build Artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# ============================================================================
+# IMPORTANT: If you accidentally committed any of these files, immediately:
+# 1. Remove from repository: git rm --cached <filename>
+# 2. Commit removal: git commit -m "Remove sensitive file"
+# 3. Push to remote: git push
+# 4. Rotate any exposed credentials immediately
+# ============================================================================
