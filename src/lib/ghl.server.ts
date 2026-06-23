@@ -77,8 +77,13 @@ function resolveGhlConfig(credentials?: GhlCredentials | null): GhlRuntimeConfig
 }
 
 function ghlHeaders(token: string) {
+  // Support both OAuth tokens (sk_live_) and Private Integration tokens (pit_)
+  const authHeader = token.startsWith("pit_") 
+    ? `Bearer ${token}`  // Private Integration tokens use Bearer auth
+    : `Bearer ${token}`; // OAuth tokens also use Bearer auth
+  
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: authHeader,
     "Content-Type": "application/json",
     Accept: "application/json",
     Version: "2021-04-15",
