@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import Replicate from "replicate";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-export type EnhancementProvider = "openai" | "claude" | "replicate";
+export type EnhancementProvider = "openai" | "claude" | "replicate" | "chatgpt";
 export type EnhancementType =
   | "enhance"
   | "damage-assessment"
@@ -11,7 +11,9 @@ export type EnhancementType =
   | "auto-describe"
   | "upscale"
   | "background-removal"
-  | "color-correction";
+  | "color-correction"
+  | "detailed-report"
+  | "proposal-generation";
 
 interface EnhancementResult {
   provider: EnhancementProvider;
@@ -32,7 +34,7 @@ interface DamageAssessment {
 
 /**
  * Photo Enhancement Service
- * Integrates with OpenAI Vision, Claude, and Replicate for advanced photo processing
+ * Integrates with OpenAI Vision, Claude, ChatGPT, and Replicate for advanced photo processing
  */
 export class PhotoEnhancer {
   private openai: OpenAI;
@@ -49,6 +51,168 @@ export class PhotoEnhancer {
     this.replicate = new Replicate({
       auth: process.env.REPLICATE_API_TOKEN,
     });
+  }
+
+  /**
+   * Analyze photo for damage using ChatGPT Vision
+   */
+  async analyzeDamageWithChatGPT(imageUrl: string): Promise<DamageAssessment> {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4-vision",
+        max_tokens: 1024,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+              {
+                type: "text",
+                text: `Analyze this photo for any visible damage. Provide a detailed assessment in JSON format with the following fields:
+                {
+                  "damageType": "type of damage (e.g., water damage, fire damage, structural damage, etc.)",
+                  "severity": "low|medium|high|critical",
+                  "description": "detailed description of the damage",
+                  "estimatedRepairCost": "rough estimate if possible",
+                  "recommendations": ["recommendation 1", "recommendation 2", ...]
+                }
+                If no damage is visible, set damageType to "none" and severity to "low".`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const content = response.choices[0].message.content;
+      if (!content) throw new Error("No response from ChatGPT");
+
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not parse damage assessment");
+
+      const assessment = JSON.parse(jsonMatch[0]) as DamageAssessment;
+      return assessment;
+    } catch (error) {
+      console.error("ChatGPT damage analysis error:", error);
+      throw new Error(
+        `Damage analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  /**
+   * Generate detailed report using ChatGPT Vision
+   */
+  async generateDetailedReportWithChatGPT(
+    imageUrl: string,
+    projectName?: string,
+    contractorName?: string
+  ): Promise<string> {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4-vision",
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+              {
+                type: "text",
+                text: `Generate a professional damage assessment report for this photo. Include:
+                1. Executive Summary
+                2. Damage Assessment (type, severity, extent)
+                3. Affected Areas
+                4. Recommended Repairs
+                5. Estimated Timeline
+                6. Safety Concerns
+                7. Next Steps
+                
+                Format as a professional report suitable for client presentation.
+                ${projectName ? `Project: ${projectName}` : ""}
+                ${contractorName ? `Contractor: ${contractorName}` : ""}`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const content = response.choices[0].message.content;
+      if (!content) throw new Error("No response from ChatGPT");
+
+      return content;
+    } catch (error) {
+      console.error("ChatGPT report generation error:", error);
+      throw new Error(
+        `Report generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
+  }
+
+  /**
+   * Generate proposal text using ChatGPT Vision
+   */
+  async generateProposalWithChatGPT(
+    imageUrl: string,
+    projectType?: string,
+    budget?: string
+  ): Promise<string> {
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4-vision",
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+              {
+                type: "text",
+                text: `Based on this photo, generate a professional project proposal that includes:
+                1. Project Overview
+                2. Scope of Work (detailed line items)
+                3. Materials Required
+                4. Labor Estimate
+                5. Timeline
+                6. Quality Assurance
+                7. Warranty Information
+                8. Payment Terms
+                
+                Format as a professional proposal suitable for client presentation.
+                ${projectType ? `Project Type: ${projectType}` : ""}
+                ${budget ? `Budget Range: ${budget}` : ""}
+                
+                Include specific measurements and quantities where visible.`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const content = response.choices[0].message.content;
+      if (!content) throw new Error("No response from ChatGPT");
+
+      return content;
+    } catch (error) {
+      console.error("ChatGPT proposal generation error:", error);
+      throw new Error(
+        `Proposal generation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+    }
   }
 
   /**
@@ -94,7 +258,6 @@ export class PhotoEnhancer {
       const content = response.content[0];
       if (content.type !== "text") throw new Error("Unexpected response type");
 
-      // Extract JSON from response
       const jsonMatch = content.text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("Could not parse damage assessment");
 
@@ -113,13 +276,32 @@ export class PhotoEnhancer {
    */
   async generateDescriptionWithOpenAI(imageUrl: string): Promise<string> {
     try {
-      const response = await this.openai.vision.imageToText({
-        image: imageUrl,
+      const response = await this.openai.chat.completions.create({
+        model: "gpt-4-vision",
         max_tokens: 500,
-        detail: "high",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+              {
+                type: "text",
+                text: "Provide a detailed description of this image in 2-3 sentences.",
+              },
+            ],
+          },
+        ],
       });
 
-      return response;
+      const content = response.choices[0].message.content;
+      if (!content) throw new Error("No response from OpenAI");
+
+      return content;
     } catch (error) {
       console.error("OpenAI description error:", error);
       throw new Error(
@@ -236,7 +418,7 @@ export class PhotoEnhancer {
         {
           input: {
             image: imageUrl,
-            scale: 1, // Keep same size, just enhance
+            scale: 1,
           },
         }
       )) as string[];
@@ -268,9 +450,13 @@ export class PhotoEnhancer {
       let result: any;
       let enhancedImageUrl: string | undefined;
 
-      // Process based on type and provider
       if (enhancementType === "damage-assessment" && provider === "claude") {
         result = await this.analyzeDamageWithClaude(imageUrl);
+      } else if (
+        enhancementType === "damage-assessment" &&
+        provider === "chatgpt"
+      ) {
+        result = await this.analyzeDamageWithChatGPT(imageUrl);
       } else if (
         enhancementType === "auto-describe" &&
         provider === "openai"
@@ -290,13 +476,22 @@ export class PhotoEnhancer {
         provider === "replicate"
       ) {
         enhancedImageUrl = await this.enhanceColorsWithReplicate(imageUrl);
+      } else if (
+        enhancementType === "detailed-report" &&
+        provider === "chatgpt"
+      ) {
+        result = await this.generateDetailedReportWithChatGPT(imageUrl);
+      } else if (
+        enhancementType === "proposal-generation" &&
+        provider === "chatgpt"
+      ) {
+        result = await this.generateProposalWithChatGPT(imageUrl);
       } else {
         throw new Error(
           `Unsupported enhancement: ${enhancementType} with ${provider}`
         );
       }
 
-      // Save enhancement result to database
       await supabaseAdmin
         .from("photo_enhancements")
         .insert({
@@ -311,7 +506,6 @@ export class PhotoEnhancer {
     } catch (error) {
       console.error("Enhancement processing error:", error);
 
-      // Save error to database
       await supabaseAdmin
         .from("photo_enhancements")
         .insert({
@@ -337,6 +531,18 @@ export class PhotoEnhancer {
         costPer1K: 0.01,
         speed: "fast",
       },
+      chatgpt: {
+        name: "ChatGPT (GPT-4 Vision)",
+        capabilities: [
+          "damage-assessment",
+          "auto-describe",
+          "auto-tag",
+          "detailed-report",
+          "proposal-generation",
+        ],
+        costPer1K: 0.015,
+        speed: "medium",
+      },
       claude: {
         name: "Claude 3.5 Sonnet",
         capabilities: ["damage-assessment", "auto-tag", "auto-describe"],
@@ -359,13 +565,15 @@ export class PhotoEnhancer {
     enhancementType: EnhancementType
   ): EnhancementProvider {
     const recommendations: Record<EnhancementType, EnhancementProvider> = {
-      "damage-assessment": "claude",
+      "damage-assessment": "chatgpt",
       "auto-describe": "openai",
       "auto-tag": "claude",
       enhance: "replicate",
       upscale: "replicate",
       "background-removal": "replicate",
       "color-correction": "replicate",
+      "detailed-report": "chatgpt",
+      "proposal-generation": "chatgpt",
     };
     return recommendations[enhancementType];
   }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wand2, Zap, Tag, FileText, Maximize2, Trash2, Palette, Loader } from "lucide-react";
+import { Wand2, Zap, Tag, FileText, Maximize2, Trash2, Palette, Loader, FileCheck, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -27,9 +27,27 @@ const ENHANCEMENT_OPTIONS: EnhancementOption[] = [
     name: "Damage Assessment",
     description: "AI analyzes damage type, severity, and repair recommendations",
     icon: <Zap className="h-5 w-5" />,
-    providers: ["claude"],
-    recommended: "claude",
-    cost: "$0.003",
+    providers: ["claude", "chatgpt"],
+    recommended: "chatgpt",
+    cost: "$0.015",
+  },
+  {
+    id: "detailed-report",
+    name: "Detailed Report",
+    description: "Generate professional damage assessment report for clients",
+    icon: <FileCheck className="h-5 w-5" />,
+    providers: ["chatgpt"],
+    recommended: "chatgpt",
+    cost: "$0.015",
+  },
+  {
+    id: "proposal-generation",
+    name: "Generate Proposal",
+    description: "Create professional project proposal with scope and pricing",
+    icon: <Lightbulb className="h-5 w-5" />,
+    providers: ["chatgpt"],
+    recommended: "chatgpt",
+    cost: "$0.015",
   },
   {
     id: "auto-describe",
@@ -149,7 +167,7 @@ export function PhotoEnhancementPanel({
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex gap-1">
+              <div className="flex gap-1 flex-wrap">
                 {option.providers.map((provider) => (
                   <Badge
                     key={provider}
@@ -193,6 +211,12 @@ export function PhotoEnhancementPanel({
       <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3">
         <p className="text-xs text-blue-300">
           <strong>Note:</strong> Enhancements are processed asynchronously. Results will appear in your media library. Processing typically takes 30 seconds to 2 minutes depending on the enhancement type.
+        </p>
+      </div>
+
+      <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
+        <p className="text-xs text-green-300">
+          <strong>New:</strong> ChatGPT now available for damage assessment, detailed reports, and proposal generation. Get professional documents automatically generated from your photos!
         </p>
       </div>
     </div>
