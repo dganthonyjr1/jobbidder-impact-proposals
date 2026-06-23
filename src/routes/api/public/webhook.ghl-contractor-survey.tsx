@@ -48,6 +48,32 @@ function cors(headers: Record<string, string> = {}) {
   };
 }
 
+function normalizePhoneNumber(phone: string | null): string | null {
+  if (!phone) return null;
+  
+  // Extract only digits
+  const digitsOnly = phone.replace(/\D/g, "");
+  if (!digitsOnly) return null;
+  
+  // If 10 digits (US), add +1
+  if (digitsOnly.length === 10) {
+    return "+1" + digitsOnly;
+  }
+  
+  // If 11 digits and starts with 1 (US), convert to +1
+  if (digitsOnly.length === 11 && digitsOnly.startsWith("1")) {
+    return "+" + digitsOnly;
+  }
+  
+  // If already has country code, add +
+  if (digitsOnly.length > 10) {
+    return "+" + digitsOnly;
+  }
+  
+  // Default: assume US and add +1
+  return "+1" + digitsOnly;
+}
+
 export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey")({
   server: {
     handlers: {
@@ -69,7 +95,8 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
             body.full_name
           );
           const contactEmail = firstString(body.contact?.email, body.email);
-          const contactPhone = firstString(body.contact?.phone, body.contact?.phoneNumber, body.phone);
+          const rawContactPhone = firstString(body.contact?.phone, body.contact?.phoneNumber, body.phone);
+          const contactPhone = normalizePhoneNumber(rawContactPhone);
 
           // Extract survey responses from custom fields
           const yearsInOperation = parseInt(custom(body, "years_in_operation", "yearsInOperation") || "0", 10);
@@ -213,7 +240,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
 
           // Send SMS notification to contractor
           let smsResult: any = { skipped: true, reason: "No phone number" };
-          if (contactPhone) {
+          if (contactPhone && contactPhone.length > 0) {
             try {
               const ghlToken = process.env.GHL_API_TOKEN;
               const ghlLocationId = process.env.GHL_LOCATION_ID;
@@ -230,7 +257,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
                   : "⏳ PENDING REVIEW. Your profile scored " + scoringResult.totalScore + "/120. We'll follow up shortly.";
 
                 smsResult = await sendSmsViaGHL({
-                  to: contactPhone,
+                  to: contactPhone || "",
                   body: `Jobbidder NGS Survey Complete - Score: ${scoringResult.totalScore}/120 (${Math.round(scoringResult.percentage)}%). ${statusMessage}`,
                   contactName: contactName || "Contractor",
                   contactEmail: contactEmail,
