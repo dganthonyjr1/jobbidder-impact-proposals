@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { MobileVideoPlayer } from "./mobile-video-player";
+import { PhotoEnhancementPanel } from "./photo-enhancement-panel";
 
 interface MediaItem {
   id: string;
@@ -248,6 +249,16 @@ export function MediaGallery({
                       {tag}
                     </Badge>
                   ))}
+                </div>
+              )}
+
+              {/* AI Enhancement Panel */}
+              {selectedMedia.file_type === "photo" && (
+                <div className="mt-6 pt-6 border-t border-white/20">
+                  <PhotoEnhancementPanel
+                    mediaId={selectedMedia.id}
+                    imageUrl={selectedMedia.storage_url}
+                  />
                 </div>
               )}
             </div>
