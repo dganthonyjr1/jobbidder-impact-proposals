@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -27,7 +28,9 @@ function TermsPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/40">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="font-display font-bold text-lg">Jobbidder</Link>
+          <Link to="/">
+            <JobbidderLogo size="sm" />
+          </Link>
           <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link>
         </div>
       </header>

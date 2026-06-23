@@ -341,116 +341,135 @@ function WhyJobbidderPage() {
         </div>
       </section>
 
-      {/* ── Cost Chart ── */}
+      {/* ── Cost Chart Section ── */}
       <section className="bg-card/30 border-y border-border/40 py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
-                Stop <span className="text-destructive">bleeding money</span> on monthly fees
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                ServiceTitan and Jobber count on you paying them forever. Jobbidder Principal lets you own your software outright.
-              </p>
-              <div className="mt-8 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-sm font-medium">Save $11,000+ over 3 years vs ServiceTitan</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-sm font-medium">No per-user or per-tech fees</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-sm font-medium">Lifetime access to all future AI updates</span>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
+          <div>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
+              Stop bleeding cash to <span className="text-destructive">SaaS rent-seekers</span>
+            </h2>
+            <p className="mt-4 text-muted-foreground font-medium leading-relaxed">
+              ServiceTitan and Jobber thrive on your monthly fees. They want you to pay for life.
+              <br /><br />
+              Jobbidder is different. Our <strong>Principal</strong> plan is a one-time payment. You buy it once, you own it forever. No monthly fees, no price hikes, no bullshit.
+            </p>
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-destructive" />
+                <span className="text-sm font-semibold">Competitors: $10k+ every 3 years</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-primary" />
+                <span className="text-sm font-semibold">Jobbidder Principal: $6.5k total (Lifetime)</span>
               </div>
             </div>
-            <div className="rounded-2xl border border-border bg-background/50 p-6 shadow-2xl">
-              <CostChart />
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-8 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">3-Year Cost Comparison</h3>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-12 rounded-full bg-primary/20" />
+              </div>
             </div>
+            <CostChart />
           </div>
         </div>
       </section>
 
-      {/* ── Savings Area Chart ── */}
+      {/* ── Materials Savings Section ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1 rounded-2xl border border-border bg-background/50 p-6 shadow-2xl">
+        <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
+          <div className="order-2 lg:order-1 rounded-2xl border border-border bg-card p-4 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4">
+              <TrendingDown className="h-12 w-12 text-primary/10" />
+            </div>
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Projected Materials Savings</h3>
+              <p className="text-xs text-muted-foreground mt-1">Based on 3 jobs/week @ $1,500 savings per job</p>
+            </div>
             <SavingsChart />
           </div>
           <div className="order-1 lg:order-2">
             <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
-              The <span className="text-success">Wholesale Edge</span>
+              The only software that <span className="text-success">actually pays you</span>
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
-              Jobbidder isn't just a proposal tool. It's a buying group. We use the collective power of our contractor network to get you wholesale pricing on materials.
+            <p className="mt-4 text-muted-foreground font-medium leading-relaxed">
+              We didn&apos;t just build a proposal tool. We built a materials procurement engine.
+              <br /><br />
+              Because we aggregate volume for thousands of contractors, we get wholesale pricing that you can&apos;t get alone. We pass those savings directly to you. Most of our users save enough on their first two jobs to pay for their entire year of Jobbidder.
             </p>
-            <div className="mt-8 p-6 rounded-xl bg-primary/5 border border-primary/20">
-              <div className="text-3xl font-bold text-primary">$1,500</div>
-              <div className="text-sm font-medium text-muted-foreground mt-1">Average savings per job for a Journeyman contractor</div>
-            </div>
+            <Button asChild variant="link" className="mt-4 p-0 h-auto text-primary font-bold">
+              <Link to="/pricing">Calculate your potential savings <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 border-t border-border/40">
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((t) => (
-            <div key={t.name} className="flex flex-col gap-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-primary text-primary" />)}
+      <section className="bg-primary/5 py-16 sm:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">Trusted by contractors nationwide</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((t) => (
+              <div key={t.name} className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-card">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} className="h-4 w-4 fill-primary text-primary" />
+                  ))}
+                </div>
+                <p className="text-sm sm:text-base font-medium leading-relaxed italic">&quot;{t.quote}&quot;</p>
+                <div className="mt-6">
+                  <p className="font-bold text-foreground">{t.name}</p>
+                  <p className="text-xs text-muted-foreground font-semibold">{t.role}</p>
+                </div>
               </div>
-              <p className="text-lg font-medium italic leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
-              <div>
-                <div className="font-bold">{t.name}</div>
-                <div className="text-sm text-muted-foreground">{t.role}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-        <div className="rounded-3xl bg-gradient-to-b from-primary/20 to-background border border-primary/20 p-8 sm:p-16 text-center">
-          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tighter">
-            Ready to build your <span className="text-gradient-sia">money machine?</span>
-          </h2>
-          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Stop renting. Start owning. Join the network of contractors who are using AI to win more work, everywhere.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild size="lg" className="px-12">
-              <Link to="/login">Start for free</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="px-12">
-              <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer">Contact Agency</a>
-            </Button>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* ── CTA ── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-32">
+        <div className="rounded-3xl bg-gradient-sia p-8 sm:p-16 text-center text-primary-foreground shadow-glow">
+          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tighter">
+            Stop renting. Start winning.
+          </h2>
+          <p className="mt-6 text-base sm:text-lg font-medium opacity-90 max-w-2xl mx-auto">
+            Join the elite contractors who have ditched the monthly SaaS tax and upgraded to the Jobbidder money machine.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            <Button asChild size="lg" variant="secondary" className="font-bold">
+              <Link to="/login">Get Started Now</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="bg-transparent border-white/20 hover:bg-white/10 font-bold">
+              <Link to="/pricing">View Pricing Plans</Link>
+            </Button>
+          </div>
+          <p className="mt-6 text-xs font-medium opacity-70">
+            No credit card required to start · 60-second setup · You own your data
+          </p>
+        </div>
+      </section>
+
       {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-12 text-center text-xs text-muted-foreground">
-        <div className="flex justify-center mb-8">
+      <footer className="border-t border-border/40 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-8">
           <JobbidderLogo size="sm" />
+          <div className="flex gap-8 text-sm font-semibold text-muted-foreground">
+            <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
+            <Link to="/why-jobbidder" className="hover:text-foreground transition">Why Jobbidder</Link>
+            <Link to="/terms" className="hover:text-foreground transition">Terms</Link>
+            <Link to="/privacy" className="hover:text-foreground transition">Privacy</Link>
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">
+            © {new Date().getFullYear()} Jobbidder · A product of{" "}
+            <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="underline hover:text-primary transition">
+              Sudden Impact Agency
+            </a>
+          </p>
         </div>
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-sm font-medium">
-          <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
-          <Link to="/why-jobbidder" className="hover:text-foreground transition">Why Jobbidder</Link>
-          <Link to="/contractor-apply" className="hover:text-foreground transition">For Contractors</Link>
-          <Link to="/login" className="hover:text-foreground transition">Sign in</Link>
-          <Link to="/privacy" className="hover:text-foreground transition">Privacy</Link>
-          <Link to="/terms" className="hover:text-foreground transition">Terms</Link>
-        </div>
-        <p>© {new Date().getFullYear()} Jobbidder · A product of{" "}
-          <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
-            Sudden Impact Agency
-          </a>
-        </p>
       </footer>
     </div>
   );

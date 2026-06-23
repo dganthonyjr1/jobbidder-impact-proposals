@@ -2,8 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
-
-const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 function isAdminEmail(email: string | undefined): boolean {
   if (!email) return false;
@@ -51,9 +50,7 @@ function AuthLayout() {
     <div className="min-h-screen bg-background flex">
       <aside className="w-60 border-r border-border bg-sidebar flex flex-col">
         <Link to="/dashboard" className="flex items-center gap-2 p-5 border-b border-border">
-          <div className="flex flex-col leading-none">
-            <span className="font-display font-bold text-sm">Jobbidder</span>
-          </div>
+          <JobbidderLogo size="sm" />
         </Link>
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((n) => (

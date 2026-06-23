@@ -1,23 +1,28 @@
-type Props = {
+import { cn } from "@/lib/utils";
+
+interface Props {
   className?: string;
   size?: "sm" | "md" | "lg";
-};
+}
 
-const sizes = {
-  sm: { h: 32 },
-  md: { h: 48 },
-  lg: { h: 64 },
-};
+const LOGO_URL = "https://www.jobbidder.io/assets/images/jobbidder-logo.png";
 
 export function JobbidderLogo({ className = "", size = "md" }: Props) {
-  const { h } = sizes[size];
-  
+  const sizeClasses = {
+    sm: "h-8",
+    md: "h-12",
+    lg: "h-16",
+  };
+
   return (
-    <img 
-      src="https://files.manuscdn.com/user_upload_by_module/session_file/310519663141074869/aoVDwGIUbpLpetKx.webp" 
+    <img
+      src={LOGO_URL}
       alt="Jobbidder.io — Win more work. Everywhere."
-      style={{ height: `${h}px`, width: 'auto' }}
-      className={className}
+      className={cn("w-auto object-contain", sizeClasses[size], className)}
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.src = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663141074869/aoVDwGIUbpLpetKx.webp";
+      }}
     />
   );
 }
