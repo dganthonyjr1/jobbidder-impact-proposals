@@ -5,13 +5,21 @@ import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
 
 const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
 
+function isAdminEmail(email: string | undefined): boolean {
+  if (!email) return false;
+  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
+  if (!raw.trim()) return true; // no allowlist configured → allow all (dev fallback)
+  const admins = raw.split(",").map((e: string) => e.trim().toLowerCase());
+  return admins.includes(email.toLowerCase());
+}
+
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
-    // Skip session check on the server — localStorage is unavailable during SSR.
-    // The client-side onAuthStateChange listener in AuthLayout handles redirects.
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
+    const email = data.session.user.email;
+    if (!isAdminEmail(email)) throw redirect({ to: "/login" });
   },
   component: AuthLayout,
 });
