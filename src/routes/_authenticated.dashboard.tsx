@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listProposals } from "@/lib/proposals.functions";
 import { listEstimates } from "@/lib/estimates.functions";
+import { listContractorApplications, updateContractorStatus } from "@/lib/contractors.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, ExternalLink as DocLink } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -42,15 +43,27 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+const CONTRACTOR_STATUS_COLORS: Record<string, string> = {
+  submitted: "bg-yellow-500/20 text-yellow-300",
+  approved: "bg-green-500/20 text-green-300",
+  rejected: "bg-red-500/20 text-red-300",
+  pending_docs: "bg-blue-500/20 text-blue-300",
+};
+
 function Dashboard() {
   const fetchList = useServerFn(listProposals);
   const { data, isLoading, refetch } = useQuery({ queryKey: ["proposals"], queryFn: () => fetchList() });
   const fetchEstimates = useServerFn(listEstimates);
   const { data: estimates, isLoading: estLoading } = useQuery({ queryKey: ["estimates"], queryFn: () => fetchEstimates() });
+  const fetchContractors = useServerFn(listContractorApplications);
+  const { data: contractors, isLoading: contractorsLoading } = useQuery({ queryKey: ["contractors"], queryFn: () => fetchContractors() });
+  const doUpdateStatus = useServerFn(updateContractorStatus);
+  const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [resending, setResending] = useState<string | null>(null);
+  const [updatingContractor, setUpdatingContractor] = useState<string | null>(null);
 
   const proposals = data ?? [];
 
@@ -107,6 +120,19 @@ function Dashboard() {
     }
   }
 
+  async function updateStatus(id: string, status: "approved" | "rejected" | "pending_docs") {
+    setUpdatingContractor(id);
+    try {
+      await doUpdateStatus({ data: { id, status } });
+      queryClient.invalidateQueries({ queryKey: ["contractors"] });
+      toast.success(`Contractor marked as ${status}`);
+    } catch {
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingContractor(null);
+    }
+  }
+
   const statuses = ["all", "draft", "sent", "viewed", "accepted", "declined"];
 
   return (
@@ -141,6 +167,10 @@ function Dashboard() {
         <TabsList className="mb-4">
           <TabsTrigger value="proposals">Proposals {data ? `(${data.length})` : ""}</TabsTrigger>
           <TabsTrigger value="estimates">Estimates {estimates ? `(${estimates.length})` : ""}</TabsTrigger>
+          <TabsTrigger value="contractors">
+            <HardHat className="h-3.5 w-3.5 mr-1.5" />
+            Contractors {contractors ? `(${contractors.length})` : ""}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="proposals">
@@ -336,6 +366,115 @@ function Dashboard() {
             )}
           </div>
         </TabsContent>
+        <TabsContent value="contractors">
+          <div className="rounded-xl border border-border bg-card shadow-card overflow-hidden">
+            {contractorsLoading ? (
+              <div className="p-12 text-center text-muted-foreground">Loading…</div>
+            ) : !contractors || contractors.length === 0 ? (
+              <div className="p-16 text-center">
+                <HardHat className="h-10 w-10 mx-auto text-muted-foreground" />
+                <h3 className="mt-4 font-display font-semibold">No applications yet</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Contractor applications submitted via the apply form will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
+                    <tr>
+                      <th className="text-left p-4">Contractor</th>
+                      <th className="text-left p-4">Trade / Area</th>
+                      <th className="text-left p-4">Experience</th>
+                      <th className="text-left p-4">License #</th>
+                      <th className="text-left p-4">Documents</th>
+                      <th className="text-left p-4">Status</th>
+                      <th className="text-left p-4">Applied</th>
+                      <th className="text-left p-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {contractors.map((c: any) => (
+                      <tr key={c.id} className="border-t border-border hover:bg-accent/30 transition">
+                        <td className="p-4">
+                          <div className="font-medium">{c.name}</div>
+                          {c.phone && (
+                            <a href={`tel:${c.phone}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-0.5">
+                              <Phone className="h-3 w-3" />{c.phone}
+                            </a>
+                          )}
+                          {c.email && (
+                            <a href={`mailto:${c.email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-0.5">
+                              <Mail className="h-3 w-3" />{c.email}
+                            </a>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="text-sm">{c.trade_type || "—"}</div>
+                          {c.service_area && <div className="text-xs text-muted-foreground mt-0.5">{c.service_area}</div>}
+                        </td>
+                        <td className="p-4 text-sm">{c.years_experience || "—"}</td>
+                        <td className="p-4 text-sm font-mono">{c.license_number || "—"}</td>
+                        <td className="p-4">
+                          <div className="flex flex-col gap-1">
+                            {c.license_url && (
+                              <a href={c.license_url} target="_blank" rel="noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1">
+                                <DocLink className="h-3 w-3" /> License
+                              </a>
+                            )}
+                            {c.insurance_url && (
+                              <a href={c.insurance_url} target="_blank" rel="noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1">
+                                <DocLink className="h-3 w-3" /> COI
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge className={CONTRACTOR_STATUS_COLORS[c.status] || ""}>{c.status}</Badge>
+                        </td>
+                        <td className="p-4 text-sm text-muted-foreground">
+                          {new Date(c.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="p-4">
+                          {c.status !== "approved" && (
+                            <button
+                              onClick={() => updateStatus(c.id, "approved")}
+                              disabled={updatingContractor === c.id}
+                              className="flex items-center gap-1 text-xs text-green-400 hover:text-green-300 disabled:opacity-50 mb-1"
+                            >
+                              <CheckCircle className="h-3.5 w-3.5" /> Approve
+                            </button>
+                          )}
+                          {c.status !== "pending_docs" && c.status !== "approved" && (
+                            <button
+                              onClick={() => updateStatus(c.id, "pending_docs")}
+                              disabled={updatingContractor === c.id}
+                              className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 disabled:opacity-50 mb-1"
+                            >
+                              <Clock className="h-3.5 w-3.5" /> Needs docs
+                            </button>
+                          )}
+                          {c.status !== "rejected" && (
+                            <button
+                              onClick={() => updateStatus(c.id, "rejected")}
+                              disabled={updatingContractor === c.id}
+                              className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
+                            >
+                              <XCircle className="h-3.5 w-3.5" /> Reject
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
       </Tabs>
     </div>
   );
