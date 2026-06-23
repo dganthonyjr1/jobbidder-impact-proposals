@@ -5,9 +5,9 @@ CREATE TABLE IF NOT EXISTS photo_enhancements (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   enhancement_type TEXT NOT NULL CHECK (enhancement_type IN (
     'enhance', 'damage-assessment', 'auto-tag', 'auto-describe', 
-    'upscale', 'background-removal', 'color-correction'
+    'upscale', 'background-removal', 'color-correction', 'detailed-report', 'proposal-generation'
   )),
-  provider TEXT NOT NULL CHECK (provider IN ('openai', 'claude', 'replicate')),
+  provider TEXT NOT NULL CHECK (provider IN ('openai', 'claude', 'replicate', 'chatgpt')),
   result JSONB,
   enhanced_image_url TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')),
@@ -24,6 +24,7 @@ CREATE INDEX IF NOT EXISTS photo_enhancements_user_idx ON photo_enhancements(use
 CREATE INDEX IF NOT EXISTS photo_enhancements_status_idx ON photo_enhancements(status);
 CREATE INDEX IF NOT EXISTS photo_enhancements_provider_idx ON photo_enhancements(provider);
 CREATE INDEX IF NOT EXISTS photo_enhancements_type_idx ON photo_enhancements(enhancement_type);
+CREATE INDEX IF NOT EXISTS photo_enhancements_created_at_idx ON photo_enhancements(created_at DESC);
 
 -- Enable Row Level Security
 ALTER TABLE photo_enhancements ENABLE ROW LEVEL SECURITY;

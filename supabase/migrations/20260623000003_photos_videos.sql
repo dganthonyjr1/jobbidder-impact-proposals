@@ -41,7 +41,7 @@ CREATE TABLE photos_videos (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   
-  CONSTRAINT valid_file_size CHECK (file_size > 0 AND file_size <= 104857600) -- 100MB max
+  CONSTRAINT valid_file_size CHECK (file_size > 0 AND file_size <= 943718400) -- 900MB max
 );
 
 -- Create indexes for faster queries

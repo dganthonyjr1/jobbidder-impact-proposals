@@ -130,10 +130,11 @@ export const verifyContractorDocument = createServerFn({ method: "POST" })
     // Create audit trail entry
     await supabaseAdmin.from("compliance_audit_trail").insert({
       contractor_id: document.contractor_id,
-      action: "document_verified",
+      event_type: "document_verified",
       document_type: document.document_type,
       status: verification_status,
       details: { document_id, extracted_data },
+      created_by: document.contractor_id,
     });
 
     return {
@@ -336,10 +337,11 @@ export const requestDocumentRenewal = createServerFn({ method: "POST" })
     // Create audit trail
     await supabaseAdmin.from("compliance_audit_trail").insert({
       contractor_id,
-      action: "renewal_requested",
+      event_type: "renewal_requested",
       document_type: document.document_type,
       status: "pending",
       details: { document_id, renewal_id: renewal.id },
+      created_by: contractor_id,
     });
 
     return {
