@@ -9,9 +9,9 @@ const LOGO_URL = "https://impact-proposals.lovable.app/__l5e/assets-v1/f69bfaf6-
 
 export function JobbidderLogo({ className = "", size = "md" }: Props) {
   const sizeClasses = {
-    sm: "h-8",
-    md: "h-12",
-    lg: "h-16",
+    sm: "h-6 sm:h-8",
+    md: "h-10 sm:h-12",
+    lg: "h-12 sm:h-16",
   };
 
   return (
