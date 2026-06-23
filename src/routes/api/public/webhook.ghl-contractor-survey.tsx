@@ -114,12 +114,15 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
 
           // Find or create contractor
           let contractorId: string;
-          const { data: existingContractor } = await supabaseAdmin
+          const { data: existingContractor, error: lookupError } = await supabaseAdmin
             .from("contractor_applications")
             .select("id")
             .eq("ghl_contact_id", contactId)
-            .single()
-            .catch(() => ({ data: null }));
+            .single();
+          
+          if (lookupError && lookupError.code !== "PGRST116") {
+            throw lookupError;
+          }
 
           if (existingContractor) {
             contractorId = existingContractor.id;
