@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Check, Sparkles } from "lucide-react";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -91,8 +92,8 @@ function PricingPage() {
     <div className="min-h-screen bg-background bg-hero">
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex flex-col leading-none">
-            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
+          <Link to="/">
+            <JobbidderLogo size="sm" />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-foreground transition">Pricing</Link>

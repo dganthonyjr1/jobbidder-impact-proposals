@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Check, X, Star, Phone, FileText, Clock, Zap, ArrowRight, TrendingDown, Shield, Mail, MessageSquare, Palette } from "lucide-react";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/why-jobbidder")({
   head: () => ({
@@ -225,8 +226,8 @@ function WhyJobbidderPage() {
       {/* ── Header ── */}
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex flex-col leading-none">
-            <span className="font-display font-bold text-lg sm:text-xl tracking-tight text-gradient-sia">Jobbidder</span>
+          <Link to="/">
+            <JobbidderLogo size="sm" />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
@@ -305,7 +306,7 @@ function WhyJobbidderPage() {
                         <span className="text-sm font-bold text-foreground">{c.price}</span>
                       ) : row.key === "setup" ? (
                         <span className="text-xs text-muted-foreground">{c.setup}</span>
-                      ) : c[row.key] ? (
+                      ) : c[row.key as keyof typeof c] ? (
                         <Check className="h-4 w-4 text-success mx-auto" />
                       ) : (
                         <X className="h-4 w-4 text-destructive mx-auto" />
@@ -334,170 +335,78 @@ function WhyJobbidderPage() {
               <div className="rounded-lg bg-primary/10 p-2 shrink-0">
                 <f.icon className="h-5 w-5 text-primary" />
               </div>
-              <span className="text-sm font-semibold text-foreground">{f.label}</span>
+              <span className="text-sm font-semibold">{f.label}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── The Math ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          <div>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
-              The math they <span className="text-gradient-sia">don't want you to see</span>
-            </h2>
-            <p className="mt-4 text-base sm:text-lg text-muted-foreground font-medium">
-              Three years of renting vs. owning. The numbers speak for themselves.
-            </p>
-
-            <div className="mt-10 space-y-6">
-              <div className="rounded-xl border border-border bg-card/40 p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-muted-foreground">Jobber over 3 years</span>
-                  <span className="text-lg font-bold text-destructive">$10,800</span>
+      {/* ── Cost Chart ── */}
+      <section className="bg-card/30 border-y border-border/40 py-16 sm:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
+                Stop <span className="text-destructive">bleeding money</span> on monthly fees
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                ServiceTitan and Jobber count on you paying them forever. Jobbidder Principal lets you own your software outright.
+              </p>
+              <div className="mt-8 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span className="text-sm font-medium">Save $11,000+ over 3 years vs ServiceTitan</span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">And you still write every estimate by hand.</p>
-              </div>
-
-              <div className="rounded-xl border border-border bg-card/40 p-5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-muted-foreground">ServiceTitan over 3 years</span>
-                  <span className="text-lg font-bold text-destructive">$18,000</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span className="text-sm font-medium">No per-user or per-tech fees</span>
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">Per technician. And you still write every estimate by hand.</p>
-              </div>
-
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-glow">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-primary">Jobbidder Principal — one time</span>
-                  <span className="text-2xl font-bold text-primary">$6,500</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-primary" />
+                  <span className="text-sm font-medium">Lifetime access to all future AI updates</span>
                 </div>
-                <p className="mt-1 text-xs text-primary/80 font-semibold">You never write another estimate again. Ever.</p>
               </div>
             </div>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card/40 p-6 sm:p-8 shadow-card">
-            <h3 className="font-display text-lg font-bold mb-6">3-year total cost</h3>
-            <CostChart />
-          </div>
-        </div>
-
-        {/* Materials savings */}
-        <div className="mt-16 sm:mt-24 rounded-2xl border border-border bg-card/30 p-6 sm:p-10">
-          <div className="grid lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <h3 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">
-                Your materials savings in <span className="text-gradient-sia">year one</span>
-              </h3>
-              <p className="mt-3 text-muted-foreground font-medium">
-                At 3 jobs per week, the wholesale vs. retail materials difference is massive — whether you pass savings to clients or keep them as margin.
-              </p>
-              <div className="mt-8 flex items-baseline gap-2">
-                <span className="font-display text-5xl sm:text-6xl font-bold text-primary">$234,000</span>
-                <span className="text-muted-foreground font-medium">saved in year one</span>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                Based on $1,500 average wholesale savings per job × 3 jobs/week × 52 weeks.
-              </p>
-            </div>
-            <div>
-              <SavingsChart />
+            <div className="rounded-2xl border border-border bg-background/50 p-6 shadow-2xl">
+              <CostChart />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Workflow Comparison ── */}
+      {/* ── Savings Area Chart ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
-            What happens when a client calls?
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-          {/* Competitor path */}
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-6 sm:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <X className="h-5 w-5 text-destructive" />
-              <span className="font-display font-bold text-lg text-destructive">Your competitor</span>
-            </div>
-            <div className="space-y-0">
-              {[
-                { icon: Phone, text: "Client calls, leaves voicemail or plays phone tag", time: "Day 1" },
-                { icon: FileText, text: "Contractor writes estimate in Word or spreadsheet", time: "Day 1-2" },
-                { icon: Clock, text: "Sends proposal 3 days later via email", time: "Day 3" },
-                { icon: X, text: "Client already hired someone else", time: "Day 4" },
-              ].map((step, i) => (
-                <div key={i} className="flex gap-4 pb-8 last:pb-0 relative">
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-full bg-destructive/10 p-2 shrink-0">
-                      <step.icon className="h-4 w-4 text-destructive" />
-                    </div>
-                    {i < 3 && <div className="w-px flex-1 bg-destructive/20 mt-2" />}
-                  </div>
-                  <div className="pb-2">
-                    <span className="text-xs font-bold text-destructive/70 uppercase tracking-wider">{step.time}</span>
-                    <p className="mt-1 text-sm font-medium text-foreground/80">{step.text}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="order-2 lg:order-1 rounded-2xl border border-border bg-background/50 p-6 shadow-2xl">
+            <SavingsChart />
           </div>
-
-          {/* Jobbidder path */}
-          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 sm:p-8 shadow-glow">
-            <div className="flex items-center gap-2 mb-6">
-              <Zap className="h-5 w-5 text-primary" />
-              <span className="font-display font-bold text-lg text-primary">You, with Jobbidder</span>
-            </div>
-            <div className="space-y-0">
-              {[
-                { icon: Phone, text: "AI answers the call, gathers job details via natural conversation", time: "Minute 0" },
-                { icon: Zap, text: "Proposal generated automatically with Good / Better / Best tiers", time: "Minute 1" },
-                { icon: Mail, text: "Client receives professional branded proposal before hanging up", time: "Minute 2" },
-                { icon: Shield, text: "Contractor closes the deal same day", time: "Same day" },
-              ].map((step, i) => (
-                <div key={i} className="flex gap-4 pb-8 last:pb-0 relative">
-                  <div className="flex flex-col items-center">
-                    <div className="rounded-full bg-primary/15 p-2 shrink-0">
-                      <step.icon className="h-4 w-4 text-primary" />
-                    </div>
-                    {i < 3 && <div className="w-px flex-1 bg-primary/25 mt-2" />}
-                  </div>
-                  <div className="pb-2">
-                    <span className="text-xs font-bold text-primary/80 uppercase tracking-wider">{step.time}</span>
-                    <p className="mt-1 text-sm font-medium text-foreground">{step.text}</p>
-                  </div>
-                </div>
-              ))}
+          <div className="order-1 lg:order-2">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
+              The <span className="text-success">Wholesale Edge</span>
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Jobbidder isn't just a proposal tool. It's a buying group. We use the collective power of our contractor network to get you wholesale pricing on materials.
+            </p>
+            <div className="mt-8 p-6 rounded-xl bg-primary/5 border border-primary/20">
+              <div className="text-3xl font-bold text-primary">$1,500</div>
+              <div className="text-sm font-medium text-muted-foreground mt-1">Average savings per job for a Journeyman contractor</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Testimonials ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
-            What contractors are <span className="text-gradient-sia">saying</span>
-          </h2>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24 border-t border-border/40">
+        <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((t) => (
-            <div key={t.name} className="rounded-2xl border border-border bg-card/40 p-6 sm:p-8 shadow-card flex flex-col">
-              <div className="flex gap-1 mb-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 text-primary fill-primary" />
-                ))}
+            <div key={t.name} className="flex flex-col gap-4">
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => <Star key={i} className="h-4 w-4 fill-primary text-primary" />)}
               </div>
-              <p className="text-sm font-medium text-foreground/90 leading-relaxed flex-1">"{t.quote}"</p>
-              <div className="mt-6 pt-6 border-t border-border/40">
-                <p className="text-sm font-bold text-foreground">{t.name}</p>
-                <p className="text-xs text-muted-foreground font-medium">{t.role}</p>
+              <p className="text-lg font-medium italic leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
+              <div>
+                <div className="font-bold">{t.name}</div>
+                <div className="text-sm text-muted-foreground">{t.role}</div>
               </div>
             </div>
           ))}
@@ -505,36 +414,43 @@ function WhyJobbidderPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="rounded-3xl border border-primary/20 bg-primary/5 p-8 sm:p-12 md:p-16 text-center shadow-glow relative overflow-hidden">
-          <div className="absolute inset-0 bg-hero opacity-40" />
-          <div className="relative">
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter max-w-3xl mx-auto">
-              Stop renting tools that don't work.
-              <br />
-              <span className="text-gradient-sia">Own the system that pays for itself.</span>
-            </h2>
-            <p className="mt-6 text-base sm:text-lg text-muted-foreground font-medium max-w-xl mx-auto">
-              Start your free trial today. No credit card required. Your first proposal is on us.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-              <Button asChild size="lg" className="text-lg px-8">
-                <Link to="/login">Get started free <ArrowRight className="ml-2 h-5 w-5" /></Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link to="/pricing">View pricing</Link>
-              </Button>
-            </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+        <div className="rounded-3xl bg-gradient-to-b from-primary/20 to-background border border-primary/20 p-8 sm:p-16 text-center">
+          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tighter">
+            Ready to build your <span className="text-gradient-sia">money machine?</span>
+          </h2>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+            Stop renting. Start owning. Join the network of contractors who are using AI to win more work, everywhere.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            <Button asChild size="lg" className="px-12">
+              <Link to="/login">Start for free</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="px-12">
+              <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer">Contact Agency</a>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-border/40 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Jobbidder · A product of{" "}
-        <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
-          Sudden Impact Agency
-        </a>
+      <footer className="border-t border-border/40 py-12 text-center text-xs text-muted-foreground">
+        <div className="flex justify-center mb-8">
+          <JobbidderLogo size="sm" />
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-sm font-medium">
+          <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
+          <Link to="/why-jobbidder" className="hover:text-foreground transition">Why Jobbidder</Link>
+          <Link to="/contractor-apply" className="hover:text-foreground transition">For Contractors</Link>
+          <Link to="/login" className="hover:text-foreground transition">Sign in</Link>
+          <Link to="/privacy" className="hover:text-foreground transition">Privacy</Link>
+          <Link to="/terms" className="hover:text-foreground transition">Terms</Link>
+        </div>
+        <p>© {new Date().getFullYear()} Jobbidder · A product of{" "}
+          <a href="https://suddenimpactagency.io" target="_blank" rel="noreferrer" className="text-foreground/80 hover:text-primary transition">
+            Sudden Impact Agency
+          </a>
+        </p>
       </footer>
     </div>
   );

@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-
-const SIA_LOGO = "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/S1DwV6RpRVZL2ZtYEo16/media/689ba94c7b7578a4c3bbeead.jpeg";
+import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — Jobbidder" }] }),
@@ -71,11 +70,11 @@ function LoginPage() {
   return (
     <div className="min-h-screen bg-background bg-hero flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex flex-col leading-none">
-            <span className="font-display font-bold text-xl">Jobbidder</span>
-          </div>
-        </Link>
+        <div className="flex justify-center mb-8">
+          <Link to="/">
+            <JobbidderLogo />
+          </Link>
+        </div>
         <Card className="p-8 bg-card border-border shadow-card">
           <h1 className="font-display text-2xl font-semibold mb-1">
             {mode === "signin" ? "Welcome back" : "Create your account"}
