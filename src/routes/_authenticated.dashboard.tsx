@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, ExternalLink as DocLink } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -420,13 +420,13 @@ function Dashboard() {
                             {c.license_url && (
                               <a href={c.license_url} target="_blank" rel="noreferrer"
                                 className="text-xs text-primary hover:underline flex items-center gap-1">
-                                <DocLink className="h-3 w-3" /> License
+                                <ExternalLink className="h-3 w-3" /> License
                               </a>
                             )}
                             {c.insurance_url && (
                               <a href={c.insurance_url} target="_blank" rel="noreferrer"
                                 className="text-xs text-primary hover:underline flex items-center gap-1">
-                                <DocLink className="h-3 w-3" /> COI
+                                <ExternalLink className="h-3 w-3" /> COI
                               </a>
                             )}
                           </div>
