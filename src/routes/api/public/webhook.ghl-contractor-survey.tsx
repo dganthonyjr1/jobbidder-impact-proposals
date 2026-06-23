@@ -264,11 +264,18 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
                   tags: ["jobbidder", "ngs-survey", `score-${scoringResult.status.toLowerCase()}`],
                   credentials: ghlCredentials,
                 });
+                
+                // Log SMS result but don't fail the webhook
+                if (!smsResult.ok) {
+                  console.warn("[webhook.ghl-contractor-survey] SMS send failed (non-critical):", smsResult.error || smsResult.message);
+                }
               }
             } catch (smsError) {
-              console.error("[webhook.ghl-contractor-survey] SMS send failed:", smsError);
-              smsResult = { error: smsError instanceof Error ? smsError.message : "Unknown error" };
+              console.warn("[webhook.ghl-contractor-survey] SMS send error (non-critical):", smsError);
+              smsResult = { skipped: true, reason: smsError instanceof Error ? smsError.message : "Unknown error" };
             }
+          } else {
+            smsResult = { skipped: true, reason: "No phone number provided" };
           }
 
           return Response.json(
