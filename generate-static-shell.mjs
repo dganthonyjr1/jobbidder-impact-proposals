@@ -12,7 +12,7 @@ try {
   }
 } catch {}
 
-const baseUrl = 'https://dganthonyjr1.github.io/bidpilot-impact-proposals/';
+const baseUrl = 'https://dganthonyjr1.github.io/jobbidder-impact-proposals/';
 const response = await server.fetch(new Request(baseUrl), env, {});
 let html = await response.text();
 if (!response.ok) {
