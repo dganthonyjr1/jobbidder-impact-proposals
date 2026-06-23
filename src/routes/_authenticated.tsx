@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated")({
     const email = data.session.user.email;
     if (!isAdminEmail(email)) {
       await supabase.auth.signOut();
-      throw redirect({ to: "/login", search: { error: "access_denied" } });
+      throw redirect({ to: "/login" });
     }
   },
   component: AuthLayout,

@@ -11,15 +11,11 @@ import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — Jobbidder" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({
-    error: typeof s.error === "string" ? s.error : "",
-  }),
   component: LoginPage,
 });
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { error: urlError } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
