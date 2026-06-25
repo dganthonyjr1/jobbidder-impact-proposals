@@ -1,23 +1,24 @@
 /**
  * ============================================================================
- * JOBBIDDER.IO - PROPRIETARY AND CONFIDENTIAL
- * Document Verification System - OCR & Compliance Checking
- * Protected by U.S. Patent Application (Provisional) - June 23, 2026
+ * JOBBIDDER.IO — Contractor Document Verification
+ * Server functions for AI-powered credential checking
  * ============================================================================
  */
 
 import { createServerFn } from "@tanstack/start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
+import { extractDocumentData, determineVerificationStatus, type DocType } from "./document-ai.server";
+import { sendSmsViaGHL } from "./ghl.server";
 
-export type DocumentType = "license" | "liability_insurance" | "workers_comp" | "surety_bond";
+export type DocumentType = DocType;
 
 export type DocumentVerification = {
   document_id: string;
   contractor_id: string;
   document_type: DocumentType;
   file_url: string;
-  status: "pending" | "verified" | "expired" | "invalid";
+  status: "pending" | "ai_extracted" | "verified" | "expired" | "invalid" | "needs_review";
   extracted_data: Record<string, any>;
   expiration_date: string | null;
   verified_by: string | null;
@@ -25,372 +26,243 @@ export type DocumentVerification = {
   created_at: string;
 };
 
-/**
- * Upload contractor document
- * Handles file upload and OCR processing
- */
+/** Register a newly-uploaded document and trigger AI extraction. */
 export const uploadContractorDocument = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z
-      .object({
-        contractor_id: z.string().uuid(),
-        document_type: z.enum(["license", "liability_insurance", "workers_comp", "surety_bond"]),
-        file_url: z.string().url(),
-        file_name: z.string(),
-      })
-      .parse(input)
+    z.object({
+      contractor_id: z.string().uuid(),
+      document_type: z.enum([
+        "license", "gc_license", "electrical_license", "plumbing_license",
+        "roofing_license", "specialty_license",
+        "liability_insurance", "workers_comp", "surety_bond",
+      ]),
+      file_url: z.string().url(),
+      file_name: z.string(),
+      file_mime: z.string().default("application/octet-stream"),
+    }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { contractor_id, document_type, file_url, file_name } = input;
+    const { contractor_id, document_type, file_url, file_name, file_mime } = input;
 
-    // Create document record
-    const { data: document, error: doc_error } = await supabaseAdmin
+    // Run AI extraction immediately (sync for simplicity; move to queue for scale)
+    const extracted = await extractDocumentData(file_url, document_type as DocType, file_mime);
+    const status = determineVerificationStatus(extracted, document_type as DocType);
+
+    const { data: doc, error } = await supabaseAdmin
       .from("contractor_documents")
       .insert({
         contractor_id,
         document_type,
         file_url,
         file_name,
-        status: "pending",
-        extracted_data: {},
+        file_mime,
+        status,
+        extracted_data: extracted as any,
+        ai_confidence: extracted.confidence,
+        expiration_date: extracted.expiration_date ?? null,
+        coverage_amount: extracted.coverage_amount ?? null,
+        license_number: extracted.license_number ?? null,
+        issuer_name: extracted.issuer_name ?? null,
+        holder_name: extracted.holder_name ?? null,
+        state_code: extracted.state_code ?? null,
       })
       .select()
       .single();
 
-    if (doc_error) throw new Error(`Document upload failed: ${doc_error.message}`);
+    if (error) throw new Error(`Document upload failed: ${error.message}`);
 
-    // TODO: Trigger OCR processing (async job)
-    // await triggerOCRProcessing(document.id, file_url);
+    // Compliance audit trail
+    await supabaseAdmin.from("compliance_audit_trail").insert({
+      contractor_id,
+      event_type: "document_uploaded",
+      document_type: document_type === "liability_insurance" ? "coi" : document_type as any,
+      status: status as any,
+      details: { document_id: doc.id, ai_confidence: extracted.confidence, file_name },
+      created_by: contractor_id,
+    }).catch(() => { /* audit trail is best-effort */ });
 
     return {
-      document_id: document.id,
-      status: "pending",
-      message: "Document uploaded and queued for verification",
+      document_id: doc.id,
+      status,
+      ai_confidence: extracted.confidence,
+      message: status === "needs_review"
+        ? "Document uploaded — queued for manual review"
+        : `Document uploaded and ${status === "ai_extracted" ? "auto-verified by AI" : status}`,
     };
   });
 
-/**
- * Verify contractor document
- * Checks expiration, coverage limits, and validity
- */
-export const verifyContractorDocument = createServerFn({ method: "POST" })
+/** Admin: manually approve or reject a document after reviewing AI extraction. */
+export const adminVerifyDocument = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z
-      .object({
-        document_id: z.string().uuid(),
-        extracted_data: z.record(z.any()),
-      })
-      .parse(input)
+    z.object({
+      document_id: z.string().uuid(),
+      verdict: z.enum(["verified", "invalid", "needs_review"]),
+      notes: z.string().optional(),
+    }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { document_id, extracted_data } = input;
+    const { document_id, verdict, notes } = input;
 
-    // Get document
-    const { data: document, error: doc_error } = await supabaseAdmin
+    const { data: doc, error: fetchErr } = await supabaseAdmin
       .from("contractor_documents")
-      .select("*")
+      .select("contractor_id, document_type")
       .eq("id", document_id)
       .single();
 
-    if (doc_error) throw new Error("Document not found");
+    if (fetchErr) throw new Error("Document not found");
 
-    // Verify based on document type
-    let verification_status = "pending";
-    let expiration_date = null;
-
-    if (document.document_type === "license") {
-      verification_status = await verifyLicense(extracted_data);
-      expiration_date = extracted_data.expiration_date;
-    } else if (document.document_type === "liability_insurance") {
-      verification_status = await verifyLiabilityInsurance(extracted_data);
-      expiration_date = extracted_data.policy_expiration;
-    } else if (document.document_type === "workers_comp") {
-      verification_status = await verifyWorkersComp(extracted_data);
-      expiration_date = extracted_data.coverage_expiration;
-    } else if (document.document_type === "surety_bond") {
-      verification_status = await verifySuretyBond(extracted_data);
-      expiration_date = extracted_data.bond_expiration;
-    }
-
-    // Update document record
-    const { data: updated_doc, error: update_error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("contractor_documents")
       .update({
-        status: verification_status,
-        extracted_data,
-        expiration_date,
+        status: verdict,
+        notes: notes ?? null,
         verified_at: new Date().toISOString(),
       })
-      .eq("id", document_id)
-      .select()
-      .single();
+      .eq("id", document_id);
 
-    if (update_error) throw new Error("Failed to update document");
+    if (error) throw new Error("Failed to update document");
 
-    // Create audit trail entry
     await supabaseAdmin.from("compliance_audit_trail").insert({
-      contractor_id: document.contractor_id,
-      event_type: "document_verified",
-      document_type: document.document_type,
-      status: verification_status,
-      details: { document_id, extracted_data },
-      created_by: document.contractor_id,
-    });
+      contractor_id: doc.contractor_id,
+      event_type: verdict === "verified" ? "document_verified" : "compliance_check_failed",
+      document_type: doc.document_type as any,
+      status: verdict as any,
+      details: { document_id, notes },
+      created_by: doc.contractor_id,
+    }).catch(() => {});
 
-    return {
-      document_id,
-      status: verification_status,
-      expiration_date,
-      message: `Document ${verification_status}`,
-    };
+    return { document_id, status: verdict };
   });
 
-/**
- * Verify contractor license
- * Checks license number, state, and expiration
- */
-async function verifyLicense(data: Record<string, any>): Promise<string> {
-  const { license_number, state, expiration_date } = data;
-
-  if (!license_number || !state) return "invalid";
-
-  if (expiration_date) {
-    const exp_date = new Date(expiration_date);
-    if (exp_date < new Date()) return "expired";
-  }
-
-  // TODO: Check against state licensing board database
-  return "verified";
-}
-
-/**
- * Verify liability insurance
- * Checks coverage limits and expiration
- */
-async function verifyLiabilityInsurance(data: Record<string, any>): Promise<string> {
-  const { policy_number, coverage_limit, policy_expiration } = data;
-
-  if (!policy_number || !coverage_limit) return "invalid";
-
-  // Check minimum coverage (typically $1M for commercial glazing)
-  const coverage = parseInt(String(coverage_limit).replace(/[^0-9]/g, ""));
-  if (coverage < 1000000) return "invalid";
-
-  if (policy_expiration) {
-    const exp_date = new Date(policy_expiration);
-    if (exp_date < new Date()) return "expired";
-  }
-
-  // TODO: Verify with insurance provider
-  return "verified";
-}
-
-/**
- * Verify workers' compensation insurance
- * Checks coverage and expiration
- */
-async function verifyWorkersComp(data: Record<string, any>): Promise<string> {
-  const { policy_number, coverage_expiration } = data;
-
-  if (!policy_number) return "invalid";
-
-  if (coverage_expiration) {
-    const exp_date = new Date(coverage_expiration);
-    if (exp_date < new Date()) return "expired";
-  }
-
-  // TODO: Verify with insurance provider
-  return "verified";
-}
-
-/**
- * Verify surety bond
- * Checks bond amount and expiration
- */
-async function verifySuretyBond(data: Record<string, any>): Promise<string> {
-  const { bond_number, bond_amount, bond_expiration } = data;
-
-  if (!bond_number || !bond_amount) return "invalid";
-
-  // Check minimum bond amount (typically $50K-$100K)
-  const amount = parseInt(String(bond_amount).replace(/[^0-9]/g, ""));
-  if (amount < 50000) return "invalid";
-
-  if (bond_expiration) {
-    const exp_date = new Date(bond_expiration);
-    if (exp_date < new Date()) return "expired";
-  }
-
-  // TODO: Verify with bond issuer
-  return "verified";
-}
-
-/**
- * Get contractor documents
- * Returns all documents for a contractor
- */
+/** Get all documents for a contractor. */
 export const getContractorDocuments = createServerFn({ method: "GET" })
   .inputValidator((input) =>
-    z
-      .object({
-        contractor_id: z.string().uuid(),
-      })
-      .parse(input)
+    z.object({ contractor_id: z.string().uuid() }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { contractor_id } = input;
-
     const { data: documents, error } = await supabaseAdmin
       .from("contractor_documents")
       .select("*")
-      .eq("contractor_id", contractor_id)
+      .eq("contractor_id", input.contractor_id)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Failed to fetch documents");
-
-    return {
-      contractor_id,
-      documents,
-      total: documents.length,
-    };
+    return { contractor_id: input.contractor_id, documents: documents ?? [], total: documents?.length ?? 0 };
   });
 
-/**
- * Check document expiration
- * Returns documents expiring soon
- */
+/** Get all contractors with their compliance roll-up for the admin dashboard. */
+export const getAllContractorsWithCompliance = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data: contractors, error } = await supabaseAdmin
+      .from("contractor_applications")
+      .select(`
+        id, name, phone, email, trade_type, service_area, status, created_at,
+        qualification_status, qualification_score,
+        contractor_documents ( id, document_type, status, expiration_date, holder_name, license_number, issuer_name, coverage_amount, ai_confidence, file_url, file_name, notes, verified_at, extracted_data )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(`Failed to fetch contractors: ${error.message}`);
+    return contractors ?? [];
+  });
+
+/** Get documents expiring within N days across all contractors. */
 export const checkExpiringDocuments = createServerFn({ method: "GET" })
   .inputValidator((input) =>
-    z
-      .object({
-        contractor_id: z.string().uuid(),
-        days_until_expiration: z.number().default(30),
-      })
-      .parse(input)
+    z.object({
+      contractor_id: z.string().uuid().optional(),
+      days_until_expiration: z.number().default(30),
+    }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { contractor_id, days_until_expiration } = input;
+    const threshold = new Date(Date.now() + input.days_until_expiration * 86_400_000).toISOString();
 
-    const expiration_threshold = new Date(
-      Date.now() + days_until_expiration * 24 * 60 * 60 * 1000
-    ).toISOString();
-
-    const { data: documents, error } = await supabaseAdmin
+    let q = supabaseAdmin
       .from("contractor_documents")
-      .select("*")
-      .eq("contractor_id", contractor_id)
-      .lte("expiration_date", expiration_threshold)
+      .select("*, contractor_applications(name, phone, email)")
+      .lte("expiration_date", threshold)
       .gte("expiration_date", new Date().toISOString())
       .order("expiration_date", { ascending: true });
 
-    if (error) throw new Error("Failed to fetch expiring documents");
+    if (input.contractor_id) q = q.eq("contractor_id", input.contractor_id);
 
-    return {
-      contractor_id,
-      expiring_documents: documents,
-      total: documents.length,
-    };
+    const { data: documents, error } = await q;
+    if (error) throw new Error("Failed to fetch expiring documents");
+    return { expiring_documents: documents ?? [], total: documents?.length ?? 0 };
   });
 
-/**
- * Request document renewal
- * Sends notification to contractor to renew document
- */
+/** Send an SMS to a contractor asking them to re-upload an expiring/expired document. */
 export const requestDocumentRenewal = createServerFn({ method: "POST" })
   .inputValidator((input) =>
-    z
-      .object({
-        document_id: z.string().uuid(),
-        contractor_id: z.string().uuid(),
-      })
-      .parse(input)
+    z.object({
+      document_id: z.string().uuid(),
+      contractor_id: z.string().uuid(),
+    }).parse(input)
   )
   .handler(async ({ input }) => {
     const { document_id, contractor_id } = input;
 
-    // Get document
-    const { data: document, error: doc_error } = await supabaseAdmin
-      .from("contractor_documents")
-      .select("*")
-      .eq("id", document_id)
-      .single();
+    const [{ data: doc }, { data: contractor }] = await Promise.all([
+      supabaseAdmin.from("contractor_documents").select("document_type").eq("id", document_id).single(),
+      supabaseAdmin.from("contractor_applications").select("name, phone").eq("id", contractor_id).single(),
+    ]);
 
-    if (doc_error) throw new Error("Document not found");
+    if (!doc) throw new Error("Document not found");
+    if (!contractor?.phone) throw new Error("Contractor phone not found");
 
-    // Create renewal request
-    const { data: renewal, error: renewal_error } = await supabaseAdmin
+    const siteUrl = process.env.VITE_SITE_URL ?? "https://jobbidder.io";
+    const msg = `Hi ${contractor.name ?? "there"}! Your ${doc.document_type.replace(/_/g, " ")} on file with NGS is expiring or needs renewal. Please re-upload at: ${siteUrl}/contractor-apply`;
+
+    let smsSent = false;
+    try {
+      await sendSmsViaGHL(
+        { apiToken: process.env.GHL_API_TOKEN!, locationId: process.env.GHL_LOCATION_ID!, fromNumber: process.env.GHL_FROM_NUMBER! },
+        contractor.phone,
+        msg
+      );
+      smsSent = true;
+    } catch { /* log but don't throw — renewal request still recorded */ }
+
+    const { data: renewal } = await supabaseAdmin
       .from("document_renewal_requests")
-      .insert({
-        document_id,
-        contractor_id,
-        document_type: document.document_type,
-        requested_at: new Date().toISOString(),
-        status: "pending",
-      })
+      .insert({ document_id, contractor_id, document_type: doc.document_type, sms_sent: smsSent })
       .select()
       .single();
 
-    if (renewal_error) throw new Error("Failed to create renewal request");
-
-    // TODO: Send SMS/email notification to contractor
-
-    // Create audit trail
     await supabaseAdmin.from("compliance_audit_trail").insert({
       contractor_id,
       event_type: "renewal_requested",
-      document_type: document.document_type,
+      document_type: doc.document_type as any,
       status: "pending",
-      details: { document_id, renewal_id: renewal.id },
+      details: { document_id, renewal_id: renewal?.id, sms_sent: smsSent },
       created_by: contractor_id,
-    });
+    }).catch(() => {});
 
-    return {
-      renewal_id: renewal.id,
-      document_id,
-      status: "pending",
-      message: "Renewal request sent to contractor",
-    };
+    return { renewal_id: renewal?.id, sms_sent: smsSent, message: "Renewal request created" };
   });
 
-/**
- * Get compliance status for contractor
- * Returns overall compliance status and expiring documents
- */
+/** Compliance roll-up for a single contractor. */
 export const getContractorComplianceStatus = createServerFn({ method: "GET" })
   .inputValidator((input) =>
-    z
-      .object({
-        contractor_id: z.string().uuid(),
-      })
-      .parse(input)
+    z.object({ contractor_id: z.string().uuid() }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { contractor_id } = input;
-
-    // Get all documents
-    const { data: documents, error: doc_error } = await supabaseAdmin
+    const { data: documents } = await supabaseAdmin
       .from("contractor_documents")
       .select("*")
-      .eq("contractor_id", contractor_id);
+      .eq("contractor_id", input.contractor_id);
 
-    if (doc_error) throw new Error("Failed to fetch documents");
+    const docs = documents ?? [];
+    const verified = docs.filter((d) => d.status === "verified").length;
+    const expired  = docs.filter((d) => d.status === "expired").length;
+    const invalid  = docs.filter((d) => d.status === "invalid").length;
+    const pending  = docs.filter((d) => d.status === "pending" || d.status === "needs_review").length;
 
-    // Calculate compliance status
-    const verified_count = documents.filter((d) => d.status === "verified").length;
-    const expired_count = documents.filter((d) => d.status === "expired").length;
-    const invalid_count = documents.filter((d) => d.status === "invalid").length;
+    const overall_status =
+      docs.length === 0            ? "incomplete"
+      : expired > 0 || invalid > 0 ? "non_compliant"
+      : pending > 0                 ? "pending"
+      : "compliant";
 
-    let overall_status = "compliant";
-    if (expired_count > 0 || invalid_count > 0) overall_status = "non_compliant";
-    if (documents.length === 0) overall_status = "incomplete";
-
-    return {
-      contractor_id,
-      overall_status,
-      verified: verified_count,
-      expired: expired_count,
-      invalid: invalid_count,
-      total: documents.length,
-      documents,
-    };
+    return { contractor_id: input.contractor_id, overall_status, verified, expired, invalid, pending, total: docs.length, documents: docs };
   });

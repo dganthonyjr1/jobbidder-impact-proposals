@@ -50,7 +50,19 @@ import { Route as ContractorApplyRouteImport } from './routes/contractor-apply'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
 import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
 import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
+import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
+import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/api/public/webhook.ghl-voice-prequal'
 
+const AuthenticatedContractorVerificationRoute = AuthenticatedContractorVerificationRouteImport.update({
+  id: '/_authenticated/contractor-verification',
+  path: '/contractor-verification',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const ApiPublicWebhookGhlVoicePrequalRoute = ApiPublicWebhookGhlVoicePrequalRouteImport.update({
+  id: '/api/public/webhook/ghl-voice-prequal',
+  path: '/api/public/webhook/ghl-voice-prequal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
   path: '/why-jobbidder',
@@ -283,6 +295,8 @@ export interface FileRoutesByFullPath {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
+  '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
+  '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -325,6 +339,8 @@ export interface FileRoutesByTo {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
+  '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
+  '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -368,6 +384,8 @@ export interface FileRoutesById {
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
+  '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
+  '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -412,6 +430,8 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/settings'
     | '/contractor-search'
+    | '/contractor-verification'
+    | '/api/public/webhook/ghl-voice-prequal'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -454,6 +474,8 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/settings'
     | '/contractor-search'
+    | '/contractor-verification'
+    | '/api/public/webhook/ghl-voice-prequal'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -497,6 +519,8 @@ export interface FileRouteTypes {
     | '/_authenticated/ghl-setup'
     | '/_authenticated/settings'
     | '/_authenticated/contractor-search'
+    | '/_authenticated/contractor-verification'
+    | '/api/public/webhook/ghl-voice-prequal'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -563,6 +587,7 @@ export interface RootRouteChildren {
   ContractorApplyRoute: typeof ContractorApplyRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
+  ApiPublicWebhookGhlVoicePrequalRoute: typeof ApiPublicWebhookGhlVoicePrequalRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -678,6 +703,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/contractor-search'
       preLoaderRoute: typeof AuthenticatedContractorSearchRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/contractor-verification': {
+      id: '/_authenticated/contractor-verification'
+      path: '/contractor-verification'
+      fullPath: '/contractor-verification'
+      preLoaderRoute: typeof AuthenticatedContractorVerificationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/api/public/webhook/ghl-voice-prequal': {
+      id: '/api/public/webhook/ghl-voice-prequal'
+      path: '/api/public/webhook/ghl-voice-prequal'
+      fullPath: '/api/public/webhook/ghl-voice-prequal'
+      preLoaderRoute: typeof ApiPublicWebhookGhlVoicePrequalRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/ghl-setup': {
       id: '/_authenticated/ghl-setup'
@@ -862,6 +901,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
+  AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
 
@@ -870,6 +910,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
+  AuthenticatedContractorVerificationRoute: AuthenticatedContractorVerificationRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
 
@@ -914,6 +955,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContractorApplyRoute: ContractorApplyRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
+  ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

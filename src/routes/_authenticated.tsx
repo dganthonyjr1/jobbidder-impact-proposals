@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, FileText, Settings, LogOut, HardHat } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, HardHat, ShieldCheck } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 function isAdminEmail(email: string | undefined): boolean {
@@ -46,6 +46,7 @@ function AuthLayout() {
   const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { to: "/contractor-search", label: "Find Contractors", icon: HardHat },
+    { to: "/contractor-verification", label: "Verify Credentials", icon: ShieldCheck },
     { to: "/proposals/new", label: "New Proposal", icon: FileText },
     { to: "/settings", label: "Settings", icon: Settings },
   ] as const;
