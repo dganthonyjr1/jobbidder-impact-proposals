@@ -19,12 +19,35 @@ const ALLOWED_TYPES = new Set([
 ]);
 
 const TRADE_OPTIONS = [
-  "Glass Installation",
+  // ── Installation ──────────────────────────────────────────────────────────
+  "Window Film Installation",
   "Commercial Glazing",
-  "Residential Windows",
-  "Auto Glass",
+  "Glass Installation",
+  "Residential Windows & Doors",
+  "Storefront / Curtain Wall",
   "Shower / Bath Glass",
   "Mirror Installation",
+  "Auto Glass",
+  // ── Building Perimeter Hardening ──────────────────────────────────────────
+  "Building Perimeter Hardening",
+  "Security Film Installation",
+  "Blast-Resistant Glazing",
+  // ── Design ────────────────────────────────────────────────────────────────
+  "Glazing / Fenestration Design",
+  // ── Building Modeling / Energy Engineering ────────────────────────────────
+  "Building Energy Modeling",
+  "Energy Engineering",
+  // ── Sustainability ────────────────────────────────────────────────────────
+  "Sustainability / LEED Consulting",
+  // ── Production ────────────────────────────────────────────────────────────
+  "Glass Fabrication & Production",
+  // ── Project Management ────────────────────────────────────────────────────
+  "Project Management",
+  // ── National Retail Rollouts ──────────────────────────────────────────────
+  "National Retail Rollouts",
+  // ── Grant / Incentive Consulting ──────────────────────────────────────────
+  "Energy Grant / Incentive Consulting",
+  // ── General ───────────────────────────────────────────────────────────────
   "General Contracting",
   "Other",
 ];

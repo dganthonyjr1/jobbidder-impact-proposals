@@ -1,23 +1,23 @@
 /**
  * POST /api/public/contractor-recruit
  *
- * Intake webhook for contractor recruitment leads.
- * External systems (state licensing boards, referral networks, job boards)
- * POST contractor data here; the server validates eligibility, upserts a GHL
- * contact tagged for NGS glazing recruitment, triggers the hiring-agent
- * workflow, sends a personalized invite, and stores the outreach record.
+ * Intake webhook for NGS contractor recruitment leads.
+ * Covers every service niche on ngs.inc — trade type is auto-detected
+ * from keywords or can be pinned with the `niche` field.
  *
- * Authentication: Bearer token via CONTRACTOR_RECRUIT_API_KEY env var.
+ * Auth: Authorization: Bearer <CONTRACTOR_RECRUIT_API_KEY>
  *
- * Single recruit:
- *   POST /api/public/contractor-recruit
- *   Authorization: Bearer <CONTRACTOR_RECRUIT_API_KEY>
- *   { "name": "...", "phone": "...", "email": "...", "trade_type": "...", "service_state": "CA", "source": "licensing_board" }
+ * Single:
+ *   { "name": "...", "phone": "...", "trade_type": "Window Film Installer",
+ *     "service_state": "CA", "source": "licensing_board" }
  *
- * Bulk recruit (up to 50 per request):
- *   POST /api/public/contractor-recruit
- *   Authorization: Bearer <CONTRACTOR_RECRUIT_API_KEY>
- *   { "contractors": [ { ... }, { ... } ] }
+ * With explicit niche override:
+ *   { ..., "niche": "building-perimeter-hardening" }
+ *
+ * Bulk (≤50):
+ *   { "contractors": [ {...}, {...} ] }
+ *
+ * GET returns service info + full niche catalog.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
@@ -26,12 +26,14 @@ import {
   recruitContractor,
   bulkRecruitContractors,
   NGS_STATES,
+  NGS_SERVICE_NICHES,
+  NGS_NICHE_IDS,
 } from "@/lib/contractor-recruit.server";
 
 function cors(extra: Record<string, string> = {}) {
   return {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",
     ...extra,
   };
@@ -43,7 +45,7 @@ function unauthorized(msg = "Invalid or missing API key") {
 
 function verifyApiKey(request: Request): boolean {
   const apiKey = process.env.CONTRACTOR_RECRUIT_API_KEY;
-  if (!apiKey) return false; // key not configured → deny all
+  if (!apiKey) return false;
   const auth = request.headers.get("Authorization") || "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : auth.trim();
   return token === apiKey;
@@ -53,7 +55,9 @@ const SingleRecruit = z.object({
   name: z.string().trim().min(1).max(200),
   phone: z.string().trim().max(30).nullable().optional(),
   email: z.string().trim().email().max(254).nullable().optional(),
-  trade_type: z.string().trim().max(100).nullable().optional(),
+  trade_type: z.string().trim().max(150).nullable().optional(),
+  /** Optional explicit niche ID — auto-detected from trade_type if omitted */
+  niche: z.string().trim().max(80).nullable().optional(),
   service_state: z.string().trim().length(2).toUpperCase().nullable().optional(),
   source: z
     .enum(["api", "manual", "licensing_board", "referral"])
@@ -68,8 +72,6 @@ const BulkPayload = z.object({
   contractors: z.array(SingleRecruit).min(1).max(50),
 });
 
-const SinglePayload = SingleRecruit;
-
 export const Route = createFileRoute("/api/public/contractor-recruit")({
   server: {
     handlers: {
@@ -80,9 +82,19 @@ export const Route = createFileRoute("/api/public/contractor-recruit")({
           {
             service: "NGS Contractor Recruitment API",
             description:
-              "POST glazing contractor leads here to trigger outreach via the NGS hiring agent.",
+              "POST contractor leads here to trigger niche-specific outreach via the NGS hiring agent.",
             operating_states: NGS_STATES,
-            docs: "POST with { name, phone?, email?, trade_type, service_state, source? } or { contractors: [...] } for bulk.",
+            niches: NGS_SERVICE_NICHES.map((n) => ({
+              id: n.id,
+              label: n.label,
+              parent_service: n.parentService,
+              example_keywords: n.keywords.slice(0, 4),
+            })),
+            usage: {
+              single: "POST { name, phone?, email?, trade_type?, niche?, service_state, source? }",
+              bulk: "POST { contractors: [...] } — up to 50 per request",
+              auth: "Authorization: Bearer <CONTRACTOR_RECRUIT_API_KEY>",
+            },
           },
           { headers: cors() },
         ),
@@ -108,13 +120,15 @@ export const Route = createFileRoute("/api/public/contractor-recruit")({
         }
 
         // --- Single mode -----------------------------------------------------
-        const singleParse = SinglePayload.safeParse(body);
+        const singleParse = SingleRecruit.safeParse(body);
         if (!singleParse.success) {
           return Response.json(
             {
               ok: false,
               error: "Invalid payload",
               details: singleParse.error.flatten(),
+              hint: "Provide at least: name + (phone or email) + service_state. " +
+                    "Use niche field with one of: " + NGS_NICHE_IDS.join(", "),
             },
             { status: 400, headers: cors() },
           );
