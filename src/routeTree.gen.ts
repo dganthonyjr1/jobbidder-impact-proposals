@@ -49,6 +49,7 @@ import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './rou
 import { Route as ContractorApplyRouteImport } from './routes/contractor-apply'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
 import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
+import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
 
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
@@ -122,6 +123,11 @@ const EIdRoute = EIdRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedContractorSearchRoute = AuthenticatedContractorSearchRouteImport.update({
+  id: '/_authenticated/contractor-search',
+  path: '/contractor-search',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedGhlSetupRoute = AuthenticatedGhlSetupRouteImport.update({
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -402,6 +411,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/ghl-setup'
     | '/settings'
+    | '/contractor-search'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -443,6 +453,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/ghl-setup'
     | '/settings'
+    | '/contractor-search'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -485,6 +496,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/ghl-setup'
     | '/_authenticated/settings'
+    | '/_authenticated/contractor-search'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
@@ -658,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/contractor-search': {
+      id: '/_authenticated/contractor-search'
+      path: '/contractor-search'
+      fullPath: '/contractor-search'
+      preLoaderRoute: typeof AuthenticatedContractorSearchRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ghl-setup': {
@@ -842,6 +861,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
 
@@ -849,6 +869,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
 
