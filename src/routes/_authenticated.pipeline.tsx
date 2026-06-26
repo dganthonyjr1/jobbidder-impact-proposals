@@ -210,7 +210,7 @@ function NewDealModal({ onClose, onSave }: { onClose: () => void; onSave: (data:
         <div className="space-y-3">
           <div>
             <label className="text-sm font-medium">Company Name *</label>
-            <input className="w-full mt-1 px-3 py-2 rounded-md border border-border bg-background text-sm" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} placeholder="National Glass Solutions" />
+            <input className="w-full mt-1 px-3 py-2 rounded-md border border-border bg-background text-sm" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} placeholder="National Glazing Solutions Inc" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

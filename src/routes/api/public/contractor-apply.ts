@@ -80,7 +80,7 @@ export const Route = createFileRoute("/api/public/contractor-apply")({
         // Confirmation SMS to contractor (non-blocking)
         sendSmsViaGHL({
           to: input.phone,
-          body: `Hi ${firstName}! We received your contractor application and documents. Our team at National Glass Solutions will review everything and follow up with you shortly. Questions? Reply to this message.`,
+          body: `Hi ${firstName}! We received your contractor application and documents. Our team at National Glazing Solutions Inc will review everything and follow up with you shortly. Questions? Reply to this message.`,
           contactName: input.name,
           contactEmail: input.email || undefined,
         }).catch((e) => console.warn("[contractor-apply] confirmation SMS failed:", e?.message));

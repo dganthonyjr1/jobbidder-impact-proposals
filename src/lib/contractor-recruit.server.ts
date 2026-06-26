@@ -529,7 +529,7 @@ function buildSmsInvite(opts: {
 }): string {
   const { firstName, niche, state, applyUrl } = opts;
   return (
-    `Hi ${firstName}! NGS (National Glass Solutions) is hiring skilled contractors ` +
+    `Hi ${firstName}! NGS (National Glazing Solutions Inc) is hiring skilled contractors ` +
     `to ${niche.roleDescription} in ${state}. ` +
     `Join our network — apply in 2 min: ${applyUrl} ` +
     `Questions? Reply to this message.`
@@ -537,7 +537,7 @@ function buildSmsInvite(opts: {
 }
 
 function buildEmailSubject(opts: { niche: NgsNiche; state: string }): string {
-  return `${opts.niche.label} opportunity in ${opts.state} — National Glass Solutions`;
+  return `${opts.niche.label} opportunity in ${opts.state} — National Glazing Solutions Inc`;
 }
 
 function buildEmailText(opts: {
@@ -550,7 +550,7 @@ function buildEmailText(opts: {
   return [
     `Hi ${firstName},`,
     "",
-    `National Glass Solutions (NGS) is actively recruiting contractors to ${niche.roleDescription} in ${state}.`,
+    `National Glazing Solutions Inc (NGS) is actively recruiting contractors to ${niche.roleDescription} in ${state}.`,
     "",
     `NGS is a national leader in ${niche.parentService.toLowerCase()} services, serving commercial, ` +
       `government, retail, and residential clients across California, Nevada, Arizona, and Texas.`,
@@ -586,7 +586,7 @@ function buildInviteEmailHtml(opts: {
 <body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;color:#1a1a1a;background:#fff;">
 
   <div style="text-align:center;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #1d4ed8;">
-    <h1 style="font-size:24px;font-weight:700;color:#1d4ed8;margin:0 0 4px;">National Glass Solutions</h1>
+    <h1 style="font-size:24px;font-weight:700;color:#1d4ed8;margin:0 0 4px;">National Glazing Solutions Inc</h1>
     <p style="color:#64748b;font-size:13px;margin:0;">ngs.inc &nbsp;·&nbsp; Powered by <strong>Jobbidder.io</strong></p>
   </div>
 
@@ -625,7 +625,7 @@ function buildInviteEmailHtml(opts: {
 
   <hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0 16px;">
   <p style="font-size:11px;color:#94a3b8;text-align:center;line-height:1.6;">
-    National Glass Solutions (NGS) &nbsp;·&nbsp; ngs.inc &nbsp;·&nbsp; Jobbidder.io<br>
+    National Glazing Solutions Inc (NGS) &nbsp;·&nbsp; ngs.inc &nbsp;·&nbsp; Jobbidder.io<br>
     You received this because your license or profile matches our open <strong>${niche.label}</strong>
     contractor position in ${stateName}.
   </p>
