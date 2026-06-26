@@ -17,13 +17,22 @@ export const Route = createFileRoute("/why-jobbidder")({
 
 const competitors = [
   {
-    name: "Jobber",
-    price: "$300/mo",
+    name: "NetSuite",
+    price: "$2,499+/mo",
     ai: false,
     voice: false,
     wholesale: false,
     ownsData: false,
-    setup: "Manual estimates",
+    setup: "6–12 months",
+  },
+  {
+    name: "HubSpot",
+    price: "$800+/mo",
+    ai: false,
+    voice: false,
+    wholesale: false,
+    ownsData: false,
+    setup: "Months of config",
   },
   {
     name: "ServiceTitan",
@@ -35,22 +44,13 @@ const competitors = [
     setup: "Months to set up",
   },
   {
-    name: "Housecall Pro",
-    price: "$329/mo",
+    name: "Jobber",
+    price: "$300/mo",
     ai: false,
     voice: false,
     wholesale: false,
     ownsData: false,
     setup: "Manual estimates",
-  },
-  {
-    name: "Buildxact",
-    price: "$299/mo",
-    ai: false,
-    voice: false,
-    wholesale: false,
-    ownsData: false,
-    setup: "Upload blueprints manually",
   },
   {
     name: "Spreadsheets",
@@ -77,14 +77,14 @@ const jobbidderFeatures = [
 /* ── SVG Bar Chart: 3-year total cost ── */
 function CostChart() {
   const data = [
-    { label: "ServiceTitan", value: 18000, color: "#ef4444" },
-    { label: "Housecall Pro", value: 11844, color: "#f97316" },
+    { label: "NetSuite", value: 89964, color: "#dc2626" },
+    { label: "HubSpot", value: 28800, color: "#ef4444" },
+    { label: "ServiceTitan", value: 18000, color: "#f97316" },
     { label: "Jobber", value: 10800, color: "#eab308" },
-    { label: "Buildxact", value: 10764, color: "#84cc16" },
-    { label: "Jobbidder Journeyman", value: 10692, color: "#7c3aed" },
-    { label: "Jobbidder Principal", value: 6500, color: "#22d3ee" },
+    { label: "Jobbidder/yr", value: 3564, color: "#7c3aed" },
+    { label: "Jobbidder 1x", value: 6500, color: "#22d3ee" },
   ];
-  const max = 20000;
+  const max = 100000;
   const w = 640;
   const h = 320;
   const pad = { top: 24, right: 24, bottom: 64, left: 80 };
@@ -96,7 +96,7 @@ function CostChart() {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto" role="img" aria-label="3-year cost comparison chart">
       {/* Y-axis grid lines */}
-      {[0, 5000, 10000, 15000, 20000].map((tick) => {
+      {[0, 25000, 50000, 75000, 100000].map((tick) => {
         const y = pad.top + chartH - (tick / max) * chartH;
         return (
           <g key={tick}>
@@ -426,6 +426,94 @@ function WhyJobbidderPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── NetSuite & HubSpot Replacement Section ── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <div className="inline-flex items-center gap-2 rounded-full border border-destructive/30 bg-destructive/10 px-3 py-1 text-xs font-semibold text-destructive mb-6">
+            <X className="h-3 w-3" />
+            <span>Still paying for NetSuite + HubSpot?</span>
+          </div>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
+            Cancel both. <span className="text-gradient-sia">Jobbidder does it all</span> — built for contractors.
+          </h2>
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground font-medium">
+            NetSuite and HubSpot are generic enterprise tools that cost a fortune and require months to configure. Jobbidder was purpose-built for contractor recruitment, verification, and pipeline management — and it's live in 60 seconds.
+          </p>
+        </div>
+
+        <div className="overflow-x-auto -mx-4 px-4 mb-12">
+          <table className="w-full min-w-[700px] border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-4 px-4 text-xs font-bold text-muted-foreground uppercase tracking-wider w-48">Capability</th>
+                <th className="text-center py-4 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider min-w-[120px]">NetSuite</th>
+                <th className="text-center py-4 px-3 text-xs font-bold text-muted-foreground uppercase tracking-wider min-w-[120px]">HubSpot</th>
+                <th className="text-center py-4 px-3 text-xs font-bold text-primary uppercase tracking-wider min-w-[120px]">Jobbidder</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { label: "Monthly cost", netsuite: "$2,499+", hubspot: "$800+", jobbidder: "$297" },
+                { label: "Setup time", netsuite: "6–12 months", hubspot: "2–4 months", jobbidder: "60 seconds" },
+                { label: "Contractor pipeline / CRM", netsuite: "partial", hubspot: "generic", jobbidder: "✓ built-in" },
+                { label: "AI voice prequal calls", netsuite: "✗", hubspot: "✗", jobbidder: "✓ automated" },
+                { label: "License & insurance verification", netsuite: "✗", hubspot: "✗", jobbidder: "✓ AI-extracted" },
+                { label: "Document renewal alerts", netsuite: "✗", hubspot: "✗", jobbidder: "✓ automatic" },
+                { label: "Automated SMS/email outreach", netsuite: "✗", hubspot: "✓ (extra cost)", jobbidder: "✓ included" },
+                { label: "AI proposal generation", netsuite: "✗", hubspot: "✗", jobbidder: "✓ 60 seconds" },
+                { label: "Wholesale materials pricing", netsuite: "✗", hubspot: "✗", jobbidder: "✓ saves $1,500/job" },
+                { label: "Built for contractors", netsuite: "✗", hubspot: "✗", jobbidder: "✓ 100%" },
+              ].map((row) => (
+                <tr key={row.label} className="border-b border-border/60">
+                  <td className="py-3 px-4 text-sm font-semibold text-foreground">{row.label}</td>
+                  {[row.netsuite, row.hubspot].map((val, i) => (
+                    <td key={i} className="py-3 px-3 text-center">
+                      {val === "✗" ? (
+                        <X className="h-4 w-4 text-destructive mx-auto" />
+                      ) : val.startsWith("✓") ? (
+                        <span className="text-xs font-medium text-muted-foreground">{val}</span>
+                      ) : (
+                        <span className="text-sm font-bold text-foreground">{val}</span>
+                      )}
+                    </td>
+                  ))}
+                  <td className="py-3 px-3 text-center bg-primary/5">
+                    {row.jobbidder === "✗" ? (
+                      <X className="h-4 w-4 text-destructive mx-auto" />
+                    ) : row.jobbidder.startsWith("✓") ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <Check className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-xs font-semibold text-primary">{row.jobbidder.replace("✓ ", "")}</span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-bold text-primary">{row.jobbidder}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-6">
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">NetSuite does</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">General ERP, accounting, inventory — none of it built for recruiting or managing field contractors. You need a consultant just to set it up.</p>
+            <p className="mt-4 text-2xl font-bold text-destructive">$30,000+/yr</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">HubSpot does</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Generic contact management and email sequences. No contractor credentialing, no voice AI, no document verification. You'll spend weeks building custom workflows.</p>
+            <p className="mt-4 text-2xl font-bold text-destructive">$9,600+/yr</p>
+          </div>
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Jobbidder does</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Recruits, prequals, verifies, pipelines, and closes contractors — all automated. Plus AI proposals, wholesale pricing, and SMS outreach. Purpose-built for your business.</p>
+            <p className="mt-4 text-2xl font-bold text-primary">$3,564/yr — or own it forever</p>
           </div>
         </div>
       </section>
