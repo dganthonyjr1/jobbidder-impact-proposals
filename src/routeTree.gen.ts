@@ -26,6 +26,8 @@ import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe
 import { Route as EIdRouteImport } from './routes/e.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
+import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
+import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
@@ -141,6 +143,16 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuditTokenRoute = AuditTokenRouteImport.update({
+  id: '/audit/$token',
+  path: '/audit/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMediaUploadRoute =
   AuthenticatedMediaUploadRouteImport.update({
@@ -338,12 +350,14 @@ export interface FileRoutesByFullPath {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -387,12 +401,14 @@ export interface FileRoutesByTo {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -438,7 +454,9 @@ export interface FileRoutesById {
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
+  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/p/$id': typeof PIdRoute
@@ -489,12 +507,14 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
+    | '/affiliate'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
     | '/proposal/$id'
     | '/proposals/new'
+    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -538,6 +558,7 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
+    | '/affiliate'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -588,12 +609,15 @@ export interface FileRouteTypes {
     | '/_authenticated/ghl-setup'
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
+    | '/_authenticated/affiliate'
     | '/_authenticated/settings'
+    | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
     | '/p/$id'
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
+    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -635,6 +659,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
+  AuditTokenRoute: typeof AuditTokenRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
@@ -780,6 +805,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/pipeline'
       preLoaderRoute: typeof AuthenticatedPipelineRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/affiliate': {
+      id: '/_authenticated/affiliate'
+      path: '/affiliate'
+      fullPath: '/affiliate'
+      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/audit/$token': {
+      id: '/audit/$token'
+      path: '/audit/$token'
+      fullPath: '/audit/$token'
+      preLoaderRoute: typeof AuditTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/media-upload': {
       id: '/_authenticated/media-upload'
@@ -1010,6 +1049,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
+  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
@@ -1024,6 +1064,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
+  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
@@ -1048,6 +1089,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
+  AuditTokenRoute: AuditTokenRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
