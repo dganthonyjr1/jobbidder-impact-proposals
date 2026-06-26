@@ -314,7 +314,7 @@ function WhyJobbidderPage() {
                   ))}
                   <td className="py-4 px-3 text-center bg-primary/5">
                     {row.key === "price" ? (
-                      <span className="text-sm font-bold text-primary">Journeyman $297/mo · Principal $6,500 once</span>
+                      <span className="text-sm font-bold text-primary">Journeyman $297/mo · Principal $14,999 once</span>
                     ) : row.key === "setup" ? (
                       <span className="text-xs text-primary font-semibold">60 seconds</span>
                     ) : (
@@ -517,7 +517,7 @@ function WhyJobbidderPage() {
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
             <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Jobbidder does</p>
             <p className="text-sm text-muted-foreground leading-relaxed">Recruits, prequals, verifies, pipelines, and closes contractors — all automated. Plus AI proposals, wholesale pricing, and SMS outreach. Purpose-built for your business.</p>
-            <p className="mt-4 text-2xl font-bold text-primary">$3,564/yr — or own it forever</p>
+            <p className="mt-4 text-2xl font-bold text-primary">$3,564/yr — or own it for $14,999</p>
           </div>
         </div>
       </section>

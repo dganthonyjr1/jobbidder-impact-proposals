@@ -70,7 +70,7 @@ const tiers = [
   {
     name: "Principal",
     tagline: "Own it forever. The last tool you will ever buy.",
-    price: "$6,500",
+    price: "$14,999",
     period: "one-time",
     description: "For contractors who own their operation and never want to pay a monthly fee again. One payment. Lifetime access. You are the Principal.",
     features: [
