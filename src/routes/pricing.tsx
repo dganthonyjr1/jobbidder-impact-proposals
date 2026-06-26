@@ -63,6 +63,7 @@ const tiers = [
     features: [
       "Everything in Journeyman",
       "500 AI credits/mo included",
+      "$0.50 per credit after 500",
       "AI voice prequal calls (up to 15 min)",
       "License & insurance verification",
       "White-label branding",
@@ -85,6 +86,7 @@ const tiers = [
     features: [
       "Everything in Master GC",
       "2,000 AI credits/mo included",
+      "$0.50 per credit after 2,000",
       "Document renewal alerts",
       "Priority AI voice (enhanced model)",
       "All future features included",
@@ -208,7 +210,11 @@ function PricingPage() {
             <Zap className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
               <h3 className="font-bold text-base">How AI credits work</h3>
-              <p className="text-sm text-muted-foreground mt-0.5">One credit = one AI action. Credits refresh every billing cycle. Unused credits do not roll over.</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                One credit = one AI action. Your monthly allotment is included in the plan price.
+                Once you exceed your allotment, usage continues automatically at <strong className="text-foreground">$0.50 per credit</strong> — billed at the end of each cycle.
+                Credits refresh every billing cycle and unused credits do not roll over.
+              </p>
             </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -231,7 +237,8 @@ function PricingPage() {
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
             One complete contractor onboarding (outreach → prequal call → document verification → placement) uses approximately 5 credits.
-            Master GC (500 credits) supports ~100 contractor onboardings per month. Principal (2,000 credits) supports ~400.
+            Master GC (500 credits) supports ~100 onboardings/mo. Principal (2,000) supports ~400. Enterprise (10,000) supports ~2,000.
+            Need more? Usage continues automatically at $0.50/credit — no interruptions, no manual top-ups.
           </p>
         </div>
       </section>
@@ -262,7 +269,7 @@ function PricingPage() {
                 <span className="text-muted-foreground font-medium text-lg">/mo</span>
               </div>
               <p className="mt-1 text-sm font-semibold text-muted-foreground">
-                + $3,500 one-time setup fee · non-refundable · Unlimited AI credits (fair use)
+                + $3,500 one-time setup fee · non-refundable · 10,000 AI credits/mo included · $0.50/credit after
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 vs. $3,299+/mo for NetSuite + HubSpot combined — with none of the contractor-specific capabilities.
