@@ -515,9 +515,9 @@ function WhyJobbidderPage() {
             <p className="mt-4 text-2xl font-bold text-destructive">$9,600+/yr</p>
           </div>
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Jobbidder does</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">Recruits, prequals, verifies, pipelines, and closes contractors — all automated. Plus AI proposals, wholesale pricing, and SMS outreach. Purpose-built for your business.</p>
-            <p className="mt-4 text-2xl font-bold text-primary">$3,564/yr — or own it for $14,999</p>
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Jobbidder Enterprise does</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Recruits, prequals, verifies, pipelines, and closes contractors — all automated. Plus AI proposals, wholesale pricing, SMS outreach, and a full Kanban CRM. Purpose-built for your business.</p>
+            <p className="mt-4 text-2xl font-bold text-primary">$3,500/mo — replaces both</p>
           </div>
         </div>
       </section>
