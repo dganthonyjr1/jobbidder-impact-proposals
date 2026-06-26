@@ -81,8 +81,7 @@ function CostChart() {
     { label: "HubSpot", value: 28800, color: "#ef4444" },
     { label: "ServiceTitan", value: 18000, color: "#f97316" },
     { label: "Jobber", value: 10800, color: "#eab308" },
-    { label: "Jobbidder/yr", value: 3564, color: "#7c3aed" },
-    { label: "Jobbidder 1x", value: 6500, color: "#22d3ee" },
+    { label: "Housecall Pro", value: 11844, color: "#84cc16" },
   ];
   const max = 100000;
   const w = 640;
@@ -346,21 +345,26 @@ function WhyJobbidderPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 sm:gap-16 items-center">
           <div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tighter">
-              Stop bleeding cash to <span className="text-destructive">SaaS rent-seekers</span>
+              Look at what they're <span className="text-destructive">charging you every 3 years</span>
             </h2>
             <p className="mt-4 text-muted-foreground font-medium leading-relaxed">
-              ServiceTitan and Jobber thrive on your monthly fees. They want you to pay for life.
+              NetSuite alone costs nearly <strong>$90,000 over 3 years</strong> — and still can't recruit a single contractor or verify one license.
+              HubSpot adds another $29,000 for generic CRM that was never built for field operations.
               <br /><br />
-              Jobbidder is different. Our <strong>Principal</strong> plan is a one-time payment. You buy it once, you own it forever. No monthly fees, no price hikes, no bullshit.
+              These tools were designed for Fortune 500 companies. You're paying enterprise prices for a fraction of the value.
             </p>
-            <div className="mt-8 space-y-4">
+            <div className="mt-8 space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-destructive" />
-                <span className="text-sm font-semibold">Competitors: $10k+ every 3 years</span>
+                <div className="h-2 w-2 rounded-full bg-red-600" />
+                <span className="text-sm font-semibold">NetSuite: $89,964 over 3 years</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-primary" />
-                <span className="text-sm font-semibold">Jobbidder Principal: $6.5k total (Lifetime)</span>
+                <div className="h-2 w-2 rounded-full bg-red-400" />
+                <span className="text-sm font-semibold">HubSpot: $28,800 over 3 years</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-orange-400" />
+                <span className="text-sm font-semibold">ServiceTitan: $18,000 over 3 years</span>
               </div>
             </div>
           </div>
