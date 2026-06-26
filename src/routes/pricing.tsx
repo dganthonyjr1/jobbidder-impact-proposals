@@ -20,11 +20,12 @@ const tiers = [
     price: "$0",
     period: "/mo",
     setup: null,
-    description: "One AI proposal trial. No credit card, no commitment — just proof.",
+    description: "One complete AI experience — end to end. No credit card, no commitment. Just proof.",
     features: [
-      "1 proposal trial",
-      "AI-generated scope & labor",
+      "1 full AI intake call (up to 15 min)",
+      "1 AI-generated proposal",
       "Good / Better / Best tiers",
+      "SMS & email delivery",
       "Public share link",
     ],
     cta: "Start Free",
@@ -61,11 +62,13 @@ const tiers = [
     description: "For agencies and multi-contractor operations that need full control.",
     features: [
       "Everything in Journeyman",
+      "500 AI credits/mo included",
+      "AI voice prequal calls (up to 15 min)",
+      "License & insurance verification",
       "White-label branding",
       "Unlimited contractors",
-      "Priority support",
-      "Custom integrations",
       "Team management dashboard",
+      "Custom integrations",
     ],
     cta: "Go Master GC",
     href: "https://link.suddenimpactagency.io/payment-link/6a1b2f2703b17c94f5713b5b",
@@ -81,10 +84,12 @@ const tiers = [
     description: "For serious operations that demand the best tooling, fastest support, and every feature as it ships.",
     features: [
       "Everything in Master GC",
+      "2,000 AI credits/mo included",
+      "Document renewal alerts",
+      "Priority AI voice (enhanced model)",
       "All future features included",
       "Priority white-glove onboarding",
       "Dedicated support line",
-      "Direct line to the build team",
       "SLA guarantee",
     ],
     cta: "Become a Principal",
@@ -96,7 +101,7 @@ const tiers = [
 
 const enterpriseFeatures = [
   { icon: Users, label: "AI contractor recruitment pipeline", detail: "Auto-recruit, track, and stage contractors from lead to active" },
-  { icon: Phone, label: "Automated voice pre-qualification", detail: "AI calls prospects, qualifies them, and routes to your pipeline" },
+  { icon: Phone, label: "Automated voice pre-qualification", detail: "AI calls prospects up to 15 min, qualifies them, routes to pipeline" },
   { icon: ShieldCheck, label: "License & insurance verification", detail: "AI extracts and validates credentials from uploaded documents" },
   { icon: Kanban, label: "Kanban pipeline CRM", detail: "Replace HubSpot — full deal + contractor pipeline in one view" },
   { icon: Zap, label: "Document renewal alerts", detail: "Auto-notify contractors before licenses or insurance expires" },
@@ -196,6 +201,41 @@ function PricingPage() {
         </div>
       </section>
 
+      {/* ── Credit Breakdown ── */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="rounded-2xl border border-border bg-card/60 p-6 sm:p-8">
+          <div className="flex items-start gap-3 mb-6">
+            <Zap className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-base">How AI credits work</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">One credit = one AI action. Credits refresh every billing cycle. Unused credits do not roll over.</p>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[
+              { action: "AI voice prequal call", cost: "1 credit", detail: "Up to 15 minutes per call" },
+              { action: "AI document extraction", cost: "1 credit", detail: "License, insurance, workers comp, surety bond" },
+              { action: "AI proposal generation", cost: "1 credit", detail: "Full Good / Better / Best proposal" },
+              { action: "Automated SMS sequence", cost: "1 credit", detail: "Full multi-touch recruitment sequence" },
+              { action: "Contractor verification report", cost: "1 credit", detail: "Compiled compliance summary" },
+              { action: "Document renewal alert", cost: "1 credit", detail: "Auto-triggered 30/60/90 days before expiry" },
+            ].map((row) => (
+              <div key={row.action} className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background/60 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold">{row.action}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{row.detail}</p>
+                </div>
+                <span className="text-sm font-bold text-primary shrink-0">{row.cost}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            One complete contractor onboarding (outreach → prequal call → document verification → placement) uses approximately 5 credits.
+            Master GC (500 credits) supports ~100 contractor onboardings per month. Principal (2,000 credits) supports ~400.
+          </p>
+        </div>
+      </section>
+
       {/* ── Enterprise Tier ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/5 p-8 sm:p-12 overflow-hidden shadow-glow">
@@ -222,7 +262,7 @@ function PricingPage() {
                 <span className="text-muted-foreground font-medium text-lg">/mo</span>
               </div>
               <p className="mt-1 text-sm font-semibold text-muted-foreground">
-                + $3,500 one-time setup fee · non-refundable
+                + $3,500 one-time setup fee · non-refundable · Unlimited AI credits (fair use)
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 vs. $3,299+/mo for NetSuite + HubSpot combined — with none of the contractor-specific capabilities.
