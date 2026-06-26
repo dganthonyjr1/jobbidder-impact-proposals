@@ -32,6 +32,51 @@ export const listContractorApplications = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const getContractorProfile = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({ contractor_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("contractor_applications")
+      .select("id, name, phone, email, trade_type, service_area, license_number, status, qualification_status, qualification_score, created_at")
+      .eq("id", data.contractor_id)
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+export const getContractorProposals = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({ contractor_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await supabaseAdmin
+      .from("contractor_applications")
+      .select("id, name, status, created_at")
+      .eq("id", data.contractor_id)
+      .limit(1);
+    return rows ?? [];
+  });
+
+export const getContractorStats = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({ contractor_id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: docs } = await supabaseAdmin
+      .from("contractor_documents")
+      .select("id, status, document_type")
+      .eq("contractor_id", data.contractor_id);
+    const { data: events } = await supabaseAdmin
+      .from("contractor_performance_events")
+      .select("id, event_type")
+      .eq("contractor_id", data.contractor_id);
+    return {
+      documents_uploaded: docs?.length ?? 0,
+      documents_verified: docs?.filter((d: any) => d.status === "verified" || d.status === "ai_extracted").length ?? 0,
+      jobs_completed: events?.filter((e: any) => e.event_type === "project_completed").length ?? 0,
+      jobs_active: events?.filter((e: any) => e.event_type === "offer_accepted").length ?? 0,
+    };
+  });
+
 export const updateContractorStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({
