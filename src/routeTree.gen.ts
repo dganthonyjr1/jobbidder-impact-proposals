@@ -25,6 +25,7 @@ import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EIdRouteImport } from './routes/e.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
+import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
@@ -134,6 +135,11 @@ const EIdRoute = EIdRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedMediaUploadRoute =
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
+  '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -379,6 +386,7 @@ export interface FileRoutesByTo {
   '/documents': typeof AuthenticatedDocumentsRoute
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
+  '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -429,6 +437,7 @@ export interface FileRoutesById {
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
+  '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/ghl-setup'
     | '/media-upload'
+    | '/pipeline'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/documents'
     | '/ghl-setup'
     | '/media-upload'
+    | '/pipeline'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -576,6 +587,7 @@ export interface FileRouteTypes {
     | '/_authenticated/documents'
     | '/_authenticated/ghl-setup'
     | '/_authenticated/media-upload'
+    | '/_authenticated/pipeline'
     | '/_authenticated/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -760,6 +772,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/pipeline': {
+      id: '/_authenticated/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof AuthenticatedPipelineRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/media-upload': {
@@ -990,6 +1009,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
+  AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
@@ -1003,6 +1023,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
+  AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }

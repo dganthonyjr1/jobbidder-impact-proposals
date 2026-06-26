@@ -200,3 +200,47 @@ DO $$ BEGIN
 END $$;
 
 SELECT 'All tables ready' AS status;
+
+
+-- ============================================================================
+-- Client Deals (CRM Pipeline)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS client_deals (
+  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_name     TEXT        NOT NULL,
+  contact_name     TEXT,
+  contact_phone    TEXT,
+  contact_email    TEXT,
+  deal_value       BIGINT,
+  stage            TEXT        NOT NULL DEFAULT 'lead'
+                               CHECK (stage IN ('lead','meeting','proposal','negotiating','won','lost')),
+  notes            TEXT,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS client_deals_stage_idx   ON client_deals(stage);
+CREATE INDEX IF NOT EXISTS client_deals_created_idx ON client_deals(created_at);
+
+ALTER TABLE client_deals ENABLE ROW LEVEL SECURITY;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='client_deals' AND policyname='Authenticated users can view client deals') THEN
+    CREATE POLICY "Authenticated users can view client deals" ON client_deals FOR SELECT TO authenticated USING (true);
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='client_deals' AND policyname='Service role can manage client deals') THEN
+    CREATE POLICY "Service role can manage client deals" ON client_deals FOR ALL TO service_role USING (true) WITH CHECK (true);
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname='update_client_deals_updated_at') THEN
+    CREATE TRIGGER update_client_deals_updated_at BEFORE UPDATE ON client_deals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  END IF;
+END $$;
+
+SELECT 'client_deals table ready' AS status;
