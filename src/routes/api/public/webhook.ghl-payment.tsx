@@ -18,11 +18,21 @@ import process from "node:process";
  */
 
 const TIER_BY_NAME: Record<string, string> = {
-  apprentice: "apprentice",
-  journeyman: "journeyman",
+  apprentice:  "apprentice",
+  journeyman:  "journeyman",
   "master gc": "master_gc",
   "master_gc": "master_gc",
-  principal: "principal",
+  principal:   "principal",
+  enterprise:  "enterprise",
+};
+
+// Monthly plan value in cents per tier (matches current pricing)
+const TIER_CENTS: Record<string, number> = {
+  apprentice:  0,
+  journeyman:  49700,
+  master_gc:   99700,
+  principal:   199700,
+  enterprise:  350000,
 };
 
 function tierFromPayload(p: any): string | null {
@@ -42,6 +52,61 @@ function tierFromPayload(p: any): string | null {
   if (amount >= 450) return "master_gc";
   if (amount >= 250) return "journeyman";
   return null;
+}
+
+async function processAffiliateCommission(payerEmail: string, tier: string) {
+  try {
+    // Find a pending/active referral for this email
+    const { data: referral } = await supabaseAdmin
+      .from("referrals")
+      .select("id, referrer_code, referred_company, status, activated_at")
+      .eq("referred_email", payerEmail)
+      .neq("status", "churned")
+      .maybeSingle();
+
+    if (!referral) return;
+
+    const billingPeriod = new Date().toISOString().slice(0, 7); // e.g. "2026-06"
+    const planCents     = TIER_CENTS[tier] ?? 49700;
+    const commission    = Math.round(planCents * 0.15);
+
+    if (commission === 0) return; // apprentice is free, no commission
+
+    // Idempotency: don't write duplicate commission for same referral + period
+    const { data: dupe } = await supabaseAdmin
+      .from("affiliate_transactions")
+      .select("id")
+      .eq("referral_id", referral.id)
+      .eq("billing_period", billingPeriod)
+      .eq("transaction_type", "commission_earned")
+      .maybeSingle();
+
+    if (dupe) return;
+
+    const now = new Date().toISOString();
+    await Promise.all([
+      supabaseAdmin.from("affiliate_transactions").insert({
+        referrer_code:    referral.referrer_code,
+        referral_id:      referral.id,
+        transaction_type: "commission_earned",
+        amount_cents:     commission,
+        description:      `15% commission — ${referral.referred_company} (${tier})`,
+        billing_period:   billingPeriod,
+        status:           "pending",
+      }),
+      supabaseAdmin.from("referrals").update({
+        status:       "active",
+        activated_at: referral.activated_at ?? now,
+        plan_name:    tier,
+        plan_amount_cents: planCents,
+      }).eq("id", referral.id),
+    ]);
+
+    console.log("[affiliate] commission written", { referral: referral.id, commission, billingPeriod });
+  } catch (err) {
+    // Never let affiliate errors break the payment flow
+    console.error("[affiliate] processAffiliateCommission failed:", err);
+  }
 }
 
 export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
@@ -89,6 +154,10 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
           })
           .eq("id", existing.id);
         if (upErr) return new Response(upErr.message, { status: 500 });
+
+        // ── Affiliate commission ──────────────────────────────────────────────
+        await processAffiliateCommission(lower, tier);
+        // ─────────────────────────────────────────────────────────────────────
 
         return Response.json({ ok: true, contractor_id: existing.id, tier });
       },

@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +10,39 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 import { Eye, EyeOff } from "lucide-react";
+
+const recordReferralSignup = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({
+    referralCode: z.string(),
+    referredEmail: z.string().email(),
+    referredCompany: z.string(),
+  }).parse(input))
+  .handler(async ({ data: { referralCode, referredEmail, referredCompany } }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: codeRow } = await supabaseAdmin
+      .from("referral_codes")
+      .select("code")
+      .eq("code", referralCode)
+      .maybeSingle();
+    if (!codeRow) return { ok: false };
+
+    const { data: existing } = await supabaseAdmin
+      .from("referrals")
+      .select("id")
+      .eq("referred_email", referredEmail.toLowerCase())
+      .maybeSingle();
+    if (existing) return { ok: true, duplicate: true };
+
+    await supabaseAdmin.from("referrals").insert({
+      referrer_code: referralCode,
+      referred_email: referredEmail.toLowerCase(),
+      referred_company: referredCompany || referredEmail.split("@")[0],
+      status: "pending",
+    });
+
+    return { ok: true };
+  });
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — Jobbidder" }] }),
@@ -57,6 +92,14 @@ function LoginPage() {
         });
         if (error) throw error;
         toast.success("Account created!");
+        // Record referral if user arrived via a referral link
+        const ref = localStorage.getItem("jobbidder_ref");
+        if (ref) {
+          try {
+            await recordReferralSignup({ data: { referralCode: ref, referredEmail: email, referredCompany: businessName || "" } });
+          } catch { /* non-blocking — don't fail signup if referral write fails */ }
+          localStorage.removeItem("jobbidder_ref");
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
