@@ -314,7 +314,7 @@ function WhyJobbidderPage() {
                   ))}
                   <td className="py-4 px-3 text-center bg-primary/5">
                     {row.key === "price" ? (
-                      <span className="text-sm font-bold text-primary">Journeyman $297/mo · Principal $14,999 once</span>
+                      <span className="text-sm font-bold text-primary">From $497/mo + setup · Enterprise $3,500/mo</span>
                     ) : row.key === "setup" ? (
                       <span className="text-xs text-primary font-semibold">60 seconds</span>
                     ) : (

@@ -16,32 +16,35 @@ export const Route = createFileRoute("/pricing")({
 const tiers = [
   {
     name: "Apprentice",
-    tagline: "Learn the system. Zero risk.",
+    tagline: "See what the system can do. Zero risk.",
     price: "$0",
     period: "/mo",
-    description: "For contractors trying Jobbidder for the first time.",
+    setup: null,
+    description: "One AI proposal trial. No credit card, no commitment — just proof.",
     features: [
       "1 proposal trial",
       "AI-generated scope & labor",
       "Good / Better / Best tiers",
       "Public share link",
     ],
-    cta: "Start as Apprentice",
+    cta: "Start Free",
     href: "/login",
     highlighted: false,
     external: false,
   },
   {
     name: "Journeyman",
-    tagline: "Full power. No limits. Pays for itself on your first job.",
-    price: "$297",
+    tagline: "Full power. Pays for itself on your first job.",
+    price: "$497",
     period: "/mo",
-    description: "For contractors closing 3+ jobs per month.",
+    setup: "$497",
+    description: "For contractors closing jobs and done leaving money on the table.",
     features: [
-      "Unlimited proposals",
+      "Unlimited AI proposals",
+      "Good / Better / Best tiers",
       "Full materials catalog",
-      "SMS & email delivery",
       "Wholesale pricing access",
+      "SMS & email delivery",
       "Client e-signatures",
     ],
     cta: "Become a Journeyman",
@@ -51,16 +54,18 @@ const tiers = [
   },
   {
     name: "Master GC",
-    tagline: "Run your empire. White label included.",
-    price: "$497",
+    tagline: "Run your operation under your brand.",
+    price: "$997",
     period: "/mo",
-    description: "For agencies and multi-contractor operations.",
+    setup: "$997",
+    description: "For agencies and multi-contractor operations that need full control.",
     features: [
       "Everything in Journeyman",
       "White-label branding",
       "Unlimited contractors",
       "Priority support",
       "Custom integrations",
+      "Team management dashboard",
     ],
     cta: "Go Master GC",
     href: "https://link.suddenimpactagency.io/payment-link/6a1b2f2703b17c94f5713b5b",
@@ -69,16 +74,18 @@ const tiers = [
   },
   {
     name: "Principal",
-    tagline: "Own it forever. The last tool you will ever buy.",
-    price: "$14,999",
-    period: "one-time",
-    description: "For contractors who own their operation and never want to pay a monthly fee again. One payment. Lifetime access. You are the Principal.",
+    tagline: "The full platform. Nothing held back.",
+    price: "$1,997",
+    period: "/mo",
+    setup: "$1,997",
+    description: "For serious operations that demand the best tooling, fastest support, and every feature as it ships.",
     features: [
       "Everything in Master GC",
-      "Lifetime access — no monthly fees",
-      "All future updates included",
+      "All future features included",
       "Priority white-glove onboarding",
+      "Dedicated support line",
       "Direct line to the build team",
+      "SLA guarantee",
     ],
     cta: "Become a Principal",
     href: "https://link.suddenimpactagency.io/payment-link/6a1b2f6771d2406ac8cf9eb4",
@@ -154,6 +161,11 @@ function PricingPage() {
                 <span className="font-display text-4xl font-bold tracking-tight">{tier.price}</span>
                 <span className="text-muted-foreground font-medium">{tier.period}</span>
               </div>
+              {tier.setup && (
+                <p className="mt-1 text-xs font-semibold text-muted-foreground">
+                  + {tier.setup} one-time setup fee · non-refundable
+                </p>
+              )}
               <ul className="mt-6 space-y-3 flex-1">
                 {tier.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3 text-sm font-medium">
@@ -176,7 +188,7 @@ function PricingPage() {
               </Button>
               {tier.price !== "$0" && (
                 <p className="mt-3 text-center text-xs text-muted-foreground font-medium">
-                  Pays for itself on your first job through wholesale materials savings
+                  Most users recover the setup fee on their first job
                 </p>
               )}
             </div>
@@ -209,7 +221,10 @@ function PricingPage() {
                 <span className="font-display text-5xl font-bold tracking-tight">$3,500</span>
                 <span className="text-muted-foreground font-medium text-lg">/mo</span>
               </div>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm font-semibold text-muted-foreground">
+                + $3,500 one-time setup fee · non-refundable
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
                 vs. $3,299+/mo for NetSuite + HubSpot combined — with none of the contractor-specific capabilities.
               </p>
 
