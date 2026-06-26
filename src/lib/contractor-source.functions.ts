@@ -6,7 +6,7 @@
  * Called from _authenticated.contractor-search.tsx via useServerFn().
  */
 
-import { createServerFn } from "@tanstack/start";
+import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { searchContractorsForNiche } from "@/lib/contractor-sourcing.server";
