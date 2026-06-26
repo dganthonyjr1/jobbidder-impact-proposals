@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Building2, Phone, ShieldCheck, Kanban, Zap, Users } from "lucide-react";
+import { Check, Sparkles, Building2, Phone, ShieldCheck, Kanban, Zap, Users, PackagePlus } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/pricing")({
@@ -239,6 +239,88 @@ function PricingPage() {
             One complete contractor onboarding (outreach → prequal call → document verification → placement) uses approximately 5 credits.
             Master GC (500 credits) supports ~100 onboardings/mo. Principal (2,000) supports ~400. Enterprise (10,000) supports ~2,000.
             Need more? Usage continues automatically at $0.50/credit — no interruptions, no manual top-ups.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Credit Add-On Packs ── */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="rounded-2xl border border-border bg-card/60 p-6 sm:p-8">
+          <div className="flex items-start gap-3 mb-6">
+            <PackagePlus className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-base">Credit add-on packs</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Need more credits mid-cycle? Buy in bulk and save versus the $0.50/credit overage rate.
+                Packs never expire, stack on top of your monthly allotment, and are consumed before overage kicks in.
+              </p>
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              {
+                name: "Starter Pack",
+                credits: "1,000 credits",
+                price: "$99",
+                perCredit: "$0.099 / credit",
+                saving: "Save 80% vs. overage",
+                detail: "~200 contractor onboardings",
+              },
+              {
+                name: "Growth Pack",
+                credits: "5,000 credits",
+                price: "$399",
+                perCredit: "$0.080 / credit",
+                saving: "Save 84% vs. overage",
+                detail: "~1,000 contractor onboardings",
+                popular: true,
+              },
+              {
+                name: "Scale Pack",
+                credits: "15,000 credits",
+                price: "$999",
+                perCredit: "$0.067 / credit",
+                saving: "Save 87% vs. overage",
+                detail: "~3,000 contractor onboardings",
+              },
+            ].map((pack) => (
+              <div
+                key={pack.name}
+                className={
+                  "relative rounded-xl border p-5 flex flex-col gap-3 " +
+                  (pack.popular
+                    ? "border-primary/60 bg-card shadow-glow"
+                    : "border-border bg-background/60")
+                }
+              >
+                {pack.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-primary-foreground whitespace-nowrap">
+                      Best Value
+                    </span>
+                  </div>
+                )}
+                <div>
+                  <p className="font-bold text-sm">{pack.name}</p>
+                  <p className="text-2xl font-display font-bold tracking-tight mt-1">{pack.price}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{pack.credits}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-primary">{pack.saving}</p>
+                  <p className="text-xs text-muted-foreground">{pack.perCredit}</p>
+                  <p className="text-xs text-muted-foreground">{pack.detail}</p>
+                </div>
+                <Button asChild variant={pack.popular ? "default" : "outline"} size="sm" className="mt-auto w-full">
+                  <a href="mailto:don@suddenimpactagency.io?subject=Credit%20Pack%20Purchase" target="_blank" rel="noreferrer">
+                    Buy Pack
+                  </a>
+                </Button>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Packs are available on any paid plan. Credits are consumed in order: monthly allotment first, then pack credits, then overage at $0.50/credit.
+            Add-on credits do not expire and carry over month to month.
           </p>
         </div>
       </section>
