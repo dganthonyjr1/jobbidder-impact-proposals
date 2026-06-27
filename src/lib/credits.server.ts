@@ -225,3 +225,37 @@ export const getCreditUsage = createServerFn({ method: "GET" })
       packs: packs ?? [],
     };
   });
+
+export const getCreditHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+
+    const { data: contractor } = await supabaseAdmin
+      .from("contractors")
+      .select("id, subscription_tier")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!contractor) return { ledger: [], packs: [] };
+
+    const [{ data: ledger }, { data: packs }] = await Promise.all([
+      supabaseAdmin
+        .from("credit_ledger")
+        .select("id, action_type, credits_used, is_overage, billing_period, description, created_at")
+        .eq("contractor_id", contractor.id)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabaseAdmin
+        .from("credit_pack_purchases")
+        .select("id, pack_name, credits_total, credits_remaining, purchased_at")
+        .eq("contractor_id", contractor.id)
+        .order("purchased_at", { ascending: false })
+        .limit(20),
+    ]);
+
+    return {
+      ledger: ledger ?? [],
+      packs: packs ?? [],
+    };
+  });
