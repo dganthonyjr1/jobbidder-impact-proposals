@@ -27,6 +27,7 @@ import { Route as EIdRouteImport } from './routes/e.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
 import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
@@ -147,6 +148,11 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
 const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
   id: '/affiliate',
   path: '/affiliate',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuditTokenRoute = AuditTokenRouteImport.update({
@@ -351,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -402,6 +409,7 @@ export interface FileRoutesByTo {
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -455,6 +463,7 @@ export interface FileRoutesById {
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
@@ -508,6 +517,7 @@ export interface FileRouteTypes {
     | '/media-upload'
     | '/pipeline'
     | '/affiliate'
+    | '/account'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -559,6 +569,7 @@ export interface FileRouteTypes {
     | '/media-upload'
     | '/pipeline'
     | '/affiliate'
+    | '/account'
     | '/settings'
     | '/e/$id'
     | '/email/unsubscribe'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
     | '/_authenticated/affiliate'
+    | '/_authenticated/account'
     | '/_authenticated/settings'
     | '/audit/$token'
     | '/e/$id'
@@ -811,6 +823,13 @@ declare module '@tanstack/react-router' {
       path: '/affiliate'
       fullPath: '/affiliate'
       preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/audit/$token': {
@@ -1050,6 +1069,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
@@ -1065,6 +1085,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }

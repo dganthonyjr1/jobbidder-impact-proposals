@@ -35,14 +35,36 @@ const TIER_CENTS: Record<string, number> = {
   enterprise:  350000,
 };
 
-function tierFromPayload(p: any): string | null {
-  const productName: string =
+// Credit add-on pack definitions
+const PACK_BY_NAME: Record<string, { pack_name: string; credits: number }> = {
+  "starter": { pack_name: "starter", credits: 1000 },
+  "growth":  { pack_name: "growth",  credits: 5000 },
+  "scale":   { pack_name: "scale",   credits: 15000 },
+};
+
+function productNameFromPayload(p: any): string {
+  return String(
     p?.order?.products?.[0]?.name ||
     p?.product_name ||
     p?.productName ||
     p?.product ||
-    "";
-  const key = String(productName).toLowerCase().trim();
+    ""
+  ).toLowerCase().trim();
+}
+
+function packFromPayload(p: any): { pack_name: string; credits: number } | null {
+  const key = productNameFromPayload(p);
+  if (!key.includes("credit") && !key.includes("pack")) return null;
+  for (const [needle, pack] of Object.entries(PACK_BY_NAME)) {
+    if (key.includes(needle)) return pack;
+  }
+  return null;
+}
+
+function tierFromPayload(p: any): string | null {
+  const key = productNameFromPayload(p);
+  // Don't match subscription tiers inside a credit-pack product name
+  if (key.includes("credit") || key.includes("pack")) return null;
   for (const [needle, tier] of Object.entries(TIER_BY_NAME)) {
     if (key.includes(needle)) return tier;
   }
@@ -124,6 +146,30 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
         const email: string | undefined =
           body?.contact?.email || body?.email || body?.customer?.email;
         if (!email) return new Response("Missing email", { status: 400 });
+
+        // ── Credit pack purchase ──────────────────────────────────────────────
+        const pack = packFromPayload(body);
+        if (pack) {
+          const { data: pkContractor } = await supabaseAdmin
+            .from("contractors")
+            .select("id")
+            .or(`email.eq.${lower},billing_email.eq.${lower}`)
+            .limit(1)
+            .maybeSingle();
+          if (!pkContractor) {
+            console.log("[ghl-payment] credit pack: no contractor for", lower);
+            return Response.json({ ok: true, matched: false, type: "credit_pack" });
+          }
+          await supabaseAdmin.from("credit_pack_purchases").insert({
+            contractor_id:     pkContractor.id,
+            pack_name:         pack.pack_name,
+            credits_total:     pack.credits,
+            credits_remaining: pack.credits,
+          });
+          console.log("[ghl-payment] credit pack added", { pack: pack.pack_name, credits: pack.credits, contractor: pkContractor.id });
+          return Response.json({ ok: true, type: "credit_pack", pack: pack.pack_name, credits: pack.credits });
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         const tier = tierFromPayload(body);
         if (!tier) return new Response("Unrecognized product", { status: 400 });

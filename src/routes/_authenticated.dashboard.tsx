@@ -4,11 +4,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { listProposals } from "@/lib/proposals.functions";
 import { listEstimates } from "@/lib/estimates.functions";
 import { listContractorApplications, updateContractorStatus } from "@/lib/contractors.functions";
+import { getCreditUsage } from "@/lib/credits.server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2 } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2, Zap, PackagePlus } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -46,6 +47,93 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
+const TIER_LABELS: Record<string, string> = {
+  apprentice: "Apprentice",
+  journeyman: "Journeyman",
+  master_gc:  "Master GC",
+  principal:  "Principal",
+  enterprise: "Enterprise",
+};
+
+function CreditWidget({ credits }: { credits: NonNullable<Awaited<ReturnType<typeof getCreditUsage>>> }) {
+  const { tier, allotment, usedThisPeriod, overageCount, lifetimeCount, packCreditsRemaining, billingPeriod } = credits;
+
+  // Apprentice — lifetime limit display
+  if (tier === "apprentice") {
+    const used = lifetimeCount ?? 0;
+    const remaining = Math.max(0, 2 - used);
+    const pct = Math.min(100, (used / 2) * 100);
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-2 shrink-0">
+          <Zap className="h-4 w-4 text-yellow-400" />
+          <span className="text-sm font-medium">Free Trial · {TIER_LABELS[tier]}</span>
+        </div>
+        <div className="flex-1">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>{used} of 2 lifetime AI actions used</span>
+            <span>{remaining} remaining</span>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div className="h-full rounded-full bg-yellow-400 transition-all" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        <Link to="/pricing" className="text-xs text-primary hover:underline shrink-0">Upgrade plan →</Link>
+      </div>
+    );
+  }
+
+  // Journeyman — unlimited proposals, no credit meter
+  if (tier === "journeyman") {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 mb-6 flex items-center gap-3">
+        <Zap className="h-4 w-4 text-blue-400" />
+        <span className="text-sm font-medium">Journeyman · Unlimited proposals</span>
+        <span className="text-xs text-muted-foreground ml-auto">Voice, SMS &amp; Doc AI available on Master GC+</span>
+      </div>
+    );
+  }
+
+  // Master GC / Principal / Enterprise — monthly meter
+  const pct = allotment > 0 ? Math.min(100, (usedThisPeriod / allotment) * 100) : 0;
+  const remaining = Math.max(0, allotment - usedThisPeriod);
+  const isOver = usedThisPeriod >= allotment;
+  const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-400" : "bg-green-500";
+  const [month, year] = [billingPeriod.slice(5, 7), billingPeriod.slice(0, 4)];
+  const monthLabel = new Date(`${year}-${month}-01`).toLocaleString("default", { month: "long", year: "numeric" });
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-2 shrink-0">
+          <Zap className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">{TIER_LABELS[tier] ?? tier} · AI Credits</span>
+          <span className="text-xs text-muted-foreground">{monthLabel}</span>
+        </div>
+        <div className="flex-1">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1">
+            <span>{usedThisPeriod.toLocaleString()} of {allotment.toLocaleString()} credits used</span>
+            {!isOver && <span>{remaining.toLocaleString()} remaining</span>}
+            {isOver && <span className="text-red-400">{overageCount} overage credits (billed at $0.50 each)</span>}
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+        {packCreditsRemaining > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-green-400 shrink-0">
+            <PackagePlus className="h-3.5 w-3.5" />
+            {packCreditsRemaining.toLocaleString()} pack credits available
+          </div>
+        )}
+        {isOver && packCreditsRemaining === 0 && (
+          <Link to="/pricing" className="text-xs text-primary hover:underline shrink-0">Buy credit pack →</Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const CONTRACTOR_STATUS_COLORS: Record<string, string> = {
   submitted: "bg-yellow-500/20 text-yellow-300",
   approved: "bg-green-500/20 text-green-300",
@@ -62,6 +150,8 @@ function Dashboard() {
   const { data: contractors, isLoading: contractorsLoading } = useQuery({ queryKey: ["contractors"], queryFn: () => fetchContractors() });
   const fetchMedia = useServerFn(listUserMedia);
   const { data: media, isLoading: mediaLoading, refetch: refetchMedia } = useQuery({ queryKey: ["media"], queryFn: () => fetchMedia() });
+  const fetchCredits = useServerFn(getCreditUsage);
+  const { data: credits } = useQuery({ queryKey: ["credits"], queryFn: () => fetchCredits() });
   const doDeleteMedia = useServerFn(deleteMedia);
   const doUpdateStatus = useServerFn(updateContractorStatus);
   const queryClient = useQueryClient();
@@ -153,6 +243,9 @@ function Dashboard() {
           <Link to="/proposals/new"><Plus className="h-4 w-4 mr-2" /> New proposal</Link>
         </Button>
       </div>
+
+      {/* Credit usage widget */}
+      {credits && <CreditWidget credits={credits} />}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

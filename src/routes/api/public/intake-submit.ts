@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
+import { checkAndDeductCredit } from "@/lib/credits.server";
 import Groq from "groq-sdk";
 
 const Body = z.object({
@@ -199,10 +200,21 @@ export const Route = createFileRoute("/api/public/intake-submit")({
         // Fetch contractor including pricing_settings
         const { data: contractor } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, email, pricing_settings")
+          .select("id, business_name, email, pricing_settings, subscription_tier")
           .eq("slug", input.slug)
           .maybeSingle();
         if (!contractor) return Response.json({ success: false, error: "Contractor not found" }, { status: 404 });
+
+        // Credit check — block if limit reached
+        const creditResult = await checkAndDeductCredit(
+          contractor.id,
+          contractor.subscription_tier ?? "apprentice",
+          "proposal",
+          `Proposal for ${input.client_name}`,
+        );
+        if (!creditResult.allowed) {
+          return Response.json({ success: false, error: creditResult.message ?? "Credit limit reached. Please upgrade your plan." }, { status: 402 });
+        }
 
         // Merge contractor pricing with defaults
         const pricing: PricingSettings = contractor.pricing_settings

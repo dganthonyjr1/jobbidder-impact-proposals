@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, FileText, Settings, LogOut, HardHat, ShieldCheck, Kanban, Share2 } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, HardHat, ShieldCheck, Kanban, Share2, CreditCard } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 function isAdminEmail(email: string | undefined): boolean {
@@ -50,6 +50,7 @@ function AuthLayout() {
     { to: "/contractor-verification", label: "Verify Credentials", icon: ShieldCheck },
     { to: "/proposals/new", label: "New Proposal", icon: FileText },
     { to: "/affiliate", label: "Affiliate", icon: Share2 },
+    { to: "/account", label: "Billing", icon: CreditCard },
     { to: "/settings", label: "Settings", icon: Settings },
   ] as const;
 
