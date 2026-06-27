@@ -49,7 +49,7 @@ const tiers = [
       "Client e-signatures",
     ],
     cta: "Become a Journeyman",
-    href: "https://link.suddenimpactagency.io/payment-link/6a1b2d8903b17c94f5713b58",
+    href: "https://link.suddenimpactagency.io/payment-link/6a402a42390a6e280643af94",
     highlighted: true,
     external: true,
   },
@@ -72,7 +72,7 @@ const tiers = [
       "Custom integrations",
     ],
     cta: "Go Master GC",
-    href: "https://link.suddenimpactagency.io/payment-link/6a1b2f2703b17c94f5713b5b",
+    href: "https://link.suddenimpactagency.io/payment-link/6a402ae09b12592b36824ddb",
     highlighted: false,
     external: true,
   },
@@ -95,7 +95,7 @@ const tiers = [
       "SLA guarantee",
     ],
     cta: "Become a Principal",
-    href: "https://link.suddenimpactagency.io/payment-link/6a1b2f6771d2406ac8cf9eb4",
+    href: "https://link.suddenimpactagency.io/payment-link/6a402b3a9b12592b36824ddd",
     highlighted: false,
     external: true,
   },
@@ -265,6 +265,7 @@ function PricingPage() {
                 perCredit: "$0.099 / credit",
                 saving: "Save 80% vs. overage",
                 detail: "~200 contractor onboardings",
+                href: "https://link.suddenimpactagency.io/payment-link/6a402e329b12592b36824de5",
               },
               {
                 name: "Growth Pack",
@@ -274,6 +275,7 @@ function PricingPage() {
                 saving: "Save 84% vs. overage",
                 detail: "~1,000 contractor onboardings",
                 popular: true,
+                href: "https://link.suddenimpactagency.io/payment-link/6a402edd9b12592b36824de6",
               },
               {
                 name: "Scale Pack",
@@ -282,6 +284,7 @@ function PricingPage() {
                 perCredit: "$0.067 / credit",
                 saving: "Save 87% vs. overage",
                 detail: "~3,000 contractor onboardings",
+                href: "https://link.suddenimpactagency.io/payment-link/6a402fb79b12592b36824de9",
               },
             ].map((pack) => (
               <div
@@ -311,7 +314,7 @@ function PricingPage() {
                   <p className="text-xs text-muted-foreground">{pack.detail}</p>
                 </div>
                 <Button asChild variant={pack.popular ? "default" : "outline"} size="sm" className="mt-auto w-full">
-                  <a href="mailto:don@suddenimpactagency.io?subject=Credit%20Pack%20Purchase" target="_blank" rel="noreferrer">
+                  <a href={pack.href} target="_blank" rel="noreferrer">
                     Buy Pack
                   </a>
                 </Button>
@@ -359,10 +362,10 @@ function PricingPage() {
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="font-bold">
-                  <a href="mailto:don@suddenimpactagency.io?subject=Enterprise%20Plan%20Inquiry">Book a Demo</a>
+                  <a href="https://link.suddenimpactagency.io/payment-link/6a402be19b12592b36824ddf" target="_blank" rel="noreferrer">Get Started</a>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link to="/why-jobbidder">See the comparison</Link>
+                  <a href="mailto:don@suddenimpactagency.io?subject=Enterprise%20Plan%20Inquiry">Book a Demo</a>
                 </Button>
               </div>
               <p className="mt-4 text-xs text-muted-foreground">Custom onboarding included · Dedicated account manager · Cancel anytime</p>
