@@ -22,13 +22,12 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProposalIdRouteImport } from './routes/proposal.$id'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as GoSlugRouteImport } from './routes/go.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EIdRouteImport } from './routes/e.$id'
+import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
-import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
-import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
-import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
@@ -36,6 +35,8 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
 import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
 import { Route as AuthenticatedContractorDashboardRouteImport } from './routes/_authenticated.contractor-dashboard'
+import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
@@ -60,7 +61,6 @@ import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './route
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
 import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
-import { Route as GoSlugRouteImport } from './routes/go.$slug'
 
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
@@ -126,6 +126,11 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GoSlugRoute = GoSlugRouteImport.update({
+  id: '/go/$slug',
+  path: '/go/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -134,6 +139,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const EIdRoute = EIdRouteImport.update({
   id: '/e/$id',
   path: '/e/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditTokenRoute = AuditTokenRouteImport.update({
+  id: '/audit/$token',
+  path: '/audit/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -145,21 +155,6 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
-  id: '/affiliate',
-  path: '/affiliate',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
-  id: '/account',
-  path: '/account',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuditTokenRoute = AuditTokenRouteImport.update({
-  id: '/audit/$token',
-  path: '/audit/$token',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMediaUploadRoute =
   AuthenticatedMediaUploadRouteImport.update({
@@ -200,6 +195,16 @@ const AuthenticatedContractorDashboardRoute =
     path: '/contractor-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -337,11 +342,6 @@ const ApiPublicHooksProcessFollowupsRoute =
     path: '/api/public/hooks/process-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
-const GoSlugRoute = GoSlugRouteImport.update({
-  id: '/go/$slug',
-  path: '/go/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -354,6 +354,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -362,15 +364,14 @@ export interface FileRoutesByFullPath {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
-  '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
-  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -394,7 +395,6 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -407,6 +407,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -415,15 +417,14 @@ export interface FileRoutesByTo {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
-  '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
-  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -447,7 +448,6 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -462,6 +462,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
   '/_authenticated/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -470,12 +472,11 @@ export interface FileRoutesById {
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
-  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
@@ -502,7 +503,6 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
-  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -517,6 +517,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/account'
+    | '/affiliate'
     | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
@@ -525,15 +527,14 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
-    | '/affiliate'
-    | '/account'
     | '/settings'
+    | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/proposals/new'
-    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -557,7 +558,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/go/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -570,6 +570,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/account'
+    | '/affiliate'
     | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
@@ -578,11 +580,11 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
-    | '/affiliate'
-    | '/account'
     | '/settings'
+    | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/proposals/new'
@@ -609,7 +611,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/go/$slug'
   id:
     | '__root__'
     | '/'
@@ -623,6 +624,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/_authenticated/account'
+    | '/_authenticated/affiliate'
     | '/_authenticated/contractor-dashboard'
     | '/_authenticated/contractor-search'
     | '/_authenticated/contractor-verification'
@@ -631,16 +634,14 @@ export interface FileRouteTypes {
     | '/_authenticated/ghl-setup'
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
-    | '/_authenticated/affiliate'
-    | '/_authenticated/account'
     | '/_authenticated/settings'
     | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
-    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -664,7 +665,6 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
-    | '/go/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -679,11 +679,12 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   WhyJobbidderRoute: typeof WhyJobbidderRoute
+  AuditTokenRoute: typeof AuditTokenRoute
   EIdRoute: typeof EIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  GoSlugRoute: typeof GoSlugRoute
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
-  AuditTokenRoute: typeof AuditTokenRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
@@ -707,7 +708,6 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
-  GoSlugRoute: typeof GoSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -803,6 +803,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/go/$slug': {
+      id: '/go/$slug'
+      path: '/go/$slug'
+      fullPath: '/go/$slug'
+      preLoaderRoute: typeof GoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -815,6 +822,13 @@ declare module '@tanstack/react-router' {
       path: '/e/$id'
       fullPath: '/e/$id'
       preLoaderRoute: typeof EIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit/$token': {
+      id: '/audit/$token'
+      path: '/audit/$token'
+      fullPath: '/audit/$token'
+      preLoaderRoute: typeof AuditTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -830,27 +844,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/pipeline'
       preLoaderRoute: typeof AuthenticatedPipelineRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/affiliate': {
-      id: '/_authenticated/affiliate'
-      path: '/affiliate'
-      fullPath: '/affiliate'
-      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/account': {
-      id: '/_authenticated/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AuthenticatedAccountRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/audit/$token': {
-      id: '/audit/$token'
-      path: '/audit/$token'
-      fullPath: '/audit/$token'
-      preLoaderRoute: typeof AuditTokenRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/media-upload': {
       id: '/_authenticated/media-upload'
@@ -899,6 +892,20 @@ declare module '@tanstack/react-router' {
       path: '/contractor-dashboard'
       fullPath: '/contractor-dashboard'
       preLoaderRoute: typeof AuthenticatedContractorDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/affiliate': {
+      id: '/_authenticated/affiliate'
+      path: '/affiliate'
+      fullPath: '/affiliate'
+      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/lovable/email/suppression': {
@@ -1069,17 +1076,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/go/$slug': {
-      id: '/go/$slug'
-      path: '/go/$slug'
-      fullPath: '/go/$slug'
-      preLoaderRoute: typeof GoSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
   AuthenticatedContractorDashboardRoute: typeof AuthenticatedContractorDashboardRoute
   AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
@@ -1088,13 +1090,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
-  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
   AuthenticatedContractorDashboardRoute: AuthenticatedContractorDashboardRoute,
   AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedContractorVerificationRoute:
@@ -1104,8 +1106,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
-  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
@@ -1126,11 +1126,12 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   WhyJobbidderRoute: WhyJobbidderRoute,
+  AuditTokenRoute: AuditTokenRoute,
   EIdRoute: EIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  GoSlugRoute: GoSlugRoute,
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
-  AuditTokenRoute: AuditTokenRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
@@ -1157,7 +1158,6 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
-  GoSlugRoute: GoSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
