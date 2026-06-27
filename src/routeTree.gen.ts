@@ -60,6 +60,7 @@ import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './route
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
 import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
+import { Route as GoSlugRouteImport } from './routes/go.$slug'
 
 const WhyJobbidderRoute = WhyJobbidderRouteImport.update({
   id: '/why-jobbidder',
@@ -336,6 +337,11 @@ const ApiPublicHooksProcessFollowupsRoute =
     path: '/api/public/hooks/process-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
+const GoSlugRoute = GoSlugRouteImport.update({
+  id: '/go/$slug',
+  path: '/go/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/go/$slug': typeof GoSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -548,6 +557,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/go/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -599,6 +609,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/go/$slug'
   id:
     | '__root__'
     | '/'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/go/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -695,6 +707,7 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  GoSlugRoute: typeof GoSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1056,6 +1069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/go/$slug': {
+      id: '/go/$slug'
+      path: '/go/$slug'
+      fullPath: '/go/$slug'
+      preLoaderRoute: typeof GoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1137,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  GoSlugRoute: GoSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

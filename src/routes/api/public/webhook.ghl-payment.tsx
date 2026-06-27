@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { sendEmailViaGHL } from "@/lib/ghl.server";
 import process from "node:process";
 
 /**
@@ -131,6 +132,73 @@ async function processAffiliateCommission(payerEmail: string, tier: string) {
   }
 }
 
+const TIER_PLAN_LABELS: Record<string, string> = {
+  journeyman: "Journeyman",
+  master_gc:  "Master GC",
+  principal:  "Principal",
+  enterprise: "Enterprise",
+};
+
+const WHITE_LABEL_TIERS = ["master_gc", "principal", "enterprise"];
+
+async function sendOnboardingEmail(
+  email: string,
+  contractor: { slug?: string | null; business_name?: string | null },
+  tier: string,
+) {
+  const planLabel = TIER_PLAN_LABELS[tier] ?? tier;
+  const businessName = contractor.business_name || "your business";
+  const slug = contractor.slug;
+  const isWhiteLabel = WHITE_LABEL_TIERS.includes(tier);
+
+  const appUrl = process.env.VITE_APP_URL || "https://jobbidder.io";
+  const intakeUrl = isWhiteLabel && slug
+    ? `${appUrl}/go/${slug}`
+    : `${appUrl}`;
+
+  const creditInfo: Record<string, string> = {
+    journeyman: "Unlimited AI proposals are included in your plan. No credit tracking needed.",
+    master_gc:  "You have 500 AI credits per month. Each credit powers one AI action (voice pre-qual, SMS sequence, document extraction, verification report).",
+    principal:  "You have 2,000 AI credits per month to power all AI actions.",
+    enterprise: "You have 10,000 AI credits per month for full-scale AI automation.",
+  };
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#111">
+      <h1 style="font-size:24px;margin-bottom:8px">Welcome to Jobbidder — ${planLabel} Plan 🎉</h1>
+      <p>Hi there,</p>
+      <p>Your <strong>${planLabel}</strong> subscription is now active for <strong>${businessName}</strong>. Here's how to get started:</p>
+
+      <h2 style="font-size:18px;margin-top:24px">1. Your Client Intake Link</h2>
+      <p>Share this link with your clients to instantly generate Good/Better/Best proposals:</p>
+      <p><a href="${intakeUrl}" style="color:#10b981;font-weight:bold">${intakeUrl}</a></p>
+      ${isWhiteLabel ? `<p style="color:#666;font-size:14px">This is your <strong>white-labeled</strong> intake page — clients see your brand, not Jobbidder.</p>` : ""}
+
+      <h2 style="font-size:18px;margin-top:24px">2. Log Into Your Dashboard</h2>
+      <p><a href="${appUrl}/dashboard" style="color:#10b981">Open your Jobbidder dashboard</a> to view proposals, manage your pipeline, and track clients.</p>
+
+      <h2 style="font-size:18px;margin-top:24px">3. Your Credits</h2>
+      <p>${creditInfo[tier] || ""}</p>
+      <p>Track your usage anytime at <a href="${appUrl}/account" style="color:#10b981">${appUrl}/account</a></p>
+
+      <h2 style="font-size:18px;margin-top:24px">4. Customize Your Branding</h2>
+      <p>Add your logo and brand color in <a href="${appUrl}/settings" style="color:#10b981">Settings</a> so every proposal and intake page reflects your brand.</p>
+
+      <hr style="margin:32px 0;border-color:#eee"/>
+      <p style="color:#888;font-size:13px">Questions? Reply to this email or reach us anytime. Welcome aboard!</p>
+      <p style="color:#888;font-size:13px">— The Jobbidder Team</p>
+    </div>
+  `;
+
+  await sendEmailViaGHL({
+    to: email,
+    subject: `Welcome to Jobbidder — Your ${planLabel} plan is active 🎉`,
+    html,
+    text: `Welcome to Jobbidder! Your ${planLabel} plan for ${businessName} is now active. Visit your dashboard: ${appUrl}/dashboard. Your client intake link: ${intakeUrl}`,
+    contactName: businessName,
+  });
+}
+
 export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
   server: {
     handlers: {
@@ -146,6 +214,8 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
         const email: string | undefined =
           body?.contact?.email || body?.email || body?.customer?.email;
         if (!email) return new Response("Missing email", { status: 400 });
+
+        const lower = email.toLowerCase();
 
         // ── Credit pack purchase ──────────────────────────────────────────────
         const pack = packFromPayload(body);
@@ -174,11 +244,10 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
         const tier = tierFromPayload(body);
         if (!tier) return new Response("Unrecognized product", { status: 400 });
 
-        const lower = email.toLowerCase();
         // Find contractor by primary email or billing_email
         const { data: existing, error: findErr } = await supabaseAdmin
           .from("contractors")
-          .select("id, email, billing_email")
+          .select("id, email, billing_email, slug, business_name, subscription_tier")
           .or(`email.eq.${lower},billing_email.eq.${lower}`)
           .limit(1)
           .maybeSingle();
@@ -189,6 +258,9 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
           console.log("[ghl-payment] no contractor for", lower, "tier=", tier);
           return Response.json({ ok: true, matched: false });
         }
+
+        const prevTier = existing.subscription_tier ?? "apprentice";
+        const isFirstActivation = prevTier === "apprentice" || !prevTier;
 
         const { error: upErr } = await supabaseAdmin
           .from("contractors")
@@ -203,6 +275,14 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
 
         // ── Affiliate commission ──────────────────────────────────────────────
         await processAffiliateCommission(lower, tier);
+        // ─────────────────────────────────────────────────────────────────────
+
+        // ── Onboarding email on first paid activation ─────────────────────────
+        if (isFirstActivation) {
+          sendOnboardingEmail(lower, existing, tier).catch((err) =>
+            console.error("[ghl-payment] onboarding email failed:", err),
+          );
+        }
         // ─────────────────────────────────────────────────────────────────────
 
         return Response.json({ ok: true, contractor_id: existing.id, tier });
