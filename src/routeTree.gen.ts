@@ -40,6 +40,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
+import { Route as ApiPublicTestEmailGhlRouteImport } from './routes/api/public/test-email-ghl'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
@@ -221,6 +222,11 @@ const ApiPublicTestProposalFlowRoute =
     path: '/api/public/test-proposal-flow',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTestEmailGhlRoute = ApiPublicTestEmailGhlRouteImport.update({
+  id: '/api/public/test-email-ghl',
+  path: '/api/public/test-email-ghl',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSendProposalEmailRoute =
   ApiPublicSendProposalEmailRouteImport.update({
     id: '/api/public/send-proposal-email',
@@ -382,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -435,6 +442,7 @@ export interface FileRoutesByTo {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -490,6 +498,7 @@ export interface FileRoutesById {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -545,6 +554,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -598,6 +608,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -652,6 +663,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -695,6 +707,7 @@ export interface RootRouteChildren {
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
+  ApiPublicTestEmailGhlRoute: typeof ApiPublicTestEmailGhlRoute
   ApiPublicTestProposalFlowRoute: typeof ApiPublicTestProposalFlowRoute
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -929,6 +942,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTestProposalFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/test-email-ghl': {
+      id: '/api/public/test-email-ghl'
+      path: '/api/public/test-email-ghl'
+      fullPath: '/api/public/test-email-ghl'
+      preLoaderRoute: typeof ApiPublicTestEmailGhlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/send-proposal-email': {
       id: '/api/public/send-proposal-email'
       path: '/api/public/send-proposal-email'
@@ -1142,6 +1162,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
+  ApiPublicTestEmailGhlRoute: ApiPublicTestEmailGhlRoute,
   ApiPublicTestProposalFlowRoute: ApiPublicTestProposalFlowRoute,
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
