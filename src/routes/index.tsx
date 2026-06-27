@@ -26,7 +26,7 @@ function Index() {
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
-            <Link to="/contractor-apply" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">For Contractors</Link>
+            <Link to="/contractor-apply" search={{ phone: "", email: "", name: "", ghl_id: "" }} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">For Contractors</Link>
             <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
@@ -110,7 +110,7 @@ function Index() {
                 </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <Link to="/contractor-apply">Apply online <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/contractor-apply" search={{ phone: "", email: "", name: "", ghl_id: "" }}>Apply online <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground">

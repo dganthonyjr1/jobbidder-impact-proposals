@@ -28,6 +28,7 @@ export type Database = {
           logo_url: string | null
           phone: string | null
           primary_color: string | null
+          pricing_settings: Json | null
           service_states: string[] | null
           slug: string | null
           subscription_status: string
@@ -49,6 +50,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           primary_color?: string | null
+          pricing_settings?: Json | null
           service_states?: string[] | null
           slug?: string | null
           subscription_status?: string
@@ -70,6 +72,7 @@ export type Database = {
           logo_url?: string | null
           phone?: string | null
           primary_color?: string | null
+          pricing_settings?: Json | null
           service_states?: string[] | null
           slug?: string | null
           subscription_status?: string
@@ -654,6 +657,774 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      contractor_applications: {
+        Row: {
+          id: string
+          ghl_contact_id: string | null
+          name: string
+          phone: string
+          email: string | null
+          trade_type: string | null
+          years_experience: string | null
+          service_area: string | null
+          license_number: string | null
+          license_url: string | null
+          insurance_url: string | null
+          additional_doc_urls: Json
+          agrees_to_terms: boolean
+          status: string
+          qualification_status: string | null
+          qualification_score: number | null
+          qualification_percentage: number | null
+          years_in_operation: number | null
+          commercial_glazing_experience: number | null
+          average_project_size: string | null
+          window_film_experience: number | null
+          crew_size: number | null
+          states_licensed: string[]
+          osha_record: string | null
+          availability: string | null
+          surety_bond: string | null
+          workers_comp: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          ghl_contact_id?: string | null
+          name: string
+          phone: string
+          email?: string | null
+          trade_type?: string | null
+          years_experience?: string | null
+          service_area?: string | null
+          license_number?: string | null
+          license_url?: string | null
+          insurance_url?: string | null
+          additional_doc_urls?: Json
+          agrees_to_terms?: boolean
+          status?: string
+          qualification_status?: string | null
+          qualification_score?: number | null
+          qualification_percentage?: number | null
+          years_in_operation?: number | null
+          commercial_glazing_experience?: number | null
+          average_project_size?: string | null
+          window_film_experience?: number | null
+          crew_size?: number | null
+          states_licensed?: string[]
+          osha_record?: string | null
+          availability?: string | null
+          surety_bond?: string | null
+          workers_comp?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          ghl_contact_id?: string | null
+          name?: string
+          phone?: string
+          email?: string | null
+          trade_type?: string | null
+          years_experience?: string | null
+          service_area?: string | null
+          license_number?: string | null
+          license_url?: string | null
+          insurance_url?: string | null
+          additional_doc_urls?: Json
+          agrees_to_terms?: boolean
+          status?: string
+          qualification_status?: string | null
+          qualification_score?: number | null
+          qualification_percentage?: number | null
+          years_in_operation?: number | null
+          commercial_glazing_experience?: number | null
+          average_project_size?: string | null
+          window_film_experience?: number | null
+          crew_size?: number | null
+          states_licensed?: string[]
+          osha_record?: string | null
+          availability?: string | null
+          surety_bond?: string | null
+          workers_comp?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contractor_survey_responses: {
+        Row: {
+          id: string
+          contractor_id: string
+          years_in_operation: number | null
+          commercial_glazing_experience: number | null
+          average_project_size: string | null
+          window_film_experience: number | null
+          crew_size: number | null
+          states_licensed: string[]
+          osha_record: string | null
+          availability: string | null
+          surety_bond: string | null
+          workers_comp: string | null
+          total_score: number | null
+          percentage: number | null
+          status: string
+          completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id: string
+          years_in_operation?: number | null
+          commercial_glazing_experience?: number | null
+          average_project_size?: string | null
+          window_film_experience?: number | null
+          crew_size?: number | null
+          states_licensed?: string[]
+          osha_record?: string | null
+          availability?: string | null
+          surety_bond?: string | null
+          workers_comp?: string | null
+          total_score?: number | null
+          percentage?: number | null
+          status?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string
+          years_in_operation?: number | null
+          commercial_glazing_experience?: number | null
+          average_project_size?: string | null
+          window_film_experience?: number | null
+          crew_size?: number | null
+          states_licensed?: string[]
+          osha_record?: string | null
+          availability?: string | null
+          surety_bond?: string | null
+          workers_comp?: string | null
+          total_score?: number | null
+          percentage?: number | null
+          status?: string
+          completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contractor_recruits: {
+        Row: {
+          id: string
+          name: string
+          phone: string | null
+          email: string | null
+          trade_type: string | null
+          service_niche: string | null
+          service_state: string | null
+          source: string
+          source_ref: string | null
+          ghl_contact_id: string | null
+          invite_sent_at: string | null
+          invite_method: string | null
+          application_id: string | null
+          status: string
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          phone?: string | null
+          email?: string | null
+          trade_type?: string | null
+          service_niche?: string | null
+          service_state?: string | null
+          source?: string
+          source_ref?: string | null
+          ghl_contact_id?: string | null
+          invite_sent_at?: string | null
+          invite_method?: string | null
+          application_id?: string | null
+          status?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          phone?: string | null
+          email?: string | null
+          trade_type?: string | null
+          service_niche?: string | null
+          service_state?: string | null
+          source?: string
+          source_ref?: string | null
+          ghl_contact_id?: string | null
+          invite_sent_at?: string | null
+          invite_method?: string | null
+          application_id?: string | null
+          status?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contractor_documents: {
+        Row: {
+          id: string
+          contractor_id: string
+          document_type: string
+          file_url: string
+          file_name: string
+          file_mime: string | null
+          status: string
+          extracted_data: Json
+          ai_confidence: number | null
+          expiration_date: string | null
+          coverage_amount: number | null
+          license_number: string | null
+          issuer_name: string | null
+          holder_name: string | null
+          state_code: string | null
+          verified_at: string | null
+          verified_by: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id: string
+          document_type: string
+          file_url: string
+          file_name: string
+          file_mime?: string | null
+          status?: string
+          extracted_data?: Json
+          ai_confidence?: number | null
+          expiration_date?: string | null
+          coverage_amount?: number | null
+          license_number?: string | null
+          issuer_name?: string | null
+          holder_name?: string | null
+          state_code?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string
+          document_type?: string
+          file_url?: string
+          file_name?: string
+          file_mime?: string | null
+          status?: string
+          extracted_data?: Json
+          ai_confidence?: number | null
+          expiration_date?: string | null
+          coverage_amount?: number | null
+          license_number?: string | null
+          issuer_name?: string | null
+          holder_name?: string | null
+          state_code?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      voice_prequal_calls: {
+        Row: {
+          id: string
+          contractor_id: string | null
+          phone: string
+          ghl_contact_id: string | null
+          call_disposition: string
+          years_in_business: string | null
+          has_gc_license: string | null
+          has_liability_ins: string | null
+          has_workers_comp: string | null
+          has_surety_bond: string | null
+          states_licensed: string | null
+          crew_size: string | null
+          raw_payload: Json
+          sms_upload_link_sent: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id?: string | null
+          phone: string
+          ghl_contact_id?: string | null
+          call_disposition?: string
+          years_in_business?: string | null
+          has_gc_license?: string | null
+          has_liability_ins?: string | null
+          has_workers_comp?: string | null
+          has_surety_bond?: string | null
+          states_licensed?: string | null
+          crew_size?: string | null
+          raw_payload?: Json
+          sms_upload_link_sent?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string | null
+          phone?: string
+          ghl_contact_id?: string | null
+          call_disposition?: string
+          years_in_business?: string | null
+          has_gc_license?: string | null
+          has_liability_ins?: string | null
+          has_workers_comp?: string | null
+          has_surety_bond?: string | null
+          states_licensed?: string | null
+          crew_size?: string | null
+          raw_payload?: Json
+          sms_upload_link_sent?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      client_deals: {
+        Row: {
+          id: string
+          company_name: string
+          contact_name: string | null
+          contact_phone: string | null
+          contact_email: string | null
+          deal_value: number | null
+          stage: string
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_name: string
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
+          deal_value?: number | null
+          stage?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_name?: string
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_email?: string | null
+          deal_value?: number | null
+          stage?: string
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      jessica_followup_queue: {
+        Row: {
+          id: string
+          contact_id: string
+          phone: string | null
+          name: string | null
+          location_id: string | null
+          status: string
+          error: string | null
+          created_at: string
+          processed_at: string | null
+        }
+        Insert: {
+          id?: string
+          contact_id: string
+          phone?: string | null
+          name?: string | null
+          location_id?: string | null
+          status?: string
+          error?: string | null
+          created_at?: string
+          processed_at?: string | null
+        }
+        Update: {
+          id?: string
+          contact_id?: string
+          phone?: string | null
+          name?: string | null
+          location_id?: string | null
+          status?: string
+          error?: string | null
+          created_at?: string
+          processed_at?: string | null
+        }
+        Relationships: []
+      }
+      credit_ledger: {
+        Row: {
+          id: string
+          contractor_id: string
+          action_type: string
+          credits_used: number
+          is_overage: boolean
+          billing_period: string
+          description: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id: string
+          action_type: string
+          credits_used?: number
+          is_overage?: boolean
+          billing_period: string
+          description?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string
+          action_type?: string
+          credits_used?: number
+          is_overage?: boolean
+          billing_period?: string
+          description?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      credit_pack_purchases: {
+        Row: {
+          id: string
+          contractor_id: string
+          pack_name: string
+          credits_total: number
+          credits_remaining: number
+          purchased_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id: string
+          pack_name: string
+          credits_total: number
+          credits_remaining: number
+          purchased_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string
+          pack_name?: string
+          credits_total?: number
+          credits_remaining?: number
+          purchased_at?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          id: string
+          user_id: string
+          company_name: string
+          code: string
+          payout_preference: "credit" | "payout"
+          payout_email: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          company_name: string
+          code: string
+          payout_preference?: "credit" | "payout"
+          payout_email?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          company_name?: string
+          code?: string
+          payout_preference?: "credit" | "payout"
+          payout_email?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          id: string
+          referrer_code: string
+          referred_company: string
+          referred_email: string | null
+          plan_name: string
+          plan_amount_cents: number
+          commission_rate: number
+          status: "pending" | "active" | "churned"
+          activated_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_code: string
+          referred_company: string
+          referred_email?: string | null
+          plan_name?: string
+          plan_amount_cents?: number
+          commission_rate?: number
+          status?: "pending" | "active" | "churned"
+          activated_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_code?: string
+          referred_company?: string
+          referred_email?: string | null
+          plan_name?: string
+          plan_amount_cents?: number
+          commission_rate?: number
+          status?: "pending" | "active" | "churned"
+          activated_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      affiliate_transactions: {
+        Row: {
+          id: string
+          referrer_code: string
+          referral_id: string | null
+          transaction_type: string
+          amount_cents: number
+          description: string | null
+          billing_period: string | null
+          status: "pending" | "processed" | "failed"
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          referrer_code: string
+          referral_id?: string | null
+          transaction_type: string
+          amount_cents: number
+          description?: string | null
+          billing_period?: string | null
+          status?: "pending" | "processed" | "failed"
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          referrer_code?: string
+          referral_id?: string | null
+          transaction_type?: string
+          amount_cents?: number
+          description?: string | null
+          billing_period?: string | null
+          status?: "pending" | "processed" | "failed"
+          created_at?: string
+        }
+        Relationships: []
+      }
+      audit_access_links: {
+        Row: {
+          id: string
+          user_id: string
+          token: string
+          label: string | null
+          access_level: string
+          expires_at: string | null
+          last_accessed_at: string | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          token: string
+          label?: string | null
+          access_level?: string
+          expires_at?: string | null
+          last_accessed_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          token?: string
+          label?: string | null
+          access_level?: string
+          expires_at?: string | null
+          last_accessed_at?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      photos_videos: {
+        Row: {
+          id: string
+          user_id: string
+          proposal_id: string | null
+          contractor_id: string | null
+          file_name: string
+          file_type: "photo" | "video"
+          mime_type: string
+          file_size: number
+          duration_seconds: number | null
+          storage_path: string
+          storage_url: string
+          thumbnail_url: string | null
+          ai_analysis: Json | null
+          is_damage_photo: boolean
+          damage_type: string | null
+          title: string | null
+          description: string | null
+          tags: string[]
+          location_name: string | null
+          latitude: number | null
+          longitude: number | null
+          display_order: number
+          is_public: boolean
+          is_archived: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          proposal_id?: string | null
+          contractor_id?: string | null
+          file_name: string
+          file_type: string
+          mime_type: string
+          file_size: number
+          duration_seconds?: number | null
+          storage_path: string
+          storage_url: string
+          thumbnail_url?: string | null
+          ai_analysis?: Json | null
+          is_damage_photo?: boolean
+          damage_type?: string | null
+          title?: string | null
+          description?: string | null
+          tags?: string[]
+          location_name?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          display_order?: number
+          is_public?: boolean
+          is_archived?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          proposal_id?: string | null
+          contractor_id?: string | null
+          file_name?: string
+          file_type?: string
+          mime_type?: string
+          file_size?: number
+          duration_seconds?: number | null
+          storage_path?: string
+          storage_url?: string
+          thumbnail_url?: string | null
+          ai_analysis?: Json | null
+          is_damage_photo?: boolean
+          damage_type?: string | null
+          title?: string | null
+          description?: string | null
+          tags?: string[]
+          location_name?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          display_order?: number
+          is_public?: boolean
+          is_archived?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      media_galleries: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          gallery_type: string
+          proposal_id: string | null
+          contractor_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          gallery_type: string
+          proposal_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          gallery_type?: string
+          proposal_id?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gallery_media: {
+        Row: {
+          id: string
+          gallery_id: string
+          media_id: string
+          display_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          gallery_id: string
+          media_id: string
+          display_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          gallery_id?: string
+          media_id?: string
+          display_order?: number
+          created_at?: string
         }
         Relationships: []
       }

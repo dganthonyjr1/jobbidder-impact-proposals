@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,7 +83,7 @@ function SettingsPage() {
 
       // Load pricing settings if they exist
       if (data?.pricing_settings) {
-        setPricing({ ...DEFAULT_PRICING, ...data.pricing_settings });
+        setPricing({ ...DEFAULT_PRICING, ...(data.pricing_settings as any) });
       }
 
       if (data?.id) {
@@ -109,7 +110,7 @@ function SettingsPage() {
       logo_url: contractor.logo_url,
       slug: contractor.slug || null,
       business_address: contractor.business_address || null,
-      pricing_settings: pricing,
+      pricing_settings: pricing as unknown as Json,
     }).eq("id", contractor.id);
 
     let integrationError: any = null;
