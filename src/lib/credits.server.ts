@@ -1,3 +1,5 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 type ActionType =
@@ -162,3 +164,64 @@ export async function checkAndDeductCredit(
     return { allowed: true, isOverage: false };
   }
 }
+
+export const getCreditUsage = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const billingPeriod = new Date().toISOString().slice(0, 7);
+
+    const { data: contractor } = await supabaseAdmin
+      .from("contractors")
+      .select("id, subscription_tier")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!contractor) return null;
+
+    const tier = (contractor.subscription_tier ?? "apprentice") as string;
+    const allotment = MONTHLY_ALLOTMENT[tier] ?? 0;
+
+    // Credits used this billing period (non-overage)
+    const { data: ledgerRows } = await supabaseAdmin
+      .from("credit_ledger")
+      .select("credits_used, is_overage, action_type")
+      .eq("contractor_id", contractor.id)
+      .eq("billing_period", billingPeriod);
+
+    const rows = ledgerRows ?? [];
+    const usedThisPeriod = rows
+      .filter((r) => !r.is_overage)
+      .reduce((s, r) => s + (r.credits_used ?? 0), 0);
+    const overageCount = rows.filter((r) => r.is_overage).length;
+
+    // Lifetime count (apprentice)
+    const lifetimeCount = tier === "apprentice"
+      ? (await supabaseAdmin
+          .from("credit_ledger")
+          .select("id", { count: "exact", head: true })
+          .eq("contractor_id", contractor.id)
+        ).count ?? 0
+      : null;
+
+    // Add-on pack credits remaining
+    const { data: packs } = await supabaseAdmin
+      .from("credit_pack_purchases")
+      .select("pack_name, credits_total, credits_remaining, purchased_at")
+      .eq("contractor_id", contractor.id)
+      .gt("credits_remaining", 0)
+      .order("purchased_at", { ascending: true });
+
+    const packCreditsRemaining = (packs ?? []).reduce((s, p) => s + p.credits_remaining, 0);
+
+    return {
+      tier,
+      billingPeriod,
+      allotment,
+      usedThisPeriod,
+      overageCount,
+      lifetimeCount,
+      packCreditsRemaining,
+      packs: packs ?? [],
+    };
+  });
