@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { Loader2, CheckCircle2, Send } from "lucide-react";
+import { Loader2, CheckCircle2, Send, ArrowLeft } from "lucide-react";
 import { getBrandingBySlug } from "@/lib/go-branding.server";
 
 type Step =
@@ -95,17 +95,17 @@ function BrandedIntakePage() {
     addUser(val);
     const updatedLead = { ...lead };
 
+    // Store each answer under its own key so going back and re-answering
+    // simply overwrites it (no duplicated text). The full job description is
+    // assembled from these pieces at submit time.
     if (step === "name")       updatedLead.client_name = val;
     else if (step === "email") updatedLead.client_email = val;
     else if (step === "address") updatedLead.job_address = val;
     else if (step === "job_type") updatedLead.trade_type = val;
-    else if (step === "scope") updatedLead.job_description = val;
-    else if (step === "materials" && val.toLowerCase() !== "standard")
-      updatedLead.job_description = (updatedLead.job_description || "") + `. Materials: ${val}`;
-    else if (step === "timeline" && val.toLowerCase() !== "flexible")
-      updatedLead.job_description = (updatedLead.job_description || "") + `. Timeline: ${val}`;
-    else if (step === "terms" && val.toLowerCase() !== "standard")
-      updatedLead.job_description = (updatedLead.job_description || "") + `. Terms: ${val}`;
+    else if (step === "scope") updatedLead.scope = val;
+    else if (step === "materials") updatedLead.materials = val;
+    else if (step === "timeline") updatedLead.timeline = val;
+    else if (step === "terms") updatedLead.terms = val;
 
     setLead(updatedLead);
     const ns = nextStep(step);
@@ -117,6 +117,30 @@ function BrandedIntakePage() {
     } else {
       setTimeout(() => addBot(QUESTIONS[ns]), 400);
     }
+  }
+
+  function buildJobDescription(data: Record<string, string>): string {
+    return [
+      data.scope || "",
+      data.materials && data.materials.toLowerCase() !== "standard" ? `. Materials: ${data.materials}` : "",
+      data.timeline && data.timeline.toLowerCase() !== "flexible" ? `. Timeline: ${data.timeline}` : "",
+      data.terms && data.terms.toLowerCase() !== "standard" ? `. Terms: ${data.terms}` : "",
+    ].join("");
+  }
+
+  // Step back one question so the customer can fix a previous answer.
+  function handleBack() {
+    const idx = STEP_ORDER.indexOf(step);
+    if (idx < 2 || idx > 8) return; // only between "email" and "terms"
+    const prev = STEP_ORDER[idx - 1];
+    setMessages((m) => {
+      const copy = [...m];
+      if (copy.length && copy[copy.length - 1].role === "bot") copy.pop();   // current question
+      if (copy.length && copy[copy.length - 1].role === "user") copy.pop();  // previous answer
+      return copy;
+    });
+    setInput("");
+    setStep(prev);
   }
 
   async function submitLead(data: Record<string, string>) {
@@ -131,7 +155,7 @@ function BrandedIntakePage() {
           client_phone: "",
           job_address: data.job_address,
           trade_type: data.trade_type,
-          job_description: data.job_description,
+          job_description: buildJobDescription(data),
         }),
       });
       const json = await res.json();
@@ -165,6 +189,10 @@ function BrandedIntakePage() {
   }
 
   const isInputDisabled = step === "submitting" || step === "done";
+  const canGoBack = (() => {
+    const idx = STEP_ORDER.indexOf(step);
+    return idx >= 2 && idx <= 8; // "email" through "terms"
+  })();
 
   return (
     <div
@@ -258,6 +286,15 @@ function BrandedIntakePage() {
         {/* Input */}
         {!isInputDisabled && (
           <div className="flex items-center gap-2 border-t border-gray-200 px-3 py-3">
+            {canGoBack && (
+              <button
+                onClick={handleBack}
+                title="Go back to fix the previous answer"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-500 transition hover:bg-gray-50"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            )}
             <input
               ref={inputRef}
               type="text"
