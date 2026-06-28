@@ -15,6 +15,7 @@ const Body = z.object({
   license_url: z.string().url(),
   insurance_url: z.string().url(),
   agrees_to_terms: z.boolean(),
+  sms_opted_in: z.boolean().optional().default(false),
 });
 
 function cors(extra: Record<string, string> = {}) {
@@ -64,6 +65,10 @@ export const Route = createFileRoute("/api/public/contractor-apply")({
             insurance_url: input.insurance_url,
             agrees_to_terms: true,
             status: "submitted",
+            notes:
+              `TCPA consent — SMS/voice: ${input.sms_opted_in ? "GRANTED" : "NOT GRANTED"} on ${new Date().toISOString()} ` +
+              `via web application form. Consent covers automated SMS/text messages and AI-assisted voice calls from ` +
+              `Jobbidder (operated by Sudden Impact Agency LLC) at ${input.phone}. Terms & Privacy agreed: ${input.agrees_to_terms}.`,
           })
           .select("id")
           .single();
@@ -77,13 +82,16 @@ export const Route = createFileRoute("/api/public/contractor-apply")({
 
         const firstName = input.name.split(" ")[0];
 
-        // Confirmation SMS to contractor (non-blocking)
-        sendSmsViaGHL({
-          to: input.phone,
-          body: `Hi ${firstName}! We received your contractor application and documents. Our team at National Glazing Solutions Inc will review everything and follow up with you shortly. Questions? Reply to this message.`,
-          contactName: input.name,
-          contactEmail: input.email || undefined,
-        }).catch((e) => console.warn("[contractor-apply] confirmation SMS failed:", e?.message));
+        // Confirmation SMS to contractor (non-blocking).
+        // TCPA: only send if the applicant gave SMS consent (recorded in notes above).
+        if (input.sms_opted_in) {
+          sendSmsViaGHL({
+            to: input.phone,
+            body: `Hi ${firstName}! We received your contractor application and documents. Our team will review everything and follow up with you shortly. Reply STOP to opt out, HELP for help. Msg & data rates may apply.`,
+            contactName: input.name,
+            contactEmail: input.email || undefined,
+          }).catch((e) => console.warn("[contractor-apply] confirmation SMS failed:", e?.message));
+        }
 
         // Notify NGS team
         const notifyPhone = process.env.NGS_NOTIFY_PHONE;

@@ -13,11 +13,11 @@ const SUPPORTED_LANGS = ["en", "es", "fr", "pt", "ht"] as const;
 type Lang = typeof SUPPORTED_LANGS[number];
 
 const PREQUAL_SMS: Record<Lang, (name: string, url: string) => string> = {
-  en: (n, u) => `Hi ${n}! Thanks for speaking with NGS. To complete your contractor pre-qualification, please upload your license, insurance, and bonding documents — it only takes 5 minutes: ${u}`,
-  es: (n, u) => `¡Hola ${n}! Gracias por hablar con NGS. Para completar tu precalificación como contratista, por favor sube tu licencia, seguro y documentos de fianza — solo tarda 5 minutos: ${u}`,
-  fr: (n, u) => `Bonjour ${n} ! Merci d'avoir parlé avec NGS. Pour finaliser votre pré-qualification, veuillez télécharger votre licence, votre assurance et vos documents de caution — cela ne prend que 5 minutes : ${u}`,
-  pt: (n, u) => `Olá ${n}! Obrigado por falar com a NGS. Para concluir sua pré-qualificação como contratante, envie sua licença, seguro e documentos de fiança — leva apenas 5 minutos: ${u}`,
-  ht: (n, u) => `Bonjou ${n}! Mèsi pou pale ak NGS. Pou w konplete pre-kalifikasyon kontraktè ou, tanpri telechaje lisans ou, asirans ou, ak dokiman garanti ou — sa pran sèlman 5 minit: ${u}`,
+  en: (n, u) => `Hi ${n}! Thanks for speaking with NGS. To complete your contractor pre-qualification, please upload your license, insurance, and bonding documents — it only takes 5 minutes: ${u} Reply STOP to opt out.`,
+  es: (n, u) => `¡Hola ${n}! Gracias por hablar con NGS. Para completar tu precalificación como contratista, por favor sube tu licencia, seguro y documentos de fianza — solo tarda 5 minutos: ${u} Responde STOP para cancelar.`,
+  fr: (n, u) => `Bonjour ${n} ! Merci d'avoir parlé avec NGS. Pour finaliser votre pré-qualification, veuillez télécharger votre licence, votre assurance et vos documents de caution — cela ne prend que 5 minutes : ${u} Répondez STOP pour vous désabonner.`,
+  pt: (n, u) => `Olá ${n}! Obrigado por falar com a NGS. Para concluir sua pré-qualificação como contratante, envie sua licença, seguro e documentos de fiança — leva apenas 5 minutos: ${u} Responda STOP para cancelar.`,
+  ht: (n, u) => `Bonjou ${n}! Mèsi pou pale ak NGS. Pou w konplete pre-kalifikasyon kontraktè ou, tanpri telechaje lisans ou, asirans ou, ak dokiman garanti ou — sa pran sèlman 5 minit: ${u} Reponn STOP pou w sispann.`,
 };
 
 function resolveLang(raw?: string | null): Lang {
