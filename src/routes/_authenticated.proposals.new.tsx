@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateProposal } from "@/lib/proposals.functions";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { STATE_LIST } from "@/lib/pricing";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -84,6 +84,9 @@ function NewProposalPage() {
         requiredPlan={upgradeInfo?.plan ?? "Journeyman"}
         upgradeUrl={upgradeInfo?.url ?? UPGRADE_URLS.Journeyman}
       />
+      <Link to="/dashboard" className="inline-flex items-center gap-2 text-base text-muted-foreground hover:text-foreground mb-4">
+        <ArrowLeft className="h-5 w-5" /> Back to dashboard
+      </Link>
       <h1 className="font-display text-3xl font-bold tracking-tight mb-2">New AI Proposal</h1>
       <p className="text-muted-foreground mb-8">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
       <Card className="p-6 bg-card border-border">
