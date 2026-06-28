@@ -167,7 +167,7 @@ function AuditPortal() {
       {/* Header */}
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          <JobbidderLogo size="sm" />
+          <JobbidderLogo size="md" />
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Lock className="h-3 w-3" />
             Read-only audit access

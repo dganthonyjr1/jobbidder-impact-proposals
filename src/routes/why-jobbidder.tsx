@@ -226,7 +226,7 @@ function WhyJobbidderPage() {
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/">
-            <JobbidderLogo size="sm" />
+            <JobbidderLogo size="md" />
           </Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
@@ -548,7 +548,7 @@ function WhyJobbidderPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-border/40 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <JobbidderLogo size="sm" />
+          <JobbidderLogo size="md" />
           <div className="flex gap-8 text-sm font-semibold text-muted-foreground">
             <Link to="/pricing" className="hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="hover:text-foreground transition">Why Jobbidder</Link>

@@ -29,7 +29,7 @@ function TermsPage() {
       <header className="border-b border-border/40">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/">
-            <JobbidderLogo size="sm" />
+            <JobbidderLogo size="md" />
           </Link>
           <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link>
         </div>
