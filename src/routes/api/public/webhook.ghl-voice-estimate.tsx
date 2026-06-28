@@ -54,15 +54,44 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-estimate")({
           return Response.json({ error: "Invalid JSON" }, { status: 400 });
         }
 
-        // Extract fields — support both flat and nested GHL formats
-        const slug: string = body.contractor_slug ?? body.slug ?? "";
-        const clientName: string = body.client_name ?? body.contact?.name ?? body.name ?? "";
-        const clientEmail: string = body.client_email ?? body.email ?? body.contact?.email ?? "";
-        const clientPhone: string = body.phone ?? body.contact?.phone ?? body.client_phone ?? "";
-        const jobAddress: string = body.job_address ?? body.address ?? body.contact?.address ?? "";
-        const tradeType: string = body.trade_type ?? body.trade ?? "";
-        const jobDescription: string = body.job_description ?? body.description ?? body.notes ?? "";
-        const rawLang = body.language ?? body.contact?.language ?? body.lang ?? null;
+        // GHL can deliver fields flat, or nested under containers like
+        // customData / custom_data / contact / call / data. Merge them all into
+        // one flat view so a value is found no matter how GHL structured it.
+        const containers = [
+          body,
+          body?.customData,
+          body?.custom_data,
+          body?.customFields,
+          body?.data,
+          body?.contact,
+          body?.call,
+        ].filter((c) => c && typeof c === "object");
+        const merged: Record<string, any> = Object.assign({}, ...containers);
+
+        // Pull the first non-empty value across every plausible key name.
+        const pick = (...keys: string[]): string => {
+          for (const k of keys) {
+            const v = merged[k] ?? body?.[k];
+            if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
+          }
+          return "";
+        };
+
+        const slug: string = pick("contractor_slug", "contractorSlug", "slug", "contractor", "contractor_slu");
+        const clientName: string =
+          pick("client_name", "clientName", "customer_name", "customerName", "name", "full_name", "fullName") ||
+          [pick("first_name", "firstName"), pick("last_name", "lastName")].filter(Boolean).join(" ").trim();
+        const clientEmail: string = pick("client_email", "clientEmail", "customer_email", "email");
+        const clientPhone: string = pick("phone", "client_phone", "clientPhone", "customer_phone", "phone_number", "phoneNumber");
+        const jobAddress: string = pick("job_address", "jobAddress", "address", "full_address", "address1");
+        const tradeType: string = pick("trade_type", "tradeType", "trade", "service", "service_type");
+        const jobDescription: string = pick(
+          "job_description", "jobDescription", "job_descriptio",
+          "description", "notes", "message",
+          "call_summary", "callSummary", "summary",
+          "call_transcript", "callTranscript", "transcript",
+        );
+        const rawLang = pick("language", "lang", "locale") || null;
         const language: Lang = resolveLang(rawLang);
 
         // Validate minimum required fields
@@ -73,7 +102,28 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-estimate")({
         if (!jobDescription || jobDescription.length < 10) missing.push("job_description (min 10 chars)");
 
         if (missing.length) {
-          return Response.json({ error: "Missing required fields", missing }, { status: 400 });
+          // Echo back exactly what GHL sent so the GHL execution log shows the
+          // real payload structure — no guessing about field names.
+          const redact = (v: any) => {
+            const s = typeof v === "string" ? v : JSON.stringify(v);
+            return s.length > 120 ? s.slice(0, 117) + "…" : s;
+          };
+          const received: Record<string, string> = {};
+          for (const c of containers) {
+            for (const [k, v] of Object.entries(c)) {
+              if (!(k in received)) received[k] = redact(v);
+            }
+          }
+          return Response.json(
+            {
+              error: "Missing required fields",
+              missing,
+              received_keys: Object.keys(received),
+              received,
+              got: { slug, clientName, clientEmail, clientPhone, jobDescription_len: jobDescription.length },
+            },
+            { status: 400 },
+          );
         }
 
         // Call intake-submit to generate the AI proposal
