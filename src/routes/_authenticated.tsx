@@ -58,7 +58,7 @@ function AuthLayout() {
     <div className="min-h-screen bg-background flex">
       <aside className="w-60 border-r border-border bg-sidebar flex flex-col">
         <Link to="/dashboard" className="flex items-center gap-2 p-5 border-b border-border">
-          <JobbidderLogo size="sm" />
+          <JobbidderLogo size="md" />
         </Link>
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((n) => (
