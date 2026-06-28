@@ -324,94 +324,72 @@ function Dashboard() {
                 )}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th className="text-left p-4">Proposal #</th>
-                      <th className="text-left p-4">Client</th>
-                      <th className="text-left p-4">Trade / Address</th>
-                      <th className="text-left p-4">Total</th>
-                      <th className="text-left p-4">Status</th>
-                      <th className="text-left p-4">Views</th>
-                      <th className="text-left p-4">Created</th>
-                      <th className="text-left p-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((p: any) => (
-                      <tr key={p.id} className="border-t border-border hover:bg-accent/30 transition">
-                        <td className="p-4">
-                          <div className="font-mono text-xs">{p.proposal_number}</div>
-                          {p.language && p.language !== "en" && (
-                            <span className="text-base" title={p.language}>{LANG_FLAGS[p.language] || ""}</span>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <div className="font-medium">{p.client_name}</div>
-                          {p.client_email && (
-                            <a href={`mailto:${p.client_email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-0.5">
-                              <Mail className="h-3 w-3" />{p.client_email}
-                            </a>
-                          )}
-                          {p.client_phone && (
-                            <a href={`tel:${p.client_phone}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 mt-0.5">
-                              <Phone className="h-3 w-3" />{p.client_phone}
-                            </a>
-                          )}
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm">{p.trade_type || "—"}</div>
-                          {p.job_address && <div className="text-xs text-muted-foreground mt-0.5">{p.job_address}</div>}
-                        </td>
-                        <td className="p-4 text-sm font-mono">
-                          {p._grandTotal > 0 ? fmt(p._grandTotal) : "—"}
-                        </td>
-                        <td className="p-4">
-                          <Badge className={STATUS_COLORS[p.status] || ""}>{p.status}</Badge>
-                          {p.status === "accepted" && p.accepted_at && (
-                            <div className="text-xs text-muted-foreground mt-1">{timeAgo(p.accepted_at)}</div>
-                          )}
-                        </td>
-                        <td className="p-4 text-sm">
-                          {(p.view_count ?? 0) > 0 ? (
-                            <span className="text-foreground">
-                              {p.view_count} <span className="text-muted-foreground">· {timeAgo(p.last_viewed_at)}</span>
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </td>
-                        <td className="p-4 text-sm text-muted-foreground">
+              <div className="divide-y divide-border">
+                {filtered.map((p: any) => (
+                  <div
+                    key={p.id}
+                    className="p-4 hover:bg-accent/30 transition flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    {/* Client + details */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium">{p.client_name}</span>
+                        <Badge className={STATUS_COLORS[p.status] || ""}>{p.status}</Badge>
+                        {p.language && p.language !== "en" && (
+                          <span className="text-base" title={p.language}>{LANG_FLAGS[p.language] || ""}</span>
+                        )}
+                      </div>
+                      <div className="font-mono text-xs text-muted-foreground mt-0.5">{p.proposal_number}</div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        {p.trade_type || "—"}{p.job_address ? ` · ${p.job_address}` : ""}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                        {p.client_email && (
+                          <a href={`mailto:${p.client_email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1">
+                            <Mail className="h-3 w-3" />{p.client_email}
+                          </a>
+                        )}
+                        {p.client_phone && (
+                          <a href={`tel:${p.client_phone}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1">
+                            <Phone className="h-3 w-3" />{p.client_phone}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Total + actions */}
+                    <div className="flex items-center justify-between gap-4 shrink-0 sm:flex-col sm:items-end sm:justify-center">
+                      <div className="sm:text-right">
+                        <div className="font-mono font-semibold">{p._grandTotal > 0 ? fmt(p._grandTotal) : "—"}</div>
+                        <div className="text-xs text-muted-foreground">
                           {new Date(p.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              to="/p/$id"
-                              params={{ id: p.id }}
-                              target="_blank"
-                              className="text-primary text-sm hover:underline flex items-center gap-1"
-                            >
-                              <ExternalLink className="h-3 w-3" /> View
-                            </Link>
-                            {p.client_email && (
-                              <button
-                                onClick={() => resend(p.id, p.client_email)}
-                                disabled={resending === p.id}
-                                className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 disabled:opacity-50"
-                                title="Resend proposal email & SMS"
-                              >
-                                <Send className="h-3 w-3" />
-                                {resending === p.id ? "…" : "Resend"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          {(p.view_count ?? 0) > 0 ? ` · ${p.view_count} view${p.view_count !== 1 ? "s" : ""}` : ""}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Link
+                          to="/p/$id"
+                          params={{ id: p.id }}
+                          target="_blank"
+                          className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> View
+                        </Link>
+                        {p.client_email && (
+                          <button
+                            onClick={() => resend(p.id, p.client_email)}
+                            disabled={resending === p.id}
+                            className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50"
+                            title="Resend proposal email & SMS"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                            {resending === p.id ? "…" : "Resend"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
