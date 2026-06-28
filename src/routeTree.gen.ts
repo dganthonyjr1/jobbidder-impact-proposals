@@ -57,6 +57,7 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/api/public/webhook.ghl-voice-prequal'
 import { Route as ApiPublicWebhookGhlVoiceEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-estimate'
+import { Route as ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-update-estimate'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
 import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './routes/api/public/webhook.ghl-contractor-survey'
@@ -320,6 +321,12 @@ const ApiPublicWebhookGhlVoiceEstimateRoute =
     path: '/api/public/webhook/ghl-voice-estimate',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookGhlVoiceUpdateEstimateRoute =
+  ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport.update({
+    id: '/api/public/webhook/ghl-voice-update-estimate',
+    path: '/api/public/webhook/ghl-voice-update-estimate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookGhlPaymentRoute =
   ApiPublicWebhookGhlPaymentRouteImport.update({
     id: '/api/public/webhook/ghl-payment',
@@ -406,6 +413,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -461,6 +469,7 @@ export interface FileRoutesByTo {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -518,6 +527,7 @@ export interface FileRoutesById {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -575,6 +585,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -630,6 +641,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -686,6 +698,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -731,6 +744,7 @@ export interface RootRouteChildren {
   ApiPublicWebhookGhlJessicaFollowupRoute: typeof ApiPublicWebhookGhlJessicaFollowupRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
   ApiPublicWebhookGhlVoiceEstimateRoute: typeof ApiPublicWebhookGhlVoiceEstimateRoute
+  ApiPublicWebhookGhlVoiceUpdateEstimateRoute: typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   ApiPublicWebhookGhlVoicePrequalRoute: typeof ApiPublicWebhookGhlVoicePrequalRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -1068,6 +1082,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookGhlVoiceEstimateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/ghl-voice-update-estimate': {
+      id: '/api/public/webhook/ghl-voice-update-estimate'
+      path: '/api/public/webhook/ghl-voice-update-estimate'
+      fullPath: '/api/public/webhook/ghl-voice-update-estimate'
+      preLoaderRoute: typeof ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhook/ghl-voice-prequal': {
       id: '/api/public/webhook/ghl-voice-prequal'
       path: '/api/public/webhook/ghl-voice-prequal'
@@ -1197,6 +1218,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicWebhookGhlJessicaFollowupRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
   ApiPublicWebhookGhlVoiceEstimateRoute: ApiPublicWebhookGhlVoiceEstimateRoute,
+  ApiPublicWebhookGhlVoiceUpdateEstimateRoute:
+    ApiPublicWebhookGhlVoiceUpdateEstimateRoute,
   ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
