@@ -137,6 +137,9 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
       POST: async ({ request }) => {
         const url = new URL(request.url);
         const contractorId = url.searchParams.get("contractor");
+        const ghlToken = url.searchParams.get("ghl_token") || url.searchParams.get("token");
+        const ghlLocationId = url.searchParams.get("ghl_location_id") || url.searchParams.get("location_id");
+        
         if (!contractorId) {
           return Response.json({ ok: false, error: "Missing contractor" }, { status: 400, headers: cors() });
         }
@@ -158,13 +161,32 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         const jobState = normalizeState(firstString(custom(body, "state", "job_state", "jobState"), body.state, body.contact?.state));
         const tradeType = firstString(custom(body, "trade_type", "tradeType", "service", "project_type"), body.trade_type);
 
-        // Load contractor for business name and GHL credentials
+        // Load contractor for business name
         const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, ghl_api_token, ghl_location_id, sms_from_number, email_from")
+          .select("id, business_name")
           .eq("id", contractorId)
           .maybeSingle();
         if (contractorError) console.warn("[webhook.ghl] Contractor lookup failed:", contractorError.message);
+
+        // Use provided GHL credentials or load from database
+        let mergedContractor: any = contractor || {};
+        if (ghlToken && ghlLocationId) {
+          // Use provided credentials
+          mergedContractor.ghl_api_token = ghlToken;
+          mergedContractor.ghl_location_id = ghlLocationId;
+        } else {
+          // Load from database
+          const { data: ghlIntegration, error: ghlError } = await supabaseAdmin
+            .from("contractor_integrations")
+            .select("ghl_api_token, ghl_location_id, sms_from_number, email_from")
+            .eq("contractor_id", contractorId)
+            .maybeSingle();
+          if (ghlError) console.warn("[webhook.ghl] GHL integration lookup failed:", ghlError.message);
+          if (ghlIntegration) {
+            mergedContractor = { ...mergedContractor, ...ghlIntegration };
+          }
+        }
 
         const businessName = contractor?.business_name || "Jobbidder";
 
