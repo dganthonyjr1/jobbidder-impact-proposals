@@ -66,17 +66,17 @@ function AuthLayout() {
               key={n.to}
               to={n.to}
               activeProps={{ className: "bg-accent text-accent-foreground" }}
-              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-accent/50 transition"
+              className="flex items-center gap-3 rounded-md px-3 py-2 text-base text-sidebar-foreground hover:bg-accent/50 transition"
             >
-              <n.icon className="h-4 w-4" />
+              <n.icon className="h-5 w-5" />
               {n.label}
             </Link>
           ))}
         </nav>
         <div className="p-3 border-t border-border">
-          <div className="text-xs text-muted-foreground truncate px-2 pb-2">{email}</div>
-          <button onClick={signOut} className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 transition">
-            <LogOut className="h-4 w-4" /> Sign out
+          <div className="text-sm text-muted-foreground truncate px-2 pb-2">{email}</div>
+          <button onClick={signOut} className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-base text-muted-foreground hover:bg-accent/50 transition">
+            <LogOut className="h-5 w-5" /> Sign out
           </button>
         </div>
       </aside>
