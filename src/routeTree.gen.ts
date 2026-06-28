@@ -22,13 +22,12 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProposalIdRouteImport } from './routes/proposal.$id'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as GoSlugRouteImport } from './routes/go.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as EIdRouteImport } from './routes/e.$id'
+import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
-import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
-import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
-import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
 import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
@@ -36,9 +35,12 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
 import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
 import { Route as AuthenticatedContractorDashboardRouteImport } from './routes/_authenticated.contractor-dashboard'
+import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
+import { Route as ApiPublicTestEmailGhlRouteImport } from './routes/api/public/test-email-ghl'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
@@ -54,6 +56,7 @@ import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lova
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/api/public/webhook.ghl-voice-prequal'
+import { Route as ApiPublicWebhookGhlVoiceEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-estimate'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
 import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './routes/api/public/webhook.ghl-contractor-survey'
@@ -125,6 +128,11 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GoSlugRoute = GoSlugRouteImport.update({
+  id: '/go/$slug',
+  path: '/go/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   id: '/email/unsubscribe',
   path: '/email/unsubscribe',
@@ -133,6 +141,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
 const EIdRoute = EIdRouteImport.update({
   id: '/e/$id',
   path: '/e/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditTokenRoute = AuditTokenRouteImport.update({
+  id: '/audit/$token',
+  path: '/audit/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -144,21 +157,6 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
-  id: '/affiliate',
-  path: '/affiliate',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
-  id: '/account',
-  path: '/account',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuditTokenRoute = AuditTokenRouteImport.update({
-  id: '/audit/$token',
-  path: '/audit/$token',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMediaUploadRoute =
   AuthenticatedMediaUploadRouteImport.update({
@@ -199,6 +197,16 @@ const AuthenticatedContractorDashboardRoute =
     path: '/contractor-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -215,6 +223,11 @@ const ApiPublicTestProposalFlowRoute =
     path: '/api/public/test-proposal-flow',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicTestEmailGhlRoute = ApiPublicTestEmailGhlRouteImport.update({
+  id: '/api/public/test-email-ghl',
+  path: '/api/public/test-email-ghl',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSendProposalEmailRoute =
   ApiPublicSendProposalEmailRouteImport.update({
     id: '/api/public/send-proposal-email',
@@ -301,6 +314,12 @@ const ApiPublicWebhookGhlVoicePrequalRoute =
     path: '/api/public/webhook/ghl-voice-prequal',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookGhlVoiceEstimateRoute =
+  ApiPublicWebhookGhlVoiceEstimateRouteImport.update({
+    id: '/api/public/webhook/ghl-voice-estimate',
+    path: '/api/public/webhook/ghl-voice-estimate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookGhlPaymentRoute =
   ApiPublicWebhookGhlPaymentRouteImport.update({
     id: '/api/public/webhook/ghl-payment',
@@ -348,6 +367,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -356,15 +377,14 @@ export interface FileRoutesByFullPath {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
-  '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
-  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -375,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -384,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
+  '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -400,6 +422,8 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -408,15 +432,14 @@ export interface FileRoutesByTo {
   '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
-  '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
-  '/audit/$token': typeof AuditTokenRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
@@ -427,6 +450,7 @@ export interface FileRoutesByTo {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -436,6 +460,7 @@ export interface FileRoutesByTo {
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
+  '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -454,6 +479,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/why-jobbidder': typeof WhyJobbidderRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
   '/_authenticated/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
@@ -462,12 +489,11 @@ export interface FileRoutesById {
   '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
-  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/audit/$token': typeof AuditTokenRoute
   '/e/$id': typeof EIdRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
+  '/go/$slug': typeof GoSlugRoute
   '/p/$id': typeof PIdRoute
   '/proposal/$id': typeof ProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
@@ -481,6 +507,7 @@ export interface FileRoutesById {
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
@@ -490,6 +517,7 @@ export interface FileRoutesById {
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
+  '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -508,6 +536,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/account'
+    | '/affiliate'
     | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
@@ -516,15 +546,14 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
-    | '/affiliate'
-    | '/account'
     | '/settings'
+    | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/proposals/new'
-    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -535,6 +564,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -544,6 +574,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
+    | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -560,6 +591,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/account'
+    | '/affiliate'
     | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
@@ -568,11 +601,11 @@ export interface FileRouteTypes {
     | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
-    | '/affiliate'
-    | '/account'
     | '/settings'
+    | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/proposals/new'
@@ -586,6 +619,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -595,6 +629,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
+    | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -612,6 +647,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/why-jobbidder'
+    | '/_authenticated/account'
+    | '/_authenticated/affiliate'
     | '/_authenticated/contractor-dashboard'
     | '/_authenticated/contractor-search'
     | '/_authenticated/contractor-verification'
@@ -620,16 +657,14 @@ export interface FileRouteTypes {
     | '/_authenticated/ghl-setup'
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
-    | '/_authenticated/affiliate'
-    | '/_authenticated/account'
     | '/_authenticated/settings'
     | '/audit/$token'
     | '/e/$id'
     | '/email/unsubscribe'
+    | '/go/$slug'
     | '/p/$id'
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
-    | '/audit/$token'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-recruit'
@@ -640,6 +675,7 @@ export interface FileRouteTypes {
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
     | '/lovable/email/suppression'
@@ -649,6 +685,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
+    | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -667,11 +704,12 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   WhyJobbidderRoute: typeof WhyJobbidderRoute
+  AuditTokenRoute: typeof AuditTokenRoute
   EIdRoute: typeof EIdRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
+  GoSlugRoute: typeof GoSlugRoute
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
-  AuditTokenRoute: typeof AuditTokenRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
@@ -682,6 +720,7 @@ export interface RootRouteChildren {
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
+  ApiPublicTestEmailGhlRoute: typeof ApiPublicTestEmailGhlRoute
   ApiPublicTestProposalFlowRoute: typeof ApiPublicTestProposalFlowRoute
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
@@ -691,6 +730,7 @@ export interface RootRouteChildren {
   ApiPublicWebhookGhlContractorSurveyRoute: typeof ApiPublicWebhookGhlContractorSurveyRoute
   ApiPublicWebhookGhlJessicaFollowupRoute: typeof ApiPublicWebhookGhlJessicaFollowupRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
+  ApiPublicWebhookGhlVoiceEstimateRoute: typeof ApiPublicWebhookGhlVoiceEstimateRoute
   ApiPublicWebhookGhlVoicePrequalRoute: typeof ApiPublicWebhookGhlVoicePrequalRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -790,6 +830,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/go/$slug': {
+      id: '/go/$slug'
+      path: '/go/$slug'
+      fullPath: '/go/$slug'
+      preLoaderRoute: typeof GoSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/email/unsubscribe': {
       id: '/email/unsubscribe'
       path: '/email/unsubscribe'
@@ -802,6 +849,13 @@ declare module '@tanstack/react-router' {
       path: '/e/$id'
       fullPath: '/e/$id'
       preLoaderRoute: typeof EIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit/$token': {
+      id: '/audit/$token'
+      path: '/audit/$token'
+      fullPath: '/audit/$token'
+      preLoaderRoute: typeof AuditTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -817,27 +871,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/pipeline'
       preLoaderRoute: typeof AuthenticatedPipelineRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/affiliate': {
-      id: '/_authenticated/affiliate'
-      path: '/affiliate'
-      fullPath: '/affiliate'
-      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/account': {
-      id: '/_authenticated/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AuthenticatedAccountRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/audit/$token': {
-      id: '/audit/$token'
-      path: '/audit/$token'
-      fullPath: '/audit/$token'
-      preLoaderRoute: typeof AuditTokenRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/media-upload': {
       id: '/_authenticated/media-upload'
@@ -888,6 +921,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractorDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/affiliate': {
+      id: '/_authenticated/affiliate'
+      path: '/affiliate'
+      fullPath: '/affiliate'
+      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -907,6 +954,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/test-proposal-flow'
       fullPath: '/api/public/test-proposal-flow'
       preLoaderRoute: typeof ApiPublicTestProposalFlowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/test-email-ghl': {
+      id: '/api/public/test-email-ghl'
+      path: '/api/public/test-email-ghl'
+      fullPath: '/api/public/test-email-ghl'
+      preLoaderRoute: typeof ApiPublicTestEmailGhlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/send-proposal-email': {
@@ -1007,6 +1061,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/ghl-voice-estimate': {
+      id: '/api/public/webhook/ghl-voice-estimate'
+      path: '/api/public/webhook/ghl-voice-estimate'
+      fullPath: '/api/public/webhook/ghl-voice-estimate'
+      preLoaderRoute: typeof ApiPublicWebhookGhlVoiceEstimateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhook/ghl-voice-prequal': {
       id: '/api/public/webhook/ghl-voice-prequal'
       path: '/api/public/webhook/ghl-voice-prequal'
@@ -1060,6 +1121,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
   AuthenticatedContractorDashboardRoute: typeof AuthenticatedContractorDashboardRoute
   AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
@@ -1068,13 +1131,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
-  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedProposalsNewRoute: typeof AuthenticatedProposalsNewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
   AuthenticatedContractorDashboardRoute: AuthenticatedContractorDashboardRoute,
   AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedContractorVerificationRoute:
@@ -1084,8 +1147,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
-  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedProposalsNewRoute: AuthenticatedProposalsNewRoute,
 }
@@ -1106,11 +1167,12 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   WhyJobbidderRoute: WhyJobbidderRoute,
+  AuditTokenRoute: AuditTokenRoute,
   EIdRoute: EIdRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
+  GoSlugRoute: GoSlugRoute,
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
-  AuditTokenRoute: AuditTokenRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
@@ -1121,6 +1183,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
+  ApiPublicTestEmailGhlRoute: ApiPublicTestEmailGhlRoute,
   ApiPublicTestProposalFlowRoute: ApiPublicTestProposalFlowRoute,
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
@@ -1133,6 +1196,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookGhlJessicaFollowupRoute:
     ApiPublicWebhookGhlJessicaFollowupRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
+  ApiPublicWebhookGhlVoiceEstimateRoute: ApiPublicWebhookGhlVoiceEstimateRoute,
   ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

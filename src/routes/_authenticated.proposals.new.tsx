@@ -10,6 +10,26 @@ import { Card } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { STATE_LIST } from "@/lib/pricing";
+import { UpgradeModal } from "@/components/UpgradeModal";
+
+const UPGRADE_URLS: Record<string, string> = {
+  Journeyman: "https://link.suddenimpactagency.io/payment-link/6a402a42390a6e280643af94",
+  "Master GC": "https://link.suddenimpactagency.io/payment-link/6a402ae09b12592b36824ddb",
+  Principal:   "https://link.suddenimpactagency.io/payment-link/6a402b3a9b12592b36824ddd",
+};
+
+function creditErrorPlan(msg: string): { plan: string; url: string } | null {
+  if (msg.includes("Journeyman") || msg.includes("free AI action")) {
+    return { plan: "Journeyman", url: UPGRADE_URLS.Journeyman };
+  }
+  if (msg.includes("Master GC") || msg.includes("voice") || msg.includes("SMS") || msg.includes("document")) {
+    return { plan: "Master GC", url: UPGRADE_URLS["Master GC"] };
+  }
+  if (msg.includes("Credit limit") || msg.includes("credits")) {
+    return { plan: "Master GC", url: UPGRADE_URLS["Master GC"] };
+  }
+  return null;
+}
 
 export const Route = createFileRoute("/_authenticated/proposals/new")({
   head: () => ({ meta: [{ title: "New Proposal — Jobbidder" }] }),
@@ -20,6 +40,7 @@ function NewProposalPage() {
   const navigate = useNavigate();
   const gen = useServerFn(generateProposal);
   const [loading, setLoading] = useState(false);
+  const [upgradeInfo, setUpgradeInfo] = useState<{ plan: string; url: string; feature: string } | null>(null);
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
     job_address: "", job_state: "", trade_type: "",
@@ -44,12 +65,25 @@ function NewProposalPage() {
       toast.success(`Generated ${res.proposal_number}`);
       navigate({ to: "/p/$id", params: { id: res.id } });
     } catch (err: any) {
-      toast.error(err.message || "Failed to generate");
+      const msg: string = err.message || "Failed to generate";
+      const plan = creditErrorPlan(msg);
+      if (plan) {
+        setUpgradeInfo({ plan: plan.plan, url: plan.url, feature: "AI Proposals" });
+      } else {
+        toast.error(msg);
+      }
     } finally { setLoading(false); }
   }
 
   return (
     <div className="p-8 max-w-3xl">
+      <UpgradeModal
+        open={!!upgradeInfo}
+        onClose={() => setUpgradeInfo(null)}
+        featureName={upgradeInfo?.feature ?? "AI Proposals"}
+        requiredPlan={upgradeInfo?.plan ?? "Journeyman"}
+        upgradeUrl={upgradeInfo?.url ?? UPGRADE_URLS.Journeyman}
+      />
       <h1 className="font-display text-3xl font-bold tracking-tight mb-2">New AI Proposal</h1>
       <p className="text-muted-foreground mb-8">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
       <Card className="p-6 bg-card border-border">

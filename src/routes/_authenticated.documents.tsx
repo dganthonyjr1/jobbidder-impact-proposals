@@ -39,12 +39,12 @@ function DocumentsPage() {
 
   const { data: documents, refetch: refetchDocuments } = useQuery({
     queryKey: ["contractor-documents"],
-    queryFn: () => fetchDocuments({ contractorId: "" }), // Will be populated with actual contractor ID
+    queryFn: () => fetchDocuments({ data: { contractorId: "" } }), // Will be populated with actual contractor ID
   });
 
   const { data: expiringDocs } = useQuery({
     queryKey: ["expiring-documents"],
-    queryFn: () => fetchExpiringDocs({ contractorId: "", days_until_expiration: 30 }),
+    queryFn: () => fetchExpiringDocs({ data: { contractorId: "", days_until_expiration: 30 } }),
   });
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,12 +87,12 @@ function DocumentsPage() {
     try {
       // In production, this would upload to Supabase Storage
       // For now, we'll simulate the upload
-      const result = await doUpload({
+      const result = await doUpload({ data: {
         contractor_id: "", // Will be populated with actual contractor ID
         document_type: documentType as "license" | "liability_insurance" | "workers_comp" | "surety_bond",
         file_url: "", // Will be populated with actual Supabase URL
         file_name: selectedFile.name,
-      });
+      } });
 
       toast.success("Document uploaded successfully! We'll verify it within 24 hours.");
       

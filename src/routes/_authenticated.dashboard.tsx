@@ -487,11 +487,11 @@ function Dashboard() {
             <div className="rounded-xl border border-border bg-card shadow-card p-6">
               <h3 className="font-semibold mb-4">Your Media Library</h3>
               <MediaGallery
-                media={media || []}
+                media={(media as any) || []}
                 isLoading={mediaLoading}
                 editable={true}
                 onDelete={async (mediaId) => {
-                  await doDeleteMedia({ mediaId });
+                  await doDeleteMedia({ data: { mediaId } });
                   refetchMedia();
                 }}
               />

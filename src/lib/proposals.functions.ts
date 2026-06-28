@@ -115,7 +115,7 @@ export const listProposals = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase
       .from("proposals")
-      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, accepted_at, language, job_address")
+      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const rows = data ?? [];

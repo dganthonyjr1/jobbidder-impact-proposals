@@ -217,8 +217,9 @@ export const Route = createFileRoute("/api/public/intake-submit")({
         }
 
         // Merge contractor pricing with defaults
-        const pricing: PricingSettings = contractor.pricing_settings
-          ? { ...DEFAULT_PRICING, ...contractor.pricing_settings, trades: { ...DEFAULT_PRICING.trades, ...contractor.pricing_settings.trades } }
+        const rawPricing = contractor.pricing_settings as any;
+        const pricing: PricingSettings = rawPricing
+          ? { ...DEFAULT_PRICING, ...rawPricing, trades: { ...DEFAULT_PRICING.trades, ...rawPricing.trades } }
           : DEFAULT_PRICING;
 
         const ai = await callGroqAI(input, contractor.business_name, pricing);
