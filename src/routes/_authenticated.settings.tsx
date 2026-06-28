@@ -166,10 +166,10 @@ function SettingsPage() {
   ] as const;
 
   return (
-    <div className="p-8 max-w-4xl space-y-6">
+    <div className="p-8 max-w-4xl space-y-6 text-base">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1">Branding, pricing parameters, and integrations.</p>
+        <p className="text-muted-foreground mt-1 text-base">Branding, pricing parameters, and integrations.</p>
       </div>
 
       {/* Tab nav */}
@@ -194,12 +194,12 @@ function SettingsPage() {
         <Card className="p-6 space-y-4">
           <h2 className="font-display font-semibold text-lg">Business Info</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div><Label>Business name</Label><Input value={contractor.business_name || ""} onChange={(e) => set("business_name", e.target.value)} /></div>
-            <div><Label>Trade type</Label><Input value={contractor.trade_type || ""} onChange={(e) => set("trade_type", e.target.value)} /></div>
-            <div><Label>Phone</Label><Input value={contractor.phone || ""} onChange={(e) => set("phone", e.target.value)} /></div>
-            <div><Label>Email</Label><Input value={contractor.email || ""} onChange={(e) => set("email", e.target.value)} /></div>
-            <div><Label>License #</Label><Input value={contractor.license_number || ""} onChange={(e) => set("license_number", e.target.value)} /></div>
-            <div><Label>Brand color</Label><Input type="color" value={contractor.primary_color || "#EC4899"} onChange={(e) => set("primary_color", e.target.value)} /></div>
+            <div><Label className="text-base">Business name</Label><Input className="text-base" value={contractor.business_name || ""} onChange={(e) => set("business_name", e.target.value)} /></div>
+            <div><Label className="text-base">Trade type</Label><Input className="text-base" value={contractor.trade_type || ""} onChange={(e) => set("trade_type", e.target.value)} /></div>
+            <div><Label className="text-base">Phone</Label><Input className="text-base" value={contractor.phone || ""} onChange={(e) => set("phone", e.target.value)} /></div>
+            <div><Label className="text-base">Email</Label><Input className="text-base" value={contractor.email || ""} onChange={(e) => set("email", e.target.value)} /></div>
+            <div><Label className="text-base">License #</Label><Input className="text-base" value={contractor.license_number || ""} onChange={(e) => set("license_number", e.target.value)} /></div>
+            <div><Label className="text-base">Brand color</Label><Input type="color" value={contractor.primary_color || "#EC4899"} onChange={(e) => set("primary_color", e.target.value)} /></div>
             <div className="col-span-2">
               <Label>Business Logo</Label>
               <div className="flex items-center gap-4 mt-1">
@@ -227,9 +227,9 @@ function SettingsPage() {
                 </div>
               </div>
             </div>
-            <div className="col-span-2"><Label>Business address (shown on PDF)</Label><Input value={contractor.business_address || ""} onChange={(e) => set("business_address", e.target.value)} placeholder="123 Main St, Wildwood NJ 08260" /></div>
+            <div className="col-span-2"><Label className="text-base">Business address (shown on PDF)</Label><Input className="text-base" value={contractor.business_address || ""} onChange={(e) => set("business_address", e.target.value)} placeholder="123 Main St, Wildwood NJ 08260" /></div>
             <div className="col-span-2">
-              <Label>Intake page slug</Label>
+              <Label className="text-base">Intake page slug</Label>
               <Input
                 value={contractor.slug || ""}
                 onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))}
@@ -506,12 +506,12 @@ function SettingsPage() {
                 Optional. Add the contractor's own GHL Private Integration Token and location details so proposal contacts, emails, and SMS are created in that contractor's sub-account.
               </p>
             </div>
-            <div><Label>GHL Private Integration Token</Label><Input type="password" value={integration.ghl_api_token || ""} onChange={(e) => setInt("ghl_api_token", e.target.value)} placeholder="pit-…" /></div>
+            <div><Label className="text-base">GHL Private Integration Token</Label><Input className="text-base" type="password" value={integration.ghl_api_token || ""} onChange={(e) => setInt("ghl_api_token", e.target.value)} placeholder="pit-…" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>GHL Location ID</Label><Input value={integration.ghl_location_id || ""} onChange={(e) => setInt("ghl_location_id", e.target.value)} placeholder="Location/sub-account ID" /></div>
-              <div><Label>SMS From Number</Label><Input value={integration.ghl_from_number || ""} onChange={(e) => setInt("ghl_from_number", e.target.value)} placeholder="+15551234567" /></div>
+              <div><Label className="text-base">GHL Location ID</Label><Input className="text-base" value={integration.ghl_location_id || ""} onChange={(e) => setInt("ghl_location_id", e.target.value)} placeholder="Location/sub-account ID" /></div>
+              <div><Label className="text-base">SMS From Number</Label><Input className="text-base" value={integration.ghl_from_number || ""} onChange={(e) => setInt("ghl_from_number", e.target.value)} placeholder="+15551234567" /></div>
             </div>
-            <div><Label>Email From Address</Label><Input value={integration.ghl_from_email || ""} onChange={(e) => setInt("ghl_from_email", e.target.value)} placeholder="proposals@contractor.com" /></div>
+            <div><Label className="text-base">Email From Address</Label><Input className="text-base" value={integration.ghl_from_email || ""} onChange={(e) => setInt("ghl_from_email", e.target.value)} placeholder="proposals@contractor.com" /></div>
             <label className="flex items-start gap-3 text-sm">
               <input
                 type="checkbox"
