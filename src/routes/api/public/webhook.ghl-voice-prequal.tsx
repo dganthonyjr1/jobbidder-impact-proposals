@@ -3,11 +3,27 @@
  *
  * GHL fires this webhook at the end of the "Jessica - Voice Pre-Qual" call.
  * Records the result, links to any existing contractor application, and sends
- * an upload-link SMS — all before a human at NGS is involved.
+ * an upload-link SMS in the caller's language — all before a human is involved.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendSmsViaGHL } from "@/lib/ghl.server";
+
+const SUPPORTED_LANGS = ["en", "es", "fr", "pt", "ht"] as const;
+type Lang = typeof SUPPORTED_LANGS[number];
+
+const PREQUAL_SMS: Record<Lang, (name: string, url: string) => string> = {
+  en: (n, u) => `Hi ${n}! Thanks for speaking with NGS. To complete your contractor pre-qualification, please upload your license, insurance, and bonding documents — it only takes 5 minutes: ${u}`,
+  es: (n, u) => `¡Hola ${n}! Gracias por hablar con NGS. Para completar tu precalificación como contratista, por favor sube tu licencia, seguro y documentos de fianza — solo tarda 5 minutos: ${u}`,
+  fr: (n, u) => `Bonjour ${n} ! Merci d'avoir parlé avec NGS. Pour finaliser votre pré-qualification, veuillez télécharger votre licence, votre assurance et vos documents de caution — cela ne prend que 5 minutes : ${u}`,
+  pt: (n, u) => `Olá ${n}! Obrigado por falar com a NGS. Para concluir sua pré-qualificação como contratante, envie sua licença, seguro e documentos de fiança — leva apenas 5 minutos: ${u}`,
+  ht: (n, u) => `Bonjou ${n}! Mèsi pou pale ak NGS. Pou w konplete pre-kalifikasyon kontraktè ou, tanpri telechaje lisans ou, asirans ou, ak dokiman garanti ou — sa pran sèlman 5 minit: ${u}`,
+};
+
+function resolveLang(raw?: string | null): Lang {
+  const l = (raw || "").toLowerCase().slice(0, 2);
+  return (SUPPORTED_LANGS as readonly string[]).includes(l) ? (l as Lang) : "en";
+}
 
 function ghlCreds() {
   return {
@@ -50,6 +66,10 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
     const disposition: string = body.disposition ?? body.call_disposition ?? "unknown";
     const answers = body.survey_answers ?? body.custom_fields ?? body.customFields ?? {};
 
+    // Detect language from GHL payload (contact language, custom field, or body root)
+    const rawLang = body.language ?? body.contact?.language ?? answers.language ?? answers.lang ?? null;
+    const lang = resolveLang(rawLang);
+
     const { data: existing } = await supabaseAdmin
       .from("contractor_applications")
       .select("id, name")
@@ -79,15 +99,12 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
     }
 
     const siteUrl = process.env.VITE_SITE_URL ?? "https://jobbidder.io";
-    const name = existing?.name ?? "there";
-    const smsBody =
-      `Hi ${name}! Thanks for speaking with NGS. To complete your contractor pre-qualification, ` +
-      `please upload your license, insurance, and bonding documents — it only takes 5 minutes: ` +
-      `${siteUrl}/contractor-apply`;
+    const name = existing?.name ?? (lang === "es" ? "amigo" : lang === "fr" ? "ami" : lang === "pt" ? "amigo" : lang === "ht" ? "zanmi" : "there");
+    const smsBody = PREQUAL_SMS[lang](name, `${siteUrl}/contractor-apply`);
 
     let smsSent = false;
     try {
-      await sendSmsViaGHL(ghlCreds(), phone, smsBody);
+      await sendSmsViaGHL({ to: phone, body: smsBody, credentials: ghlCreds() });
       smsSent = true;
       await supabaseAdmin
         .from("voice_prequal_calls")
@@ -97,6 +114,6 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
         .limit(1);
     } catch { /* SMS failure must not break the webhook response */ }
 
-    return Response.json({ received: true, action: "sms_sent", sms_sent: smsSent, contractor_id: existing?.id ?? null });
+    return Response.json({ received: true, action: "sms_sent", sms_sent: smsSent, lang, contractor_id: existing?.id ?? null });
   },
 });
