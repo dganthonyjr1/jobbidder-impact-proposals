@@ -57,28 +57,19 @@ function clean(value?: string | null) {
   return trimmed || null;
 }
 
+/**
+ * Resolve GHL configuration with proper priority:
+ * 1. Contractor-provided credentials (highest priority - always use if valid)
+ * 2. Platform environment variables (fallback only)
+ * 
+ * This ensures that contractor tokens work immediately without database lookups,
+ * and contractor tokens are never overridden by stale platform credentials.
+ */
 function resolveGhlConfig(credentials?: GhlCredentials | null): GhlRuntimeConfig | null {
-  const platformToken = clean(process.env.GHL_API_TOKEN);
-  const platformLocationId = clean(process.env.GHL_LOCATION_ID);
   const contractorToken = clean(credentials?.apiToken);
   const contractorLocationId = clean(credentials?.locationId);
-
-  // Production emergency safety: prefer the centrally managed Vercel token when
-  // it is present. Contractor rows can contain stale private-integration tokens,
-  // while the environment token can be rotated immediately without direct DB
-  // access. If GHL_LOCATION_ID is not configured in Vercel, pair the platform
-  // token with the contractor's existing location ID so delivery can be restored
-  // without waiting for a second secret update.
-  if (platformToken && (platformLocationId || contractorLocationId)) {
-    return {
-      token: platformToken,
-      locationId: platformLocationId || contractorLocationId!,
-      fromNumber: clean(process.env.GHL_FROM_NUMBER) || clean(credentials?.fromNumber) || undefined,
-      fromEmail: clean(process.env.GHL_EMAIL_FROM) || clean(process.env.GHL_FROM_EMAIL) || clean(credentials?.fromEmail) || undefined,
-      source: "platform",
-    };
-  }
-
+  
+  // PRIORITY 1: Use contractor credentials if both token and location are provided
   if (contractorToken && contractorLocationId) {
     return {
       token: contractorToken,
@@ -89,17 +80,29 @@ function resolveGhlConfig(credentials?: GhlCredentials | null): GhlRuntimeConfig
     };
   }
 
+  // PRIORITY 2: Fall back to platform environment variables
+  const platformToken = clean(process.env.GHL_API_TOKEN);
+  const platformLocationId = clean(process.env.GHL_LOCATION_ID);
+  
+  if (platformToken && platformLocationId) {
+    return {
+      token: platformToken,
+      locationId: platformLocationId,
+      fromNumber: clean(process.env.GHL_FROM_NUMBER) || undefined,
+      fromEmail: clean(process.env.GHL_EMAIL_FROM) || clean(process.env.GHL_FROM_EMAIL) || undefined,
+      source: "platform",
+    };
+  }
+
+  // No valid configuration found
   return null;
 }
 
 function ghlHeaders(token: string) {
-  // Support both OAuth tokens (sk_live_) and Private Integration tokens (pit_)
-  const authHeader = token.startsWith("pit_") 
-    ? `Bearer ${token}`  // Private Integration tokens use Bearer auth
-    : `Bearer ${token}`; // OAuth tokens also use Bearer auth
-  
+  // GHL supports both OAuth tokens (sk_live_) and Private Integration tokens (pit_)
+  // Both use Bearer authentication
   return {
-    Authorization: authHeader,
+    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
     Accept: "application/json",
     Version: "2021-04-15",
@@ -112,7 +115,7 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
   if (!config) {
     return {
       ok: false,
-      error: "GHL not configured (missing contractor or platform GHL_API_TOKEN/GHL_LOCATION_ID)",
+      error: "GHL not configured (missing valid credentials)",
     };
   }
 
@@ -164,10 +167,8 @@ async function upsertGhlContact(input: GhlContactInput): Promise<GhlContactResul
 }
 
 /**
- * Send an SMS via GoHighLevel's Conversations API. Production first uses the
- * centrally managed GHL environment token when configured, allowing an invalid
- * contractor token to be rotated immediately. If the environment token is not
- * present, contractor-owned credentials are used as a fallback.
+ * Send an SMS via GoHighLevel's Conversations API.
+ * Uses contractor credentials if provided, otherwise falls back to platform credentials.
  */
 export async function sendSmsViaGHL(opts: {
   to: string;
@@ -187,7 +188,7 @@ export async function sendSmsViaGHL(opts: {
   if (!config || !fromNumber) {
     return {
       ok: false,
-      error: "GHL not configured (missing contractor or platform GHL token/location/from number)",
+      error: "GHL SMS not configured (missing credentials or from number)",
     };
   }
 
@@ -221,7 +222,7 @@ export async function sendSmsViaGHL(opts: {
       return {
         ok: false,
         status: msgRes.status,
-        error: msgJson?.message || `GHL send failed (${msgRes.status})`,
+        error: msgJson?.message || `GHL SMS send failed (${msgRes.status})`,
       };
     }
     return {
@@ -231,7 +232,7 @@ export async function sendSmsViaGHL(opts: {
       to,
     };
   } catch (e: any) {
-    return { ok: false, error: e?.message || "Network error calling GHL" };
+    return { ok: false, error: e?.message || "Network error calling GHL SMS" };
   }
 }
 
@@ -305,10 +306,8 @@ export async function triggerGhlWorkflow(opts: {
 }
 
 /**
- * Send an email via GoHighLevel's Conversations API. Production first uses the
- * centrally managed GHL environment token when configured, allowing an invalid
- * contractor token to be rotated immediately. If the environment token is not
- * present, contractor-owned credentials are used as a fallback.
+ * Send an email via GoHighLevel's Conversations API.
+ * Uses contractor credentials if provided, otherwise falls back to platform credentials.
  */
 export async function sendEmailViaGHL(opts: {
   to: string;
@@ -326,10 +325,10 @@ export async function sendEmailViaGHL(opts: {
   const config = resolveGhlConfig(opts.credentials);
   const fromEmail = opts.fromEmail || config?.fromEmail || "noreply@suddenimpactagency.io";
 
-  if (!config || !fromEmail) {
+  if (!config) {
     return {
       ok: false,
-      error: "GHL email not configured (missing contractor or platform GHL token/location/from email)",
+      error: "GHL email not configured (missing valid credentials)",
     };
   }
 
