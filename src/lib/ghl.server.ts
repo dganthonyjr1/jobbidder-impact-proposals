@@ -356,7 +356,7 @@ export async function sendEmailViaGHL(opts: {
         emailFrom: fromEmail,
         emailTo: to,
         subject: opts.subject,
-        html: opts.html,
+        html: opts.html || `<p>${opts.text || opts.subject}</p>`,
         message: opts.text || opts.subject,
         ...(opts.replyTo ? { emailReplyTo: opts.replyTo } : {}),
       }),
