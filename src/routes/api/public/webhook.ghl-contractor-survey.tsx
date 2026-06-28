@@ -98,10 +98,15 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
           const rawContactPhone = firstString(body.contact?.phone, body.contact?.phoneNumber, body.phone);
           const contactPhone = normalizePhoneNumber(rawContactPhone);
 
-          // Extract survey responses from custom fields
-          const yearsInOperation = parseInt(custom(body, "years_in_operation", "yearsInOperation") || "0", 10);
-          const commercialGlazingExperience = parseInt(custom(body, "commercial_glazing_experience", "commercialGlazingExperience") || "0", 10);
-          const averageProjectSize = custom(body, "average_project_size", "averageProjectSize") || "";
+          // Extract survey responses from custom fields. Keep the RAW values for the
+          // three required fields so we can tell "not provided" apart from a real "0".
+          const rawYears = custom(body, "years_in_operation", "yearsInOperation");
+          const rawGlazing = custom(body, "commercial_glazing_experience", "commercialGlazingExperience");
+          const rawProjectSize = custom(body, "average_project_size", "averageProjectSize");
+
+          const yearsInOperation = parseInt(String(rawYears ?? "0"), 10) || 0;
+          const commercialGlazingExperience = parseInt(String(rawGlazing ?? "0"), 10) || 0;
+          const averageProjectSize = (rawProjectSize != null ? String(rawProjectSize) : "");
           const windowFilmExperience = parseInt(custom(body, "window_film_experience", "windowFilmExperience") || "0", 10);
           const crewSize = parseInt(custom(body, "crew_size", "crewSize") || "0", 10);
           const statesLicensedStr = custom(body, "states_licensed", "statesLicensed") || "";
@@ -110,8 +115,9 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
           const suretyBond = custom(body, "surety_bond", "suretyBond") || "";
           const workersComp = custom(body, "workers_comp", "workersComp") || "";
 
-          // Check if survey is complete
-          if (!yearsInOperation || !commercialGlazingExperience || !averageProjectSize) {
+          // Survey is incomplete only if a required field was not provided at all.
+          // A provided value of 0 (e.g. 0 years, 0 prior glazing jobs) is valid.
+          if (rawYears == null || rawGlazing == null || !averageProjectSize.trim()) {
             console.log("[webhook.ghl-contractor-survey] Survey incomplete, skipping");
             return Response.json({ ok: true, message: "Survey incomplete" }, { status: 200, headers: cors() });
           }
@@ -260,7 +266,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-contractor-survey"
                   to: contactPhone || "",
                   body: `Jobbidder NGS Survey Complete - Score: ${scoringResult.totalScore}/120 (${Math.round(scoringResult.percentage)}%). ${statusMessage}`,
                   contactName: contactName || "Contractor",
-                  contactEmail: contactEmail,
+                  contactEmail: contactEmail || undefined,
                   tags: ["jobbidder", "ngs-survey", `score-${scoringResult.status.toLowerCase()}`],
                   credentials: ghlCredentials,
                 });

@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
           .limit(1)
           .maybeSingle();
 
-        await supabaseAdmin.from("voice_prequal_calls").insert({
+        const { data: callRow } = await supabaseAdmin.from("voice_prequal_calls").insert({
           contractor_id:     existing?.id ?? null,
           phone,
           ghl_contact_id:    ghlContactId,
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
           crew_size:         String(answers.crew_size ?? answers.crew ?? ""),
           raw_payload:       body as any,
           sms_upload_link_sent: false,
-        });
+        }).select("id").single();
 
         if (disposition === "not_qualified") {
           return Response.json({ received: true, action: "none", reason: "not_qualified" });
@@ -106,12 +106,12 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
         try {
           await sendSmsViaGHL({ to: phone, body: smsBody, credentials: ghlCreds() });
           smsSent = true;
-          await supabaseAdmin
-            .from("voice_prequal_calls")
-            .update({ sms_upload_link_sent: true })
-            .eq("phone", phone)
-            .order("created_at", { ascending: false })
-            .limit(1);
+          if (callRow?.id) {
+            await supabaseAdmin
+              .from("voice_prequal_calls")
+              .update({ sms_upload_link_sent: true })
+              .eq("id", callRow.id);
+          }
         } catch { /* SMS failure must not break the webhook response */ }
 
         return Response.json({ received: true, action: "sms_sent", sms_sent: smsSent, lang, contractor_id: existing?.id ?? null });
