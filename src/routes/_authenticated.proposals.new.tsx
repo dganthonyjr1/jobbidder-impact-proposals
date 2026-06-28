@@ -96,7 +96,7 @@ function NewProposalPage() {
             <div className="col-span-2"><Label>Job address</Label><Input value={form.job_address} onChange={(e) => set("job_address", e.target.value)} /></div>
             <div>
               <Label>State</Label>
-              <select value={form.job_state} onChange={(e) => set("job_state", e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+              <select value={form.job_state} onChange={(e) => set("job_state", e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground">
                 <option value="">—</option>
                 {STATE_LIST.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
