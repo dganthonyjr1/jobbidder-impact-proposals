@@ -211,6 +211,7 @@ export async function sendSmsViaGHL(opts: {
       headers: ghlHeaders(config.token),
       body: JSON.stringify({
         type: "SMS",
+        locationId: config.locationId,
         contactId: contact.contactId,
         message: opts.body,
         fromNumber: from,
@@ -350,6 +351,7 @@ export async function sendEmailViaGHL(opts: {
       headers: ghlHeaders(config.token),
       body: JSON.stringify({
         type: "Email",
+        locationId: config.locationId,
         contactId: contact.contactId,
         emailFrom: fromEmail,
         emailTo: to,

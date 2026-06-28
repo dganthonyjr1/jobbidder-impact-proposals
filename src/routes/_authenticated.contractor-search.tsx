@@ -147,7 +147,7 @@ function ContractorSearchPage() {
   // Status update
   const { mutateAsync: patchStatus, isPending: patchingStatus } = useMutation({
     mutationFn: (vars: { id: string; status: string }) =>
-      doUpdateStatus({ id: vars.id, status: vars.status as any }),
+      doUpdateStatus({ data: { id: vars.id, status: vars.status as any } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recruits"] });
       toast.success("Status updated");
@@ -170,12 +170,12 @@ function ContractorSearchPage() {
     setSearching(true);
     setSearchResults(null);
     try {
-      const result = await doSearchContractors({
+      const result = await doSearchContractors({ data: {
         nicheId,
         state,
         city: city || undefined,
         maxResults,
-      });
+      } });
       setSearchResults(result.contractors);
       setSearchSource(result.source);
       if (result.error) toast.error(result.error);
@@ -195,7 +195,7 @@ function ContractorSearchPage() {
   async function handleInvite(contractor: SourcedContractor) {
     setInvitingId(contractor.place_id);
     try {
-      const result = await doSendInvite({
+      const result = await doSendInvite({ data: {
         name: contractor.name,
         phone: contractor.phone,
         trade_type: contractor.niche.label,
@@ -203,7 +203,7 @@ function ContractorSearchPage() {
         service_state: contractor.state,
         source: "google_places",
         source_ref: contractor.place_id,
-      });
+      } });
 
       if ("code" in result && result.code === "DUPLICATE") {
         toast.info(`${contractor.name} was already contacted.`);

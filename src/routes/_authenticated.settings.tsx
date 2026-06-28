@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Copy, Check, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Jobbidder" }] }),
@@ -58,6 +60,8 @@ const TRADE_LABELS: Record<string, string> = {
   landscaping: "Landscaping",
 };
 
+const WHITE_LABEL_TIERS = ["master_gc", "principal", "enterprise"];
+
 function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,6 +70,7 @@ function SettingsPage() {
   const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [activeTab, setActiveTab] = useState<"business" | "pricing" | "integrations">("business");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -78,7 +83,7 @@ function SettingsPage() {
 
       // Load pricing settings if they exist
       if (data?.pricing_settings) {
-        setPricing({ ...DEFAULT_PRICING, ...data.pricing_settings });
+        setPricing({ ...DEFAULT_PRICING, ...(data.pricing_settings as any) });
       }
 
       if (data?.id) {
@@ -105,7 +110,7 @@ function SettingsPage() {
       logo_url: contractor.logo_url,
       slug: contractor.slug || null,
       business_address: contractor.business_address || null,
-      pricing_settings: pricing,
+      pricing_settings: pricing as unknown as Json,
     }).eq("id", contractor.id);
 
     let integrationError: any = null;
@@ -141,6 +146,18 @@ function SettingsPage() {
 
   const set = (k: string, v: string) => setContractor((c: any) => ({ ...c, [k]: v }));
   const setInt = (k: string, v: string | boolean) => setIntegration((i: any) => ({ ...i, [k]: v }));
+
+  const isWhiteLabel = WHITE_LABEL_TIERS.includes(contractor.subscription_tier ?? "");
+  const intakeUrl = contractor.slug
+    ? `${window.location.origin}/go/${contractor.slug}`
+    : null;
+
+  function copyIntakeUrl() {
+    if (!intakeUrl) return;
+    navigator.clipboard.writeText(intakeUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const tabs = [
     { id: "business", label: "Business" },
@@ -211,8 +228,62 @@ function SettingsPage() {
               </div>
             </div>
             <div className="col-span-2"><Label>Business address (shown on PDF)</Label><Input value={contractor.business_address || ""} onChange={(e) => set("business_address", e.target.value)} placeholder="123 Main St, Wildwood NJ 08260" /></div>
+            <div className="col-span-2">
+              <Label>Intake page slug</Label>
+              <Input
+                value={contractor.slug || ""}
+                onChange={(e) => set("slug", e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))}
+                placeholder="e.g. mikes-roofing"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Used in your client intake URL. Lowercase letters, numbers, and hyphens only.
+              </p>
+            </div>
           </div>
 
+          {/* White-label intake link — Master GC+ only */}
+          {isWhiteLabel && contractor.slug && (
+            <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground mb-1">Your branded client intake link</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Share this with clients — they see your brand, logo, and colors. No Jobbidder branding.
+                  </p>
+                  <code className="text-xs text-primary break-all">{intakeUrl}</code>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={copyIntakeUrl}
+                    className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-accent/50 transition"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copied!" : "Copy"}
+                  </button>
+                  <a
+                    href={intakeUrl!}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-primary hover:bg-primary/20 transition"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" /> Preview
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+          {isWhiteLabel && !contractor.slug && (
+            <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-600">
+              Set your intake page slug above to activate your white-label client intake link.
+            </div>
+          )}
+          {!isWhiteLabel && (
+            <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+              White-label intake pages are available on <strong>Master GC</strong> and above.{" "}
+              <a href="/pricing" className="text-primary underline">Upgrade your plan →</a>
+            </div>
+          )}
         </Card>
       )}
 

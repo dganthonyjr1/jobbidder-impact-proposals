@@ -33,7 +33,7 @@ function MediaUploadPage() {
   const fetchMedia = useServerFn(listMediaByContractor);
   const { data: media, refetch: refetchMedia } = useQuery({
     queryKey: ["contractor-media"],
-    queryFn: () => fetchMedia({ contractorId: "" }), // Will be populated with actual contractor ID
+    queryFn: () => fetchMedia({ data: { contractorId: "" } }), // Will be populated with actual contractor ID
   });
 
   const damageTypes = [
@@ -86,7 +86,7 @@ function MediaUploadPage() {
     setUploading(true);
     try {
       // Upload file to Supabase
-      const result = await doUpload({
+      const result = await doUpload({ data: {
         fileName: selectedFile.name,
         fileType: activeTab === "photos" ? "photo" : "video",
         mimeType: selectedFile.type,
@@ -97,7 +97,7 @@ function MediaUploadPage() {
         isDamagePhoto,
         damageType: isDamagePhoto ? damageType : null,
         locationName,
-      });
+      } });
 
       toast.success("File uploaded successfully!");
       

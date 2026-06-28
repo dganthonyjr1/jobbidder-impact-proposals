@@ -104,7 +104,7 @@ function PublicProposal() {
   async function saveClientPhotos(next: string[]) {
     setProposal((p: any) => ({ ...p, client_photos: next }));
     setSavingClientPhotos(true);
-    const { error } = await supabase.from("proposals").update({ client_photos: next }).eq("id", id);
+    const { error } = await supabase.from("proposals").update({ photos: next }).eq("id", id);
     setSavingClientPhotos(false);
     if (error) toast.error(error.message);
     else toast.success("Photos uploaded — your contractor has been notified.");
