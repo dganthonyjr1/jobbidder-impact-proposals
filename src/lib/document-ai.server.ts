@@ -1,9 +1,8 @@
 /**
  * AI-powered document data extraction for contractor pre-qualification.
- * Uses Groq vision (llama-4-scout) to read uploaded images of licenses,
- * insurance certificates, surety bonds, and workers' comp policies.
- *
- * PDF uploads fall back to "needs_review" — admin verifies manually.
+ * - Images: Groq vision (llama-4-scout) reads them directly.
+ * - PDFs (most licenses / ACORD COIs): the text layer is extracted and read by
+ *   a Groq text model. Scanned PDFs with no text layer fall back to manual review.
  */
 import Groq from "groq-sdk";
 
@@ -73,17 +72,13 @@ export async function extractDocumentData(
   const groqKey = process.env.GROQ_API_KEY;
   if (!groqKey) return empty;
 
-  // Vision extraction only supported for images
   const isImage = mimeType.startsWith("image/");
-  if (!isImage) {
-    // PDFs require human review — return empty with a note
-    return { ...empty, confidence: 0, raw_notes: "PDF — queue for manual review" };
+  const isPdf = mimeType === "application/pdf" || fileUrl.toLowerCase().split("?")[0].endsWith(".pdf");
+  if (!isImage && !isPdf) {
+    return { ...empty, raw_notes: "Unsupported file type — queue for manual review" };
   }
 
-  try {
-    const groq = new Groq({ apiKey: groqKey });
-
-    const prompt = `${FIELD_PROMPTS[docType]}
+  const prompt = `${FIELD_PROMPTS[docType]}
 
 Return ONLY a valid JSON object with exactly these keys (use null for anything not visible):
 {
@@ -108,23 +103,51 @@ Return ONLY a valid JSON object with exactly these keys (use null for anything n
 Numeric dollar amounts should be integers (no dollar signs or commas).
 Dates must be YYYY-MM-DD or null.`;
 
-    const completion = await groq.chat.completions.create({
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "image_url", image_url: { url: fileUrl } },
-            { type: "text", text: prompt },
-          ] as any,
-        },
-      ],
-      max_tokens: 600,
-      temperature: 0,
-    });
+  try {
+    const groq = new Groq({ apiKey: groqKey });
+    let responseText: string;
 
-    const text = completion.choices[0]?.message?.content ?? "{}";
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (isImage) {
+      // Image: read directly with the vision model.
+      const completion = await groq.chat.completions.create({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image_url", image_url: { url: fileUrl } },
+              { type: "text", text: prompt },
+            ] as any,
+          },
+        ],
+        max_tokens: 600,
+        temperature: 0,
+      });
+      responseText = completion.choices[0]?.message?.content ?? "{}";
+    } else {
+      // PDF: pull the text layer, then extract fields with a text model.
+      const res = await fetch(fileUrl);
+      if (!res.ok) return { ...empty, raw_notes: `Could not fetch PDF (${res.status}) — queue for manual review` };
+      const buf = Buffer.from(await res.arrayBuffer());
+      // @ts-expect-error - pdf-parse ships no type declarations for the /lib subpath
+      const pdfMod = await import("pdf-parse/lib/pdf-parse.js");
+      const pdfParse = (pdfMod as any).default as (b: Buffer) => Promise<{ text?: string }>;
+      const pdf = await pdfParse(buf).catch(() => null);
+      const pdfText = (pdf?.text || "").trim();
+      if (pdfText.replace(/\s/g, "").length < 30) {
+        // No usable text layer — almost certainly a scanned image inside a PDF.
+        return { ...empty, raw_notes: "PDF has no readable text (likely scanned) — queue for manual review" };
+      }
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "user", content: `${prompt}\n\nDOCUMENT TEXT:\n"""\n${pdfText.slice(0, 12000)}\n"""` }],
+        max_tokens: 600,
+        temperature: 0,
+      });
+      responseText = completion.choices[0]?.message?.content ?? "{}";
+    }
+
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return empty;
 
     const parsed = JSON.parse(jsonMatch[0]) as Partial<ExtractedDoc>;
