@@ -44,8 +44,15 @@ function NewProposalPage() {
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
     job_address: "", job_state: "", trade_type: "",
-    job_description: "",
+    job_description: "", prevailing_wage: "",
   });
+
+  // Map the Yes/No/Not Sure answer to the flag + source the engine expects.
+  const PW_MAP: Record<string, { flag: string; source: string }> = {
+    yes: { flag: "true", source: "direct_answer" },
+    no: { flag: "false", source: "direct_answer" },
+    notsure: { flag: "unknown", source: "uncertain" },
+  };
 
   function set(k: string, v: string) { setForm((f) => ({ ...f, [k]: v })); }
 
@@ -61,6 +68,8 @@ function NewProposalPage() {
         job_state: form.job_state || null,
         trade_type: form.trade_type || null,
         job_description: form.job_description,
+        prevailing_wage_flag: PW_MAP[form.prevailing_wage]?.flag ?? null,
+        prevailing_wage_source: PW_MAP[form.prevailing_wage]?.source ?? null,
       } });
       toast.success(`Generated ${res.proposal_number}`);
       navigate({ to: "/p/$id", params: { id: res.id } });
@@ -91,12 +100,12 @@ function NewProposalPage() {
       <p className="text-muted-foreground mb-8">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
       <Card className="p-6 bg-card border-border">
         <form onSubmit={submit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Client name *</Label><Input required value={form.client_name} onChange={(e) => set("client_name", e.target.value)} /></div>
             <div><Label>Trade type</Label><Input value={form.trade_type} onChange={(e) => set("trade_type", e.target.value)} placeholder="Flooring, HVAC…" /></div>
             <div><Label>Email</Label><Input type="email" value={form.client_email} onChange={(e) => set("client_email", e.target.value)} /></div>
             <div><Label>Phone</Label><Input value={form.client_phone} onChange={(e) => set("client_phone", e.target.value)} /></div>
-            <div className="col-span-2"><Label>Job address</Label><Input value={form.job_address} onChange={(e) => set("job_address", e.target.value)} /></div>
+            <div className="sm:col-span-2"><Label>Job address</Label><Input value={form.job_address} onChange={(e) => set("job_address", e.target.value)} /></div>
             <div>
               <Label>State</Label>
               <select value={form.job_state} onChange={(e) => set("job_state", e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground">
@@ -104,6 +113,16 @@ function NewProposalPage() {
                 {STATE_LIST.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+          </div>
+          <div>
+            <Label>Is this for a government agency, school, municipality, or does it involve any public funding, grants, or tax incentives?</Label>
+            <select value={form.prevailing_wage} onChange={(e) => set("prevailing_wage", e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-base text-foreground mt-1">
+              <option value="">Select…</option>
+              <option value="no">No — private job</option>
+              <option value="yes">Yes — government / school / public-funded</option>
+              <option value="notsure">Not sure</option>
+            </select>
+            <p className="text-xs text-muted-foreground mt-1">Flags the proposal for a prevailing-wage check so public jobs aren't priced at market rate by mistake.</p>
           </div>
           <div>
             <Label>Job description *</Label>

@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2, Zap, PackagePlus } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2, Zap, PackagePlus, AlertTriangle } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
+import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { listUserMedia, deleteMedia } from "@/lib/media.functions";
@@ -335,6 +336,11 @@ function Dashboard() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{p.client_name}</span>
                         <Badge className={STATUS_COLORS[p.status] || ""}>{p.status}</Badge>
+                        {readPrevailingWage(p.raw_input)?.notice && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 text-xs font-semibold" title="May be subject to prevailing wage — verify before sending">
+                            <AlertTriangle className="h-3 w-3" /> Prevailing wage
+                          </span>
+                        )}
                         {p.language && p.language !== "en" && (
                           <span className="text-base" title={p.language}>{LANG_FLAGS[p.language] || ""}</span>
                         )}

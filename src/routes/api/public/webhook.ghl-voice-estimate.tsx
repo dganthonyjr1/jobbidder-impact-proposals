@@ -93,6 +93,8 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-estimate")({
         );
         const rawLang = pick("language", "lang", "locale") || null;
         const language: Lang = resolveLang(rawLang);
+        const prevailingWageFlag = pick("prevailing_wage_flag", "prevailingWageFlag", "prevailing_wage") || null;
+        const prevailingWageSource = pick("prevailing_wage_source", "prevailingWageSource") || null;
 
         // Validate minimum required fields
         const missing: string[] = [];
@@ -139,6 +141,8 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-estimate")({
             job_address: jobAddress || null,
             trade_type: tradeType || null,
             job_description: jobDescription,
+            prevailing_wage_flag: prevailingWageFlag,
+            prevailing_wage_source: prevailingWageSource,
             language,
             photos: [],
           }),
