@@ -208,7 +208,15 @@ function PublicProposal() {
         <div className="bg-amber-100 border-b-2 border-amber-400 text-amber-900 px-4 sm:px-6 py-3 print:bg-amber-100">
           <div className="max-w-5xl mx-auto flex items-start gap-2 sm:gap-3">
             <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 mt-0.5 text-amber-600" />
-            <p className="text-sm sm:text-base font-semibold leading-snug">{prevailingWage.notice}</p>
+            <div>
+              <p className="text-sm sm:text-base font-semibold leading-snug">{prevailingWage.notice}</p>
+              {prevailingWage.rate && (
+                <p className="text-xs sm:text-sm mt-1.5 text-amber-800 leading-snug">
+                  Reference prevailing wage — {prevailingWage.rate.tradeLabel} ({prevailingWage.rate.state}): ~${prevailingWage.rate.base}/hr base + ${prevailingWage.rate.fringe}/hr fringe ={" "}
+                  <span className="font-semibold">${prevailingWage.rate.total}/hr total</span>. Estimate only — confirm the official wage determination for the project's county.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

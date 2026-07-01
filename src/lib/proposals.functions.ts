@@ -84,6 +84,8 @@ export const generateProposal = createServerFn({ method: "POST" })
       source: data.prevailing_wage_source,
       jobDescription: data.job_description,
       clientName: data.client_name,
+      state: data.job_state,
+      tradeType: data.trade_type,
     });
     const proposalNumber = generateProposalNumber();
     const validThrough = new Date();
