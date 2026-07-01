@@ -232,6 +232,7 @@ function ContractorApplyPage() {
             notified. Someone will follow up with you shortly to complete your onboarding.
           </p>
           <p className="text-sm text-muted-foreground">You can close this window.</p>
+          <a href="/contractor" className="inline-block text-sm text-primary underline">Check your application status anytime →</a>
         </Card>
       </div>
     );
