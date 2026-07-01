@@ -13,11 +13,11 @@ const SUPPORTED_LANGS = ["en", "es", "fr", "pt", "ht"] as const;
 type Lang = typeof SUPPORTED_LANGS[number];
 
 const PREQUAL_SMS: Record<Lang, (name: string, url: string) => string> = {
-  en: (n, u) => `Hi ${n}! Thanks for speaking with NGS. To complete your contractor pre-qualification, please upload your license, insurance, and bonding documents — it only takes 5 minutes: ${u}`,
-  es: (n, u) => `¡Hola ${n}! Gracias por hablar con NGS. Para completar tu precalificación como contratista, por favor sube tu licencia, seguro y documentos de fianza — solo tarda 5 minutos: ${u}`,
-  fr: (n, u) => `Bonjour ${n} ! Merci d'avoir parlé avec NGS. Pour finaliser votre pré-qualification, veuillez télécharger votre licence, votre assurance et vos documents de caution — cela ne prend que 5 minutes : ${u}`,
-  pt: (n, u) => `Olá ${n}! Obrigado por falar com a NGS. Para concluir sua pré-qualificação como contratante, envie sua licença, seguro e documentos de fiança — leva apenas 5 minutos: ${u}`,
-  ht: (n, u) => `Bonjou ${n}! Mèsi pou pale ak NGS. Pou w konplete pre-kalifikasyon kontraktè ou, tanpri telechaje lisans ou, asirans ou, ak dokiman garanti ou — sa pran sèlman 5 minit: ${u}`,
+  en: (n, u) => `Hi ${n}! Thanks for speaking with NGS. To complete your contractor pre-qualification, please upload your license, insurance, and bonding documents — it only takes 5 minutes: ${u} Reply STOP to opt out.`,
+  es: (n, u) => `¡Hola ${n}! Gracias por hablar con NGS. Para completar tu precalificación como contratista, por favor sube tu licencia, seguro y documentos de fianza — solo tarda 5 minutos: ${u} Responde STOP para cancelar.`,
+  fr: (n, u) => `Bonjour ${n} ! Merci d'avoir parlé avec NGS. Pour finaliser votre pré-qualification, veuillez télécharger votre licence, votre assurance et vos documents de caution — cela ne prend que 5 minutes : ${u} Répondez STOP pour vous désabonner.`,
+  pt: (n, u) => `Olá ${n}! Obrigado por falar com a NGS. Para concluir sua pré-qualificação como contratante, envie sua licença, seguro e documentos de fiança — leva apenas 5 minutos: ${u} Responda STOP para cancelar.`,
+  ht: (n, u) => `Bonjou ${n}! Mèsi pou pale ak NGS. Pou w konplete pre-kalifikasyon kontraktè ou, tanpri telechaje lisans ou, asirans ou, ak dokiman garanti ou — sa pran sèlman 5 minit: ${u} Reponn STOP pou w sispann.`,
 };
 
 function resolveLang(raw?: string | null): Lang {
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
           .limit(1)
           .maybeSingle();
 
-        await supabaseAdmin.from("voice_prequal_calls").insert({
+        const { data: callRow } = await supabaseAdmin.from("voice_prequal_calls").insert({
           contractor_id:     existing?.id ?? null,
           phone,
           ghl_contact_id:    ghlContactId,
@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
           crew_size:         String(answers.crew_size ?? answers.crew ?? ""),
           raw_payload:       body as any,
           sms_upload_link_sent: false,
-        });
+        }).select("id").single();
 
         if (disposition === "not_qualified") {
           return Response.json({ received: true, action: "none", reason: "not_qualified" });
@@ -106,12 +106,12 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
         try {
           await sendSmsViaGHL({ to: phone, body: smsBody, credentials: ghlCreds() });
           smsSent = true;
-          await supabaseAdmin
-            .from("voice_prequal_calls")
-            .update({ sms_upload_link_sent: true })
-            .eq("phone", phone)
-            .order("created_at", { ascending: false })
-            .limit(1);
+          if (callRow?.id) {
+            await supabaseAdmin
+              .from("voice_prequal_calls")
+              .update({ sms_upload_link_sent: true })
+              .eq("id", callRow.id);
+          }
         } catch { /* SMS failure must not break the webhook response */ }
 
         return Response.json({ received: true, action: "sms_sent", sms_sent: smsSent, lang, contractor_id: existing?.id ?? null });
