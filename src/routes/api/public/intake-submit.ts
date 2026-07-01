@@ -66,6 +66,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           source: input.prevailing_wage_source,
           jobDescription: input.job_description,
           clientName: input.client_name,
+          tradeType: input.trade_type,
         });
 
         const validThrough = new Date(); validThrough.setDate(validThrough.getDate() + 30);

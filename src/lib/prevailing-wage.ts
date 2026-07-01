@@ -11,6 +11,8 @@
  * on the proposal page.
  */
 
+import { lookupPrevailingWage, type PrevailingWageRate } from "./prevailing-wage-rates";
+
 export type PrevailingWageFlag = "true" | "false" | "unknown";
 
 export interface PrevailingWageResult {
@@ -18,6 +20,7 @@ export interface PrevailingWageResult {
   source: string; // direct_answer | uncertain | keyword_match | none
   notice: string | null;
   keyword_matched: boolean;
+  rate: PrevailingWageRate | null; // Phase 2: approximate prevailing wage for the trade + state
 }
 
 /** Case-insensitive keyword safety net — blunt by design (false positives are cheap, false negatives are not). */
@@ -62,6 +65,8 @@ export function evaluatePrevailingWage(opts: {
   source?: string | null;
   jobDescription?: string | null;
   clientName?: string | null;
+  state?: string | null;
+  tradeType?: string | null;
 }): PrevailingWageResult {
   let flag = normalizeFlag(opts.flag);
   let source =
@@ -77,11 +82,15 @@ export function evaluatePrevailingWage(opts: {
     source = "keyword_match";
   }
 
+  // Phase 2: only look up a rate when the job is actually flagged.
+  const rate = flag === "false" ? null : lookupPrevailingWage(opts.state, opts.tradeType);
+
   return {
     flag,
     source: source || "none",
     notice: buildNotice(flag, source),
     keyword_matched,
+    rate,
   };
 }
 
@@ -95,5 +104,6 @@ export function readPrevailingWage(rawInput: unknown): PrevailingWageResult | nu
     source: pw.source ?? "none",
     notice: pw.notice ?? null,
     keyword_matched: !!pw.keyword_matched,
+    rate: pw.rate ?? null,
   };
 }
