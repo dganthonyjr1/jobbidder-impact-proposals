@@ -18,6 +18,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ContractorApplyRouteImport } from './routes/contractor-apply'
+import { Route as ContractorRouteImport } from './routes/contractor'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProposalIdRouteImport } from './routes/proposal.$id'
@@ -49,15 +50,17 @@ import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/pub
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
 import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
 import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
+import { Route as ApiPublicContractorPortalSessionRouteImport } from './routes/api/public/contractor-portal-session'
+import { Route as ApiPublicContractorPortalRequestRouteImport } from './routes/api/public/contractor-portal-request'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-update-estimate'
 import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/api/public/webhook.ghl-voice-prequal'
 import { Route as ApiPublicWebhookGhlVoiceEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-estimate'
-import { Route as ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-update-estimate'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
 import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './routes/api/public/webhook.ghl-contractor-survey'
@@ -108,6 +111,11 @@ const LoginRoute = LoginRouteImport.update({
 const ContractorApplyRoute = ContractorApplyRouteImport.update({
   id: '/contractor-apply',
   path: '/contractor-apply',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContractorRoute = ContractorRouteImport.update({
+  id: '/contractor',
+  path: '/contractor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -274,6 +282,18 @@ const ApiPublicContractorRecruitRoute =
     path: '/api/public/contractor-recruit',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicContractorPortalSessionRoute =
+  ApiPublicContractorPortalSessionRouteImport.update({
+    id: '/api/public/contractor-portal-session',
+    path: '/api/public/contractor-portal-session',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicContractorPortalRequestRoute =
+  ApiPublicContractorPortalRequestRouteImport.update({
+    id: '/api/public/contractor-portal-request',
+    path: '/api/public/contractor-portal-request',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicContractorApplyRoute =
   ApiPublicContractorApplyRouteImport.update({
     id: '/api/public/contractor-apply',
@@ -309,6 +329,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookGhlVoiceUpdateEstimateRoute =
+  ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport.update({
+    id: '/api/public/webhook/ghl-voice-update-estimate',
+    path: '/api/public/webhook/ghl-voice-update-estimate',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookGhlVoicePrequalRoute =
   ApiPublicWebhookGhlVoicePrequalRouteImport.update({
     id: '/api/public/webhook/ghl-voice-prequal',
@@ -319,12 +345,6 @@ const ApiPublicWebhookGhlVoiceEstimateRoute =
   ApiPublicWebhookGhlVoiceEstimateRouteImport.update({
     id: '/api/public/webhook/ghl-voice-estimate',
     path: '/api/public/webhook/ghl-voice-estimate',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicWebhookGhlVoiceUpdateEstimateRoute =
-  ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport.update({
-    id: '/api/public/webhook/ghl-voice-update-estimate',
-    path: '/api/public/webhook/ghl-voice-update-estimate',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicWebhookGhlPaymentRoute =
@@ -365,6 +385,7 @@ const ApiPublicHooksProcessFollowupsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -394,6 +415,8 @@ export interface FileRoutesByFullPath {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
+  '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
+  '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -413,14 +436,15 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
-  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -450,6 +474,8 @@ export interface FileRoutesByTo {
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
+  '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
+  '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -469,8 +495,8 @@ export interface FileRoutesByTo {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
-  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -479,6 +505,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -508,6 +535,8 @@ export interface FileRoutesById {
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
+  '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
+  '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -527,8 +556,8 @@ export interface FileRoutesById {
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
-  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
+  '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -537,6 +566,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/contractor'
     | '/contractor-apply'
     | '/login'
     | '/pricing'
@@ -566,6 +596,8 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
+    | '/api/public/contractor-portal-request'
+    | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
@@ -585,14 +617,15 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
-    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/contractor'
     | '/contractor-apply'
     | '/login'
     | '/pricing'
@@ -622,6 +655,8 @@ export interface FileRouteTypes {
     | '/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
+    | '/api/public/contractor-portal-request'
+    | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
@@ -641,8 +676,8 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
-    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -650,6 +685,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/contractor'
     | '/contractor-apply'
     | '/login'
     | '/pricing'
@@ -679,6 +715,8 @@ export interface FileRouteTypes {
     | '/_authenticated/proposals/new'
     | '/api/public/accept-proposal'
     | '/api/public/contractor-apply'
+    | '/api/public/contractor-portal-request'
+    | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/decline-proposal'
@@ -698,8 +736,8 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
-    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
+    | '/api/public/webhook/ghl-voice-update-estimate'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -708,6 +746,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ContractorRoute: typeof ContractorRoute
   ContractorApplyRoute: typeof ContractorApplyRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
@@ -725,6 +764,8 @@ export interface RootRouteChildren {
   ProposalIdRoute: typeof ProposalIdRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
+  ApiPublicContractorPortalRequestRoute: typeof ApiPublicContractorPortalRequestRoute
+  ApiPublicContractorPortalSessionRoute: typeof ApiPublicContractorPortalSessionRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
   ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
@@ -744,8 +785,8 @@ export interface RootRouteChildren {
   ApiPublicWebhookGhlJessicaFollowupRoute: typeof ApiPublicWebhookGhlJessicaFollowupRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
   ApiPublicWebhookGhlVoiceEstimateRoute: typeof ApiPublicWebhookGhlVoiceEstimateRoute
-  ApiPublicWebhookGhlVoiceUpdateEstimateRoute: typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   ApiPublicWebhookGhlVoicePrequalRoute: typeof ApiPublicWebhookGhlVoicePrequalRoute
+  ApiPublicWebhookGhlVoiceUpdateEstimateRoute: typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -814,6 +855,13 @@ declare module '@tanstack/react-router' {
       path: '/contractor-apply'
       fullPath: '/contractor-apply'
       preLoaderRoute: typeof ContractorApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contractor': {
+      id: '/contractor'
+      path: '/contractor'
+      fullPath: '/contractor'
+      preLoaderRoute: typeof ContractorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1033,6 +1081,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicContractorRecruitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/contractor-portal-session': {
+      id: '/api/public/contractor-portal-session'
+      path: '/api/public/contractor-portal-session'
+      fullPath: '/api/public/contractor-portal-session'
+      preLoaderRoute: typeof ApiPublicContractorPortalSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/contractor-portal-request': {
+      id: '/api/public/contractor-portal-request'
+      path: '/api/public/contractor-portal-request'
+      fullPath: '/api/public/contractor-portal-request'
+      preLoaderRoute: typeof ApiPublicContractorPortalRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/contractor-apply': {
       id: '/api/public/contractor-apply'
       path: '/api/public/contractor-apply'
@@ -1075,13 +1137,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhook/ghl-voice-estimate': {
-      id: '/api/public/webhook/ghl-voice-estimate'
-      path: '/api/public/webhook/ghl-voice-estimate'
-      fullPath: '/api/public/webhook/ghl-voice-estimate'
-      preLoaderRoute: typeof ApiPublicWebhookGhlVoiceEstimateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/webhook/ghl-voice-update-estimate': {
       id: '/api/public/webhook/ghl-voice-update-estimate'
       path: '/api/public/webhook/ghl-voice-update-estimate'
@@ -1094,6 +1149,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/webhook/ghl-voice-prequal'
       fullPath: '/api/public/webhook/ghl-voice-prequal'
       preLoaderRoute: typeof ApiPublicWebhookGhlVoicePrequalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhook/ghl-voice-estimate': {
+      id: '/api/public/webhook/ghl-voice-estimate'
+      path: '/api/public/webhook/ghl-voice-estimate'
+      fullPath: '/api/public/webhook/ghl-voice-estimate'
+      preLoaderRoute: typeof ApiPublicWebhookGhlVoiceEstimateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhook/ghl-payment': {
@@ -1179,6 +1241,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ContractorRoute: ContractorRoute,
   ContractorApplyRoute: ContractorApplyRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
@@ -1196,6 +1259,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProposalIdRoute: ProposalIdRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
+  ApiPublicContractorPortalRequestRoute: ApiPublicContractorPortalRequestRoute,
+  ApiPublicContractorPortalSessionRoute: ApiPublicContractorPortalSessionRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
   ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
@@ -1218,9 +1283,9 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicWebhookGhlJessicaFollowupRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
   ApiPublicWebhookGhlVoiceEstimateRoute: ApiPublicWebhookGhlVoiceEstimateRoute,
+  ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
   ApiPublicWebhookGhlVoiceUpdateEstimateRoute:
     ApiPublicWebhookGhlVoiceUpdateEstimateRoute,
-  ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
