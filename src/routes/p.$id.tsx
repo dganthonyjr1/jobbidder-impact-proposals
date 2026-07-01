@@ -5,8 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Check, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
+import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
 import { getT, fmtMoney } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
@@ -199,8 +200,18 @@ function PublicProposal() {
     }
   }
 
+  const prevailingWage = readPrevailingWage(proposal.raw_input);
+
   return (
     <div className="min-h-screen bg-background print:bg-white">
+      {prevailingWage?.notice && (
+        <div className="bg-amber-100 border-b-2 border-amber-400 text-amber-900 px-4 sm:px-6 py-3 print:bg-amber-100">
+          <div className="max-w-5xl mx-auto flex items-start gap-2 sm:gap-3">
+            <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 mt-0.5 text-amber-600" />
+            <p className="text-sm sm:text-base font-semibold leading-snug">{prevailingWage.notice}</p>
+          </div>
+        </div>
+      )}
       <header className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">

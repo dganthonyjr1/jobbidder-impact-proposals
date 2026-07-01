@@ -19,6 +19,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 import { generateProposalNumber } from "@/lib/pricing";
+import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import Groq from "groq-sdk";
 
 const aiInput = z.object({
@@ -29,6 +30,8 @@ const aiInput = z.object({
   job_state: z.string().length(2).optional().nullable(),
   trade_type: z.string().max(100).optional().nullable(),
   job_description: z.string().min(1).max(5000),
+  prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),
+  prevailing_wage_source: z.string().max(50).optional().nullable(),
 });
 
 type AIProposalShape = {
@@ -76,6 +79,12 @@ export const generateProposal = createServerFn({ method: "POST" })
     if (!contractor) throw new Error("Contractor profile not found");
 
     const ai = await callAI(data);
+    const prevailingWage = evaluatePrevailingWage({
+      flag: data.prevailing_wage_flag,
+      source: data.prevailing_wage_source,
+      jobDescription: data.job_description,
+      clientName: data.client_name,
+    });
     const proposalNumber = generateProposalNumber();
     const validThrough = new Date();
     validThrough.setDate(validThrough.getDate() + 30);
@@ -102,6 +111,7 @@ export const generateProposal = createServerFn({ method: "POST" })
         tiers: ai.tiers || {},
         valid_through: validThrough.toISOString().slice(0, 10),
         source: "manual",
+        raw_input: { source: "manual", prevailing_wage: prevailingWage as any },
       })
       .select()
       .single();
@@ -115,7 +125,7 @@ export const listProposals = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase
       .from("proposals")
-      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address")
+      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address, raw_input")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const rows = data ?? [];

@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
 import { checkAndDeductCredit } from "@/lib/credits.server";
 import { mergePricing, resolveTradeRate, callGroqAI, type PricingSettings } from "@/lib/proposal-ai.server";
+import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -15,6 +16,8 @@ const Body = z.object({
   job_description: z.string().trim().min(10).max(5000),
   photos: z.array(z.string().url()).max(8).optional().default([]),
   language: z.enum(['en', 'es', 'fr', 'pt', 'ht']).optional().default('en'),
+  prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),
+  prevailing_wage_source: z.string().max(50).optional().nullable(),
 });
 
 export const Route = createFileRoute("/api/public/intake-submit")({
@@ -57,6 +60,14 @@ export const Route = createFileRoute("/api/public/intake-submit")({
 
         const ai = await callGroqAI(input, contractor.business_name, pricing);
 
+        // Prevailing-wage risk flag (deterministic, server-side keyword safety net)
+        const prevailingWage = evaluatePrevailingWage({
+          flag: input.prevailing_wage_flag,
+          source: input.prevailing_wage_source,
+          jobDescription: input.job_description,
+          clientName: input.client_name,
+        });
+
         const validThrough = new Date(); validThrough.setDate(validThrough.getDate() + 30);
         const { data: created, error } = await supabaseAdmin.from("proposals").insert({
           contractor_id: contractor.id,
@@ -84,6 +95,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           raw_input: {
             source: "public-intake",
             slug: input.slug,
+            prevailing_wage: prevailingWage as any,
             pricing_used: {
               labor_rate: resolveTradeRate(pricing, input.trade_type).labor_rate,
               material_markup: resolveTradeRate(pricing, input.trade_type).material_markup,

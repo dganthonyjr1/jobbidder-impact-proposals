@@ -5,12 +5,12 @@ import { getBrandingBySlug } from "@/lib/go-branding.server";
 
 type Step =
   | "greeting" | "name" | "email" | "address"
-  | "job_type" | "scope" | "materials" | "timeline"
+  | "job_type" | "public_funding" | "scope" | "materials" | "timeline"
   | "terms" | "submitting" | "done";
 
 const STEP_ORDER: Step[] = [
   "greeting", "name", "email", "address",
-  "job_type", "scope", "materials", "timeline",
+  "job_type", "public_funding", "scope", "materials", "timeline",
   "terms", "submitting", "done",
 ];
 
@@ -48,6 +48,7 @@ function BrandedIntakePage() {
     email: "What's your email address? (Your proposal will be sent here)",
     address: "What's the project address or location? (City and state is fine if you don't have the full address yet)",
     job_type: "What type of work do you need done? (e.g. roof replacement, kitchen remodel, flooring, HVAC, painting…)",
+    public_funding: "Is this job for a government agency, school, municipality, or does it involve any public funding, grants, or tax incentives? (Reply Yes, No, or Not sure)",
     scope: "Please describe the scope of work in detail. What needs to be done?",
     materials: "What are the key materials or items needed? (Or type 'standard' if you're not sure)",
     timeline: "Do you have a deadline or preferred timeline? (Or type 'flexible' if open)",
@@ -102,6 +103,7 @@ function BrandedIntakePage() {
     else if (step === "email") updatedLead.client_email = val;
     else if (step === "address") updatedLead.job_address = val;
     else if (step === "job_type") updatedLead.trade_type = val;
+    else if (step === "public_funding") updatedLead.public_funding = val;
     else if (step === "scope") updatedLead.scope = val;
     else if (step === "materials") updatedLead.materials = val;
     else if (step === "timeline") updatedLead.timeline = val;
@@ -131,7 +133,7 @@ function BrandedIntakePage() {
   // Step back one question so the customer can fix a previous answer.
   function handleBack() {
     const idx = STEP_ORDER.indexOf(step);
-    if (idx < 2 || idx > 8) return; // only between "email" and "terms"
+    if (idx < 2 || idx > 9) return; // only between "email" and "terms"
     const prev = STEP_ORDER[idx - 1];
     setMessages((m) => {
       const copy = [...m];
@@ -156,6 +158,7 @@ function BrandedIntakePage() {
           job_address: data.job_address,
           trade_type: data.trade_type,
           job_description: buildJobDescription(data),
+          prevailing_wage_flag: data.public_funding || null,
         }),
       });
       const json = await res.json();
@@ -191,7 +194,7 @@ function BrandedIntakePage() {
   const isInputDisabled = step === "submitting" || step === "done";
   const canGoBack = (() => {
     const idx = STEP_ORDER.indexOf(step);
-    return idx >= 2 && idx <= 8; // "email" through "terms"
+    return idx >= 2 && idx <= 9; // "email" through "terms"
   })();
 
   return (
