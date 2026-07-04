@@ -85,23 +85,34 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-estimate")({
         const clientPhone: string = pick("phone", "client_phone", "clientPhone", "customer_phone", "phone_number", "phoneNumber");
         const jobAddress: string = pick("job_address", "jobAddress", "address", "full_address", "address1");
         const tradeType: string = pick("trade_type", "tradeType", "trade", "service", "service_type");
-        const jobDescription: string = pick(
+        let jobDescription: string = pick(
           "job_description", "jobDescription", "job_descriptio",
           "description", "notes", "message",
           "call_summary", "callSummary", "summary",
           "call_transcript", "callTranscript", "transcript",
+          "proposal_scope_of_work", "scope_of_work", "scope",
         );
         const rawLang = pick("language", "lang", "locale") || null;
         const language: Lang = resolveLang(rawLang);
         const prevailingWageFlag = pick("prevailing_wage_flag", "prevailingWageFlag", "prevailing_wage") || null;
         const prevailingWageSource = pick("prevailing_wage_source", "prevailingWageSource") || null;
 
-        // Validate minimum required fields
+        // If the voice AI didn't hand us a scope (common until Jessica's agent is
+        // configured to save proposal_scope_of_work), fall back to a placeholder so
+        // the call still produces a proposal and fires email + SMS instead of hard-
+        // failing. The proposal is generic until the scope field is actually populated.
+        if (!jobDescription || jobDescription.length < 10) {
+          jobDescription =
+            `Estimate requested by phone${clientName ? ` by ${clientName}` : ""}` +
+            `${tradeType ? ` for ${tradeType}` : ""}${jobAddress ? ` at ${jobAddress}` : ""}. ` +
+            `Full scope to be confirmed with the customer.`;
+        }
+
+        // Validate only the fields we truly cannot proceed without.
         const missing: string[] = [];
         if (!slug) missing.push("contractor_slug");
         if (!clientName) missing.push("client_name");
         if (!clientEmail && !clientPhone) missing.push("client_email or phone");
-        if (!jobDescription || jobDescription.length < 10) missing.push("job_description (min 10 chars)");
 
         if (missing.length) {
           // Echo back exactly what GHL sent so the GHL execution log shows the
