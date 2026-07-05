@@ -35,7 +35,6 @@ import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
 import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
-import { Route as AuthenticatedContractorDashboardRouteImport } from './routes/_authenticated.contractor-dashboard'
 import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -198,12 +197,6 @@ const AuthenticatedContractorSearchRoute =
   AuthenticatedContractorSearchRouteImport.update({
     id: '/contractor-search',
     path: '/contractor-search',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedContractorDashboardRoute =
-  AuthenticatedContractorDashboardRouteImport.update({
-    id: '/contractor-dashboard',
-    path: '/contractor-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
@@ -397,7 +390,6 @@ export interface FileRoutesByFullPath {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -456,7 +448,6 @@ export interface FileRoutesByTo {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -517,7 +508,6 @@ export interface FileRoutesById {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
-  '/_authenticated/contractor-dashboard': typeof AuthenticatedContractorDashboardRoute
   '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -578,7 +568,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
@@ -637,7 +626,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-dashboard'
     | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
@@ -697,7 +685,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/_authenticated/account'
     | '/_authenticated/affiliate'
-    | '/_authenticated/contractor-dashboard'
     | '/_authenticated/contractor-search'
     | '/_authenticated/contractor-verification'
     | '/_authenticated/dashboard'
@@ -976,13 +963,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractorSearchRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/contractor-dashboard': {
-      id: '/_authenticated/contractor-dashboard'
-      path: '/contractor-dashboard'
-      fullPath: '/contractor-dashboard'
-      preLoaderRoute: typeof AuthenticatedContractorDashboardRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/affiliate': {
       id: '/_authenticated/affiliate'
       path: '/affiliate'
@@ -1206,7 +1186,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
-  AuthenticatedContractorDashboardRoute: typeof AuthenticatedContractorDashboardRoute
   AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1221,7 +1200,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
-  AuthenticatedContractorDashboardRoute: AuthenticatedContractorDashboardRoute,
   AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedContractorVerificationRoute:
     AuthenticatedContractorVerificationRoute,
