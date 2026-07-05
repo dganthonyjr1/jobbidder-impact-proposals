@@ -1,4 +1,5 @@
 import Groq from "groq-sdk";
+import { tradePlaybook } from "./trade-playbooks";
 
 /**
  * Shared proposal-generation logic used by both:
@@ -103,6 +104,9 @@ export function buildPrompt(
   const langName = LANG_NAMES[input.language || 'en'] || 'English';
 
   const system = `You are an expert estimator for ${business} (${input.trade_type || "general contracting"}).
+
+TRADE-SPECIFIC GUIDANCE — build the estimate the way a real ${input.trade_type || "contractor"} would, using the appropriate materials, labor phases, units, and considerations:
+${tradePlaybook(input.trade_type)}
 
 LANGUAGE: Write ALL text fields (scope_of_work, timeline, warranty, exclusions, tier descriptions, payment_terms, item names, task names, descriptions) in ${langName}. Numbers and JSON keys stay in English/numeric format.
 

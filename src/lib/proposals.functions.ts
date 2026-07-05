@@ -20,6 +20,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 import { generateProposalNumber } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
+import { tradePlaybook } from "@/lib/trade-playbooks";
 import Groq from "groq-sdk";
 
 const aiInput = z.object({
@@ -48,7 +49,9 @@ async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("AI gateway not configured — GROQ_API_KEY missing");
 
-  const sys = `You are an expert contractor estimator for ${payload.trade_type || "general contracting"}. Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
+  const sys = `You are an expert contractor estimator for ${payload.trade_type || "general contracting"}. Build the estimate the way a real ${payload.trade_type || "contractor"} would — using the right materials, labor phases, units, and considerations for this trade:
+${tradePlaybook(payload.trade_type)}
+Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
   const user = `Job for ${payload.client_name} at ${payload.job_address || "TBD"} (state: ${payload.job_state || "n/a"}).\nDescription: ${payload.job_description}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
 
   const groq = new Groq({ apiKey });
