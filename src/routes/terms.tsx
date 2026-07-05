@@ -156,8 +156,10 @@ function TermsPage() {
           <Section title="11. Fees and Payments">
             <p>
               If paid features are offered, fees will be disclosed through the applicable pricing page, order form, invoice,
-              subscription page, or written agreement. Fees are generally non-refundable except where required by law or expressly
-              stated otherwise. Third-party payment processors may impose their own terms and fees.
+              subscription page, or written agreement. One-time setup fees are covered by a 14-day money-back guarantee: if you
+              request a refund of your setup fee within 14 days of purchase, it will be refunded in full. Recurring subscription
+              fees can be canceled at any time and are otherwise non-refundable except where required by law or expressly stated
+              otherwise. Third-party payment processors may impose their own terms and fees.
             </p>
           </Section>
 

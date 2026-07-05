@@ -170,7 +170,7 @@ function PricingPage() {
               </div>
               {tier.setup && (
                 <p className="mt-1 text-xs font-semibold text-muted-foreground">
-                  + {tier.setup} one-time setup fee · non-refundable
+                  + {tier.setup} one-time setup fee · 14-day money-back guarantee
                 </p>
               )}
               <ul className="mt-6 space-y-3 flex-1">
@@ -223,7 +223,7 @@ function PricingPage() {
               <span className="text-muted-foreground font-medium">/ 3 proposals</span>
             </div>
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <a href="https://link.suddenimpactagency.io/payment-link/REPLACE_WITH_PROPOSAL_PACK_LINK" target="_blank" rel="noreferrer">Buy a Pack</a>
+              <a href="https://link.suddenimpactagency.io/payment-link/6a4a6a9ea655fa0b802a2c2b" target="_blank" rel="noreferrer">Buy a Pack</a>
             </Button>
             <p className="text-xs text-muted-foreground">$25 / proposal · upgrade to unlimited anytime</p>
           </div>
@@ -381,7 +381,7 @@ function PricingPage() {
                 <span className="text-muted-foreground font-medium text-lg">/mo</span>
               </div>
               <p className="mt-1 text-sm font-semibold text-muted-foreground">
-                + $3,500 one-time setup fee · non-refundable · 10,000 AI credits/mo included · $0.50/credit after
+                + $3,500 one-time setup fee · 14-day money-back guarantee · 10,000 AI credits/mo included · $0.50/credit after
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
                 vs. $3,299+/mo for NetSuite + HubSpot combined — with none of the contractor-specific capabilities.
