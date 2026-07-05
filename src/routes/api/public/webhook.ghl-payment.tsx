@@ -36,11 +36,14 @@ const TIER_CENTS: Record<string, number> = {
   enterprise:  350000,
 };
 
-// Credit add-on pack definitions
+// Credit add-on pack definitions.
+// "proposal" is the pay-as-you-go entry pack for free-tier contractors:
+// 3 AI proposals for $75, never expires (see credits.server.ts apprentice path).
 const PACK_BY_NAME: Record<string, { pack_name: string; credits: number }> = {
-  "starter": { pack_name: "starter", credits: 1000 },
-  "growth":  { pack_name: "growth",  credits: 5000 },
-  "scale":   { pack_name: "scale",   credits: 15000 },
+  "proposal": { pack_name: "proposal_3", credits: 3 },
+  "starter":  { pack_name: "starter", credits: 1000 },
+  "growth":   { pack_name: "growth",  credits: 5000 },
+  "scale":    { pack_name: "scale",   credits: 15000 },
 };
 
 function productNameFromPayload(p: any): string {
