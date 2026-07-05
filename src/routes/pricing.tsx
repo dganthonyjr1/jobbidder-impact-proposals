@@ -203,6 +203,33 @@ function PricingPage() {
         </div>
       </section>
 
+      {/* ── Pay-as-you-go Proposal Pack ── */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="rounded-2xl border border-primary/40 bg-card/70 p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center gap-6">
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 text-xs font-semibold text-muted-foreground mb-3">
+              <PackagePlus className="h-3 w-3 text-primary" />
+              Pay as you go
+            </div>
+            <h3 className="font-display text-2xl font-bold tracking-tight">Proposal Pack</h3>
+            <p className="mt-2 text-sm text-muted-foreground font-medium">
+              Not ready for a monthly plan? Get <strong className="text-foreground">3 AI proposals for $75</strong> — full Good / Better / Best, SMS &amp; email delivery, and a public share link.{" "}
+              <strong className="text-foreground">They never expire.</strong> Yours to use whenever the work comes in.
+            </p>
+          </div>
+          <div className="flex flex-col items-start sm:items-center gap-2 shrink-0">
+            <div className="flex items-baseline gap-1">
+              <span className="font-display text-4xl font-bold tracking-tight">$75</span>
+              <span className="text-muted-foreground font-medium">/ 3 proposals</span>
+            </div>
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <a href="https://link.suddenimpactagency.io/payment-link/REPLACE_WITH_PROPOSAL_PACK_LINK" target="_blank" rel="noreferrer">Buy a Pack</a>
+            </Button>
+            <p className="text-xs text-muted-foreground">$25 / proposal · upgrade to unlimited anytime</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Credit Breakdown ── */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-12">
         <div className="rounded-2xl border border-border bg-card/60 p-6 sm:p-8">

@@ -46,7 +46,7 @@ export async function checkAndDeductCredit(
     const normalizedTier = (tier || "apprentice") as Tier;
     const billingPeriod = new Date().toISOString().slice(0, 7); // "YYYY-MM"
 
-    // ── Apprentice: 2 lifetime actions total ─────────────────────────────────
+    // ── Apprentice: 2 free lifetime actions, then pay-as-you-go packs ─────────
     if (normalizedTier === "apprentice") {
       const { count } = await supabaseAdmin
         .from("credit_ledger")
@@ -54,23 +54,55 @@ export async function checkAndDeductCredit(
         .eq("contractor_id", contractorId);
 
       const used = count ?? 0;
-      if (used >= APPRENTICE_LIFETIME_LIMIT) {
-        return {
-          allowed: false,
-          isOverage: false,
-          message: "You've used your 2 free AI actions. Upgrade to Journeyman or higher to continue.",
-        };
+
+      // Still has free lifetime actions — use one.
+      if (used < APPRENTICE_LIFETIME_LIMIT) {
+        await supabaseAdmin.from("credit_ledger").insert({
+          contractor_id:  contractorId,
+          action_type:    actionType,
+          credits_used:   1,
+          is_overage:     false,
+          billing_period: billingPeriod,
+          description:    description ?? null,
+        });
+        return { allowed: true, isOverage: false };
       }
 
-      await supabaseAdmin.from("credit_ledger").insert({
-        contractor_id:  contractorId,
-        action_type:    actionType,
-        credits_used:   1,
-        is_overage:     false,
-        billing_period: billingPeriod,
-        description:    description ?? null,
-      });
-      return { allowed: true, isOverage: false };
+      // Free actions used up — draw from a purchased proposal pack (FIFO).
+      // Packs never expire, so any pack with credits remaining is valid.
+      const { data: packs } = await supabaseAdmin
+        .from("credit_pack_purchases")
+        .select("id, credits_remaining")
+        .eq("contractor_id", contractorId)
+        .gt("credits_remaining", 0)
+        .order("purchased_at", { ascending: true })
+        .limit(1);
+
+      if (packs && packs.length > 0) {
+        const pack = packs[0];
+        await Promise.all([
+          supabaseAdmin
+            .from("credit_pack_purchases")
+            .update({ credits_remaining: pack.credits_remaining - 1 })
+            .eq("id", pack.id),
+          supabaseAdmin.from("credit_ledger").insert({
+            contractor_id:  contractorId,
+            action_type:    actionType,
+            credits_used:   1,
+            is_overage:     false,
+            billing_period: billingPeriod,
+            description:    `${description ?? actionType} (from pack)`,
+          }),
+        ]);
+        return { allowed: true, isOverage: false };
+      }
+
+      // Nothing left — block, but point to the pack and the monthly plan.
+      return {
+        allowed: false,
+        isOverage: false,
+        message: "You've used your free proposals. Get 3 more for $75 (they never expire), or go unlimited with Journeyman.",
+      };
     }
 
     // ── Journeyman: proposals only, unlimited ─────────────────────────────────
