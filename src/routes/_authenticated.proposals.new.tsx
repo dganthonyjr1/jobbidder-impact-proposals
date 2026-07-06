@@ -102,7 +102,7 @@ function NewProposalPage() {
         <form onSubmit={submit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><Label>Client name *</Label><Input required value={form.client_name} onChange={(e) => set("client_name", e.target.value)} /></div>
-            <div><Label>Trade type</Label><Input value={form.trade_type} onChange={(e) => set("trade_type", e.target.value)} placeholder="Flooring, HVAC…" /></div>
+            <div><Label>Trade type</Label><Input value={form.trade_type} onChange={(e) => set("trade_type", e.target.value)} placeholder="Flooring, HVAC, Moving…" /></div>
             <div><Label>Email</Label><Input type="email" value={form.client_email} onChange={(e) => set("client_email", e.target.value)} /></div>
             <div><Label>Phone</Label><Input value={form.client_phone} onChange={(e) => set("client_phone", e.target.value)} /></div>
             <div className="sm:col-span-2"><Label>Job address</Label><Input value={form.job_address} onChange={(e) => set("job_address", e.target.value)} /></div>
