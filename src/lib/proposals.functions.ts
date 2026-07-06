@@ -21,6 +21,7 @@ import { z } from "zod";
 import { generateProposalNumber } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook } from "@/lib/trade-playbooks";
+import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import Groq from "groq-sdk";
 
 const aiInput = z.object({
@@ -78,10 +79,11 @@ export const generateProposal = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context;
     const { data: contractor } = await supabaseAdmin
-      .from("contractors").select("id").eq("user_id", userId).single();
+      .from("contractors")
+      .select("id, business_name, license_number, business_address, service_states")
+      .eq("user_id", userId).single();
     if (!contractor) throw new Error("Contractor profile not found");
 
-    const ai = await callAI(data);
     const prevailingWage = evaluatePrevailingWage({
       flag: data.prevailing_wage_flag,
       source: data.prevailing_wage_source,
@@ -94,6 +96,64 @@ export const generateProposal = createServerFn({ method: "POST" })
     const validThrough = new Date();
     validThrough.setDate(validThrough.getDate() + 30);
 
+    // ── Narrative (prose) verticals: moving, etc. ─────────────────────────────
+    // Prose document instead of a Good/Better/Best materials table. Pricing is a
+    // single labor line so computeTotals yields grandTotal === estimate exactly,
+    // keeping the accept/deposit money path unchanged. Gated for render by
+    // raw_input.proposal_format === "narrative".
+    if (isNarrativeTrade(data.trade_type)) {
+      const narrative = await generateNarrativeProposal(
+        {
+          client_name: data.client_name,
+          job_address: data.job_address,
+          trade_type: data.trade_type,
+          job_description: data.job_description,
+        },
+        {
+          business_name: contractor.business_name,
+          license_number: contractor.license_number,
+          service_area: (contractor.service_states || []).join(", ") || contractor.business_address,
+        },
+      );
+      if (narrative) {
+        const { data: created, error } = await supabaseAdmin
+          .from("proposals")
+          .insert({
+            contractor_id: contractor.id,
+            proposal_number: proposalNumber,
+            status: "draft",
+            client_name: data.client_name,
+            client_email: data.client_email,
+            client_phone: data.client_phone,
+            job_address: data.job_address,
+            job_state: data.job_state,
+            job_description: data.job_description,
+            trade_type: data.trade_type,
+            scope_of_work: narrative.scope_of_work,
+            timeline: narrative.timeline || null,
+            warranty: narrative.warranty || null,
+            exclusions: [],
+            materials: [],
+            labor: narrative.estimated_total > 0
+              ? [{ task: "Professional moving services", description: "Crew, trucks, transport, protection, and specialty handling as detailed in this proposal.", hours: 1, rate: narrative.estimated_total }]
+              : [],
+            tiers: {},
+            tax_rate: 0,
+            payment_terms: narrative.payment_terms,
+            valid_through: validThrough.toISOString().slice(0, 10),
+            source: "manual",
+            raw_input: { source: "manual", proposal_format: "narrative", prevailing_wage: prevailingWage as any },
+          })
+          .select()
+          .single();
+        if (error) throw new Error(error.message);
+        return { id: created.id, proposal_number: created.proposal_number };
+      }
+      // Narrative generation failed — fall through to the itemized path below.
+    }
+
+    // ── Itemized (Good/Better/Best) path ──────────────────────────────────────
+    const ai = await callAI(data);
     const { data: created, error } = await supabaseAdmin
       .from("proposals")
       .insert({

@@ -149,6 +149,9 @@ function PublicProposal() {
   const mediaUrls: string[] = Array.isArray(proposal.photos) ? proposal.photos : [];
   const clientMediaUrls: string[] = Array.isArray(proposal.client_photos) ? proposal.client_photos : [];
   const isVideoUrl = (url: string) => /\.(mp4|mov|webm)(\?|#|$)/i.test(url);
+  // Narrative (prose) proposals — moving and other service verticals — hide the
+  // Good/Better/Best tiers and line-item tables and render the written document.
+  const isNarrative = proposal.raw_input?.proposal_format === "narrative";
 
   async function sign({ signatureName, signatureEmail }: { signatureName: string; signatureEmail: string; signatureDataUrl: string | null }) {
     setSigning(true);
@@ -252,31 +255,33 @@ function PublicProposal() {
           {proposal.job_address && <p className="text-muted-foreground mt-2">{proposal.job_address}</p>}
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4 mb-10">
-          {(["good", "better", "best"] as const).map((t) => {
-            const tt = computeTotals(materials, labor, t, Number(proposal.tax_rate) || 0.07);
-            const active = tier === t;
-            return (
-              <button
-                key={t}
-                onClick={() => setTier(t)}
-                className={`text-left rounded-xl border-2 p-5 transition bg-card ${active ? "shadow-glow" : "border-border bg-card/50 hover:opacity-90"}`}
-                style={active ? { borderColor: brand, boxShadow: `0 0 0 1px ${brand}33, 0 12px 40px -12px ${brand}55` } : {}}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-display font-semibold text-lg">{TIER_LABELS[t].name}</span>
-                  {active && <Check className="h-5 w-5" style={{ color: brand }} />}
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">{TIER_LABELS[t].tagline}</p>
-                <div className="text-2xl font-display font-bold" style={active ? { color: brand } : {}}>{fmt(tt.grandTotal)}</div>
-              </button>
-            );
-          })}
-        </div>
+        {!isNarrative && (
+          <div className="grid md:grid-cols-3 gap-4 mb-10">
+            {(["good", "better", "best"] as const).map((t) => {
+              const tt = computeTotals(materials, labor, t, Number(proposal.tax_rate) || 0.07);
+              const active = tier === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTier(t)}
+                  className={`text-left rounded-xl border-2 p-5 transition bg-card ${active ? "shadow-glow" : "border-border bg-card/50 hover:opacity-90"}`}
+                  style={active ? { borderColor: brand, boxShadow: `0 0 0 1px ${brand}33, 0 12px 40px -12px ${brand}55` } : {}}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-display font-semibold text-lg">{TIER_LABELS[t].name}</span>
+                    {active && <Check className="h-5 w-5" style={{ color: brand }} />}
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">{TIER_LABELS[t].tagline}</p>
+                  <div className="text-2xl font-display font-bold" style={active ? { color: brand } : {}}>{fmt(tt.grandTotal)}</div>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {proposal.scope_of_work && (
           <Card className="p-6 mb-6">
-            <h2 className="font-display font-semibold text-xl mb-3">{t.scopeOfWork}</h2>
+            <h2 className="font-display font-semibold text-xl mb-3">{isNarrative ? "Your Proposal" : t.scopeOfWork}</h2>
             <p className="text-sm text-muted-foreground whitespace-pre-line leading-relaxed">{proposal.scope_of_work}</p>
           </Card>
         )}
@@ -394,7 +399,7 @@ function PublicProposal() {
           </Card>
         )}
 
-        {labor.length > 0 && (
+        {!isNarrative && labor.length > 0 && (
           <Card className="p-6 mb-6">
             <h2 className="font-display font-semibold text-xl mb-4">{t.labor}</h2>
             <div className="overflow-hidden rounded-md border border-border">
@@ -415,17 +420,31 @@ function PublicProposal() {
           </Card>
         )}
 
-        <Card className="p-6 mb-6">
-          <div className="space-y-2 text-sm">
-            <Row label={t.materials} v={fmt(totals.materialsSia)} />
-            <Row label={t.labor} v={fmt(totals.laborTotal)} />
-            <Row label={t.tax(taxPct)} v={fmt(totals.tax)} />
-            <div className="border-t border-border pt-3 mt-3 flex justify-between items-center">
-              <span className="font-display text-lg">{t.total}</span>
-              <span className="font-display text-3xl font-bold" style={{ color: brand }}>{fmt(totals.grandTotal)}</span>
+        {isNarrative ? (
+          totals.grandTotal > 0 && (
+            <Card className="p-6 mb-6">
+              <div className="flex justify-between items-center gap-4">
+                <div>
+                  <div className="font-display text-lg">Estimated Investment</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Final binding price is confirmed after your on-site or virtual survey.</div>
+                </div>
+                <span className="font-display text-3xl font-bold shrink-0" style={{ color: brand }}>{fmt(totals.grandTotal)}</span>
+              </div>
+            </Card>
+          )
+        ) : (
+          <Card className="p-6 mb-6">
+            <div className="space-y-2 text-sm">
+              <Row label={t.materials} v={fmt(totals.materialsSia)} />
+              <Row label={t.labor} v={fmt(totals.laborTotal)} />
+              <Row label={t.tax(taxPct)} v={fmt(totals.tax)} />
+              <div className="border-t border-border pt-3 mt-3 flex justify-between items-center">
+                <span className="font-display text-lg">{t.total}</span>
+                <span className="font-display text-3xl font-bold" style={{ color: brand }}>{fmt(totals.grandTotal)}</span>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
 
         <div className="grid md:grid-cols-3 gap-4 mb-6">
           {proposal.timeline && <Card className="p-5"><div className="text-xs text-muted-foreground uppercase mb-1">{t.timeline}</div><div className="font-medium">{proposal.timeline}</div></Card>}
@@ -448,7 +467,10 @@ function PublicProposal() {
               <div className="h-14 w-14 rounded-full bg-green-500/20 mx-auto flex items-center justify-center"><Check className="h-7 w-7 text-green-400" /></div>
               <h3 className="font-display text-2xl font-bold mt-4">{t.accepted}</h3>
               <p className="text-muted-foreground mt-2">{t.acceptedSub}</p>
-              {depositPaid ? (
+              {isNarrative && (
+                <p className="text-muted-foreground text-sm mt-2">Your mover will contact you to schedule your survey and confirm your date.</p>
+              )}
+              {!isNarrative && (depositPaid ? (
                 <div className="mt-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30">
                   <p className="text-green-400 font-semibold text-lg">✅ Deposit paid — you're all set!</p>
                   <p className="text-muted-foreground text-sm mt-1">Your contractor will be in touch shortly to confirm your start date.</p>
@@ -499,7 +521,7 @@ function PublicProposal() {
                   </Button>
                   <p className="text-xs text-muted-foreground mt-3">Secure payment powered by Stripe. You will be redirected to a hosted payment page.</p>
                 </div>
-              )}
+              ))}
             </div>
           ) : declined || proposal.status === "declined" ? (
             <div className="text-center py-6">
@@ -509,11 +531,11 @@ function PublicProposal() {
           ) : (
             <>
               <h3 className="font-display text-2xl font-bold mb-2">{t.acceptThisProposal}</h3>
-              <p className="text-sm text-muted-foreground mb-5">{t.selectedTier(TIER_LABELS[tier].name, fmt(totals.grandTotal))}</p>
+              <p className="text-sm text-muted-foreground mb-5">{isNarrative ? "Accepting confirms the scope and terms in this proposal. Your final binding price is confirmed after your survey." : t.selectedTier(TIER_LABELS[tier].name, fmt(totals.grandTotal))}</p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" className="shadow-glow text-white font-semibold" style={{ background: brand }} onClick={() => setShowSignModal(true)} disabled={signing}>
                   <PenLine className="h-4 w-4 mr-2" />
-                  {t.acceptAndSign(fmt(totals.grandTotal))}
+                  {isNarrative ? "Accept & Sign" : t.acceptAndSign(fmt(totals.grandTotal))}
                 </Button>
                 {!showDecline ? (
                   <Button size="lg" variant="outline" onClick={() => setShowDecline(true)} disabled={signing}>

@@ -55,6 +55,7 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
   const materials = (proposal.materials || []) as MaterialLine[];
   const labor = (proposal.labor || []) as LaborLine[];
   const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07);
+  const isNarrative = proposal?.raw_input?.proposal_format === "narrative";
   const created = proposal.created_at ? new Date(proposal.created_at) : new Date();
   const expires = proposal.expires_at
     ? new Date(proposal.expires_at)
@@ -96,7 +97,7 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
           <Text style={styles.clientName}>{proposal.client_name}</Text>
           {proposal.job_address ? <Text style={styles.address}>{proposal.job_address}</Text> : null}
           <Text style={[styles.h1, { marginTop: 14 }]}>
-            {(proposal.trade_type || "Project")} Proposal — {TIER_LABELS[tier]?.name || "Better"}
+            {(proposal.trade_type || "Project")} Proposal{isNarrative ? "" : ` — ${TIER_LABELS[tier]?.name || "Better"}`}
           </Text>
         </View>
 
@@ -155,7 +156,7 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
           </View>
         ) : null}
 
-        {labor.length > 0 ? (
+        {!isNarrative && labor.length > 0 ? (
           <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Labor</Text>
             <View style={styles.tableHeader}>
@@ -178,15 +179,27 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
           </View>
         ) : null}
 
-        <View style={styles.totalsBox} wrap={false}>
-          <View style={styles.totalRow}><Text style={styles.totalLabel}>Materials</Text><Text>{fmt(totals.materialsSia)}</Text></View>
-          <View style={styles.totalRow}><Text style={styles.totalLabel}>Labor</Text><Text>{fmt(totals.laborTotal)}</Text></View>
-          <View style={styles.totalRow}><Text style={styles.totalLabel}>Tax</Text><Text>{fmt(totals.tax)}</Text></View>
-          <View style={styles.grandRow}>
-            <Text style={styles.grandLabel}>Total</Text>
-            <Text style={styles.grandValue}>{fmt(totals.grandTotal)}</Text>
+        {isNarrative ? (
+          totals.grandTotal > 0 ? (
+            <View style={styles.totalsBox} wrap={false}>
+              <View style={styles.grandRow}>
+                <Text style={styles.grandLabel}>Estimated Investment</Text>
+                <Text style={styles.grandValue}>{fmt(totals.grandTotal)}</Text>
+              </View>
+              <Text style={[styles.totalLabel, { marginTop: 4, fontSize: 9 }]}>Final binding price confirmed after the on site or virtual survey.</Text>
+            </View>
+          ) : null
+        ) : (
+          <View style={styles.totalsBox} wrap={false}>
+            <View style={styles.totalRow}><Text style={styles.totalLabel}>Materials</Text><Text>{fmt(totals.materialsSia)}</Text></View>
+            <View style={styles.totalRow}><Text style={styles.totalLabel}>Labor</Text><Text>{fmt(totals.laborTotal)}</Text></View>
+            <View style={styles.totalRow}><Text style={styles.totalLabel}>Tax</Text><Text>{fmt(totals.tax)}</Text></View>
+            <View style={styles.grandRow}>
+              <Text style={styles.grandLabel}>Total</Text>
+              <Text style={styles.grandValue}>{fmt(totals.grandTotal)}</Text>
+            </View>
           </View>
-        </View>
+        )}
 
         <View style={styles.infoGrid} wrap={false}>
           {proposal.timeline ? (
