@@ -105,35 +105,41 @@ def detect_prevailing_wage(text):
     return False, 'none'
 
 
+def _date_key(d):
+    """Sort key (year, month, day) for an MM/DD/YYYY date string."""
+    p = re.split(r'[\/\-]', d)
+    return (int(p[2]), int(p[0]), int(p[1]))
+
+
 def parse_contractor_info(text):
     parsed = {}
 
-    # License number
-    for pattern in [r'license\s*#?\s*:?\s*([A-Z0-9\-]+)', r'lic\s*#?\s*:?\s*([A-Z0-9\-]+)']:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            parsed['licenseNumber'] = match.group(1).strip()
-            break
+    # License number — require the word "license/licence" AND a token that
+    # contains a digit, so loose words like "policies" cannot false-positive.
+    m = re.search(r'\blicen[sc]e\s*(?:#|no\.?|number)?\s*[:#]?\s*([A-Z]{0,3}-?\d[A-Z0-9\-]{2,})', text, re.IGNORECASE)
+    if m:
+        parsed['licenseNumber'] = m.group(1).strip()
 
-    # Insurance policy number
-    for pattern in [r'policy\s*#?\s*:?\s*([A-Z0-9\-]+)', r'policy\s*number\s*:?\s*([A-Z0-9\-]+)']:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            parsed['insurancePolicyNumber'] = match.group(1).strip()
-            break
+    # Insurance policy number — require a "policy" label (#/no/number) and a
+    # value containing a digit (rejects "policy provisions", etc.).
+    m = re.search(r'\bpolicy\s*(?:#|no\.?|number)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-]{4,})', text, re.IGNORECASE)
+    if m and re.search(r'\d', m.group(1)):
+        parsed['insurancePolicyNumber'] = m.group(1).strip()
 
-    # Expiration date
-    for pattern in [r'expir(?:ation|es?)\s*(?:date)?\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})',
-                    r'valid\s*(?:through|until|to)\s*:?\s*(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})']:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            parsed['expirationDate'] = match.group(1).strip()
-            break
+    # Expiration date — a labeled date if present, else the latest date on the
+    # document (on a certificate the newest date is the expiration).
+    m = re.search(r'(?:expir\w*|valid\s*(?:through|until|to))\D{0,15}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})', text, re.IGNORECASE)
+    if m:
+        parsed['expirationDate'] = m.group(1)
+    else:
+        dates = re.findall(r'\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})\b', text)
+        if dates:
+            parsed['expirationDate'] = max(dates, key=_date_key)
 
-    # Coverage amount
-    coverage = re.search(r'\$[\d,]+(?:\.\d{2})?', text)
-    if coverage:
-        parsed['coverageAmount'] = coverage.group(0)
+    # Coverage amount — the largest comma-formatted currency figure on the doc.
+    amounts = re.findall(r'\$?\s*(\d{1,3}(?:,\d{3})+(?:\.\d{2})?)', text)
+    if amounts:
+        parsed['coverageAmount'] = '$' + max(amounts, key=lambda s: float(s.replace(',', '')))
 
     # Prevailing-wage detection (government / public-funding keywords)
     pw_flag, pw_source = detect_prevailing_wage(text)
