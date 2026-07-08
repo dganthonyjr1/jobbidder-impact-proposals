@@ -4,24 +4,11 @@ import { useEffect, useState } from "react";
 import { LayoutDashboard, FileText, Settings, LogOut, HardHat, ShieldCheck, Kanban, Share2, CreditCard, ImagePlus, Menu, X } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
-function isAdminEmail(email: string | undefined): boolean {
-  if (!email) return false;
-  const raw = import.meta.env.VITE_ADMIN_EMAILS ?? "";
-  if (!raw.trim()) return true; // no allowlist configured → allow all (dev fallback)
-  const admins = raw.split(",").map((e: string) => e.trim().toLowerCase());
-  return admins.includes(email.toLowerCase());
-}
-
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/login" });
-    const email = data.session.user.email;
-    if (!isAdminEmail(email)) {
-      await supabase.auth.signOut();
-      throw redirect({ to: "/login" });
-    }
   },
   component: AuthLayout,
 });
