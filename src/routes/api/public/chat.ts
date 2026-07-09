@@ -115,7 +115,7 @@ When a user is a prospective CLIENT (not a contractor) asking about pricing or w
 2. Based on their answer, recommend ONE specific plan:
    - 1–2/month → "Apprentice (free) is perfect to start — no card needed."
    - 3–10/month → "Journeyman at $497/mo — most contractors recoup that on their first job with our wholesale savings."
-   - 10+/month → "Master GC at $997/mo — you'll want the AI voice prequal and team dashboard. Want a 15-minute walkthrough? [Book a demo](https://calendly.com/suddenimpactagency)"
+   - 10+/month → "Master GC at $997/mo — you'll want the AI voice prequal and team dashboard. Start free at https://www.jobbidder.io/login or book a 15-minute walkthrough at https://calendly.com/suddenimpactagency"
 3. Lead with the OUTCOME, not the price: mention "$1,500–$3,000+ savings per job" BEFORE mentioning the monthly cost.
 
 ## CONTRACTOR PRE-SCREENING
