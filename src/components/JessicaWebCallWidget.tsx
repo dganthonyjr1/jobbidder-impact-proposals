@@ -1,5 +1,16 @@
 import { useEffect } from 'react';
 
+const CONFIG = {
+  locationId: 'ycsIlNye8DF4OmblGPj6',
+  agentId: '6a2c5bd995517e66beaeb3d9',
+  apiEndpoint: 'https://services.leadconnectorhq.com/chat-widget/public/start-voice-ai-call/',
+  livekitUrl: 'wss://retell-ai-4ihahnq7.livekit.cloud',
+  // Jobbidder brand colors
+  colorPrimary: '#7C3AED',
+  colorLight: '#A855F7',
+  colorDark: '#5B21B6',
+};
+
 export function JessicaWebCallWidget() {
   useEffect(() => {
     // Load LiveKit SDK if not already loaded
@@ -9,315 +20,382 @@ export function JessicaWebCallWidget() {
       script.defer = true;
       document.head.appendChild(script);
       script.onload = () => initJessicaWebCall();
-      script.onerror = () => {
-        console.error('Failed to load LiveKit SDK');
-      };
+      script.onerror = () => console.error('[Jessica] Failed to load LiveKit SDK');
     } else {
       initJessicaWebCall();
     }
 
     return () => {
-      // Cleanup on unmount
-      const audioElements = document.querySelectorAll('[data-voiceai-audio="voiceai-jessica-widget"]');
-      audioElements.forEach(el => el.remove());
+      document.querySelectorAll('[data-jessica-audio]').forEach(el => el.remove());
     };
   }, []);
 
   return (
     <>
-      <div id="voiceai-jessica-widget" className="voiceai-orb-wrapper-enh">
-        <button className="voiceai-orb-enh" aria-label="Voice AI Assistant">
-          <div className="voiceai-spinner-orb"></div>
-          <svg className="voiceai-orb-icon-enh" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      {/* ── Desktop: floating orb (hidden on mobile) ── */}
+      <div id="jessica-orb-desktop">
+        <button id="jessica-orb-btn" aria-label="Talk to AI Proposal Agent">
+          <div id="jessica-orb-spinner"></div>
+          <svg id="jessica-orb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="8" y="4" width="8" height="16" rx="4" />
             <path d="M12 20v3m-4 0h8" />
             <circle cx="10" cy="10" r="1" fill="currentColor" />
             <circle cx="14" cy="10" r="1" fill="currentColor" />
           </svg>
-          <div className="voiceai-orb-status-enh">
-            <span className="voiceai-status-dot-enh"></span>
+          <div id="jessica-orb-dots">
+            <span></span><span></span><span></span>
           </div>
         </button>
-        
-        <div className="voiceai-status-msg-orb"></div>
-        
-        <div className="voiceai-connection-orb">
-          <div className="voiceai-connection-dot-orb"></div>
-          <span className="voiceai-connection-text-orb">Connected</span>
+        <div id="jessica-orb-label">Talk to Jessica</div>
+        <div id="jessica-orb-status"></div>
+        <div id="jessica-orb-connected">
+          <span id="jessica-orb-pulse"></span>
+          <span>Connected</span>
         </div>
       </div>
 
-      <style>{`
-        #voiceai-jessica-widget {
-          text-align: center;
-        }
+      {/* ── Mobile: sticky full-width button (hidden on desktop) ── */}
+      <div id="jessica-mobile-bar">
+        <button id="jessica-mobile-btn" aria-label="Talk to AI Proposal Agent">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+            <rect x="8" y="4" width="8" height="16" rx="4" />
+            <path d="M12 20v3m-4 0h8" />
+          </svg>
+          <span id="jessica-mobile-text">🎙️ Talk to Jessica</span>
+        </button>
+        <div id="jessica-mobile-status"></div>
+      </div>
 
-        #voiceai-jessica-widget .voiceai-orb-enh {
+      <style>{`
+        /* ── Desktop orb ── */
+        #jessica-orb-desktop {
           position: relative;
-          width: 104px;
-          height: 104px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, #11998edd 0%, #38ef7d 60%, #38ef7dcc 100%);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: #ffffff;
-          cursor: pointer;
           display: inline-flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
-          box-shadow: 
-            inset 0 -20px 40px #22c55e20,
-            inset 0 20px 40px rgba(255, 255, 255, 0.08),
-            0 0 20px #22c55e40,
-            0 0 40px #22c55e20,
-            0 0 60px #22c55e10,
-            0 8px 20px rgba(0, 0, 0, 0.4);
-          transition: all 0.5s ease;
-          animation: voiceai-orb-float-enh 3s ease-in-out infinite;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          padding: 0;
-          outline: none;
-          overflow: hidden;
+          gap: 8px;
         }
 
-        #voiceai-jessica-widget .voiceai-orb-enh::before {
-          content: '';
-          position: absolute;
-          bottom: -12px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 70%;
-          height: 8px;
-          background: radial-gradient(ellipse, rgba(0,0,0,0.4), transparent);
+        #jessica-orb-btn {
+          position: relative;
+          width: 100px;
+          height: 100px;
           border-radius: 50%;
-          opacity: 0.6;
-          animation: voiceai-shadow-float-enh 3s ease-in-out infinite;
-          z-index: -1;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-icon-enh {
-          width: 40%;
-          height: 40%;
-          margin-top: -8px;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-status-enh {
-          position: absolute;
-          bottom: 12px;
+          background: radial-gradient(circle at 35% 35%, ${CONFIG.colorLight} 0%, ${CONFIG.colorPrimary} 55%, ${CONFIG.colorDark} 100%);
+          border: none;
+          color: #ffffff;
+          cursor: pointer;
           display: flex;
-          gap: 3px;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
+          box-shadow:
+            inset 0 -16px 32px rgba(0,0,0,0.25),
+            inset 0 16px 32px rgba(255,255,255,0.1),
+            0 0 24px rgba(124,58,237,0.5),
+            0 0 48px rgba(124,58,237,0.25),
+            0 8px 24px rgba(0,0,0,0.4);
+          transition: all 0.4s ease;
+          animation: jessica-float 3s ease-in-out infinite;
+          outline: none;
+          overflow: hidden;
+          padding: 0;
         }
 
-        #voiceai-jessica-widget .voiceai-status-dot-enh {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: currentColor;
-          opacity: 0.6;
-        }
-
-        #voiceai-jessica-widget .voiceai-spinner-orb {
+        #jessica-orb-btn::before {
+          content: '';
           position: absolute;
-          width: 100%;
-          height: 100%;
+          top: 12%;
+          left: 20%;
+          width: 30%;
+          height: 20%;
+          background: rgba(255,255,255,0.25);
           border-radius: 50%;
-          border: 2px solid transparent;
-          border-top-color: currentColor;
-          animation: voiceai-spin-orb 1s linear infinite;
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-enh.loading .voiceai-spinner-orb {
-          opacity: 0.5;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-enh.active {
-          background: radial-gradient(circle at 30% 30%, #059669dd 0%, #10b981 60%, #10b981cc 100%);
-          animation: voiceai-orb-glow-enh 2s ease-in-out infinite;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-enh.active .voiceai-status-dot-enh {
-          display: none;
-        }
-
-        #voiceai-jessica-widget .voiceai-orb-enh:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        #voiceai-jessica-widget .voiceai-status-msg-orb {
-          position: absolute;
-          top: calc(104px + 20px);
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0, 0, 0, 0.8);
-          color: white;
-          padding: 8px 12px;
-          border-radius: 6px;
-          font-size: 13px;
-          white-space: nowrap;
-          opacity: 0;
+          filter: blur(4px);
           pointer-events: none;
-          transition: opacity 0.3s;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          z-index: 1000;
         }
 
-        #voiceai-jessica-widget .voiceai-status-msg-orb.visible {
+        #jessica-orb-btn:hover {
+          transform: scale(1.06) translateY(-4px);
+          box-shadow:
+            inset 0 -16px 32px rgba(0,0,0,0.3),
+            inset 0 16px 32px rgba(255,255,255,0.15),
+            0 0 32px rgba(124,58,237,0.7),
+            0 0 64px rgba(124,58,237,0.35),
+            0 12px 32px rgba(0,0,0,0.5);
+        }
+
+        #jessica-orb-btn.active {
+          background: radial-gradient(circle at 35% 35%, #C084FC 0%, #9333EA 55%, #6D28D9 100%);
+          animation: jessica-glow 2s ease-in-out infinite;
+        }
+
+        #jessica-orb-btn.loading #jessica-orb-spinner {
+          opacity: 0.6;
+        }
+
+        #jessica-orb-icon {
+          width: 38%;
+          height: 38%;
+          margin-top: -6px;
+          transition: opacity 0.3s;
+        }
+
+        #jessica-orb-dots {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+          position: absolute;
+          bottom: 14px;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+
+        #jessica-orb-dots span {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: white;
+        }
+
+        #jessica-orb-btn.active #jessica-orb-dots {
           opacity: 1;
         }
 
-        #voiceai-jessica-widget .voiceai-connection-orb {
+        #jessica-orb-btn.active #jessica-orb-dots span:nth-child(1) { animation: jessica-bounce 0.8s 0s infinite; }
+        #jessica-orb-btn.active #jessica-orb-dots span:nth-child(2) { animation: jessica-bounce 0.8s 0.15s infinite; }
+        #jessica-orb-btn.active #jessica-orb-dots span:nth-child(3) { animation: jessica-bounce 0.8s 0.3s infinite; }
+
+        #jessica-orb-spinner {
           position: absolute;
-          top: calc(104px + 50px);
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(16, 185, 129, 0.1);
-          border: 1px solid rgba(16, 185, 129, 0.4);
-          color: rgb(16, 185, 129);
-          padding: 6px 12px;
-          border-radius: 20px;
+          inset: 0;
+          border-radius: 50%;
+          border: 2px solid transparent;
+          border-top-color: rgba(255,255,255,0.7);
+          animation: jessica-spin 1s linear infinite;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+
+        #jessica-orb-label {
           font-size: 12px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.8);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+        }
+
+        #jessica-orb-status {
+          font-size: 11px;
+          color: rgba(255,255,255,0.6);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          min-height: 16px;
+          text-align: center;
+          transition: opacity 0.3s;
+        }
+
+        #jessica-orb-connected {
           display: flex;
           align-items: center;
           gap: 6px;
+          background: rgba(124,58,237,0.2);
+          border: 1px solid rgba(124,58,237,0.5);
+          color: #C084FC;
+          padding: 4px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
           opacity: 0;
-          pointer-events: none;
           transition: opacity 0.3s;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          z-index: 1000;
+          pointer-events: none;
         }
 
-        #voiceai-jessica-widget .voiceai-connection-orb.visible {
-          opacity: 1;
-        }
+        #jessica-orb-connected.visible { opacity: 1; }
 
-        #voiceai-jessica-widget .voiceai-connection-dot-orb {
+        #jessica-orb-pulse {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: currentColor;
-          animation: voiceai-pulse-dot-orb 2s infinite;
+          background: #A855F7;
+          animation: jessica-pulse 2s infinite;
         }
 
-        @keyframes voiceai-orb-float-enh {
+        /* ── Mobile sticky bar ── */
+        #jessica-mobile-bar {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 9998;
+          padding: 10px 16px 20px;
+          background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.0) 100%);
+          pointer-events: none;
+        }
+
+        #jessica-mobile-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 16px 24px;
+          background: linear-gradient(135deg, ${CONFIG.colorLight} 0%, ${CONFIG.colorPrimary} 50%, ${CONFIG.colorDark} 100%);
+          border: none;
+          border-radius: 14px;
+          color: white;
+          font-size: 17px;
+          font-weight: 700;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          cursor: pointer;
+          pointer-events: all;
+          box-shadow:
+            0 4px 20px rgba(124,58,237,0.5),
+            0 2px 8px rgba(0,0,0,0.4);
+          transition: all 0.3s ease;
+          letter-spacing: 0.01em;
+        }
+
+        #jessica-mobile-btn:active {
+          transform: scale(0.97);
+          box-shadow: 0 2px 10px rgba(124,58,237,0.4);
+        }
+
+        #jessica-mobile-btn.active {
+          background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+          box-shadow: 0 4px 20px rgba(239,68,68,0.5);
+        }
+
+        #jessica-mobile-status {
+          text-align: center;
+          font-size: 12px;
+          color: rgba(255,255,255,0.7);
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          min-height: 18px;
+          margin-top: 6px;
+          pointer-events: none;
+        }
+
+        /* ── Responsive: show orb on desktop, sticky bar on mobile ── */
+        @media (max-width: 767px) {
+          #jessica-orb-desktop {
+            display: none !important;
+          }
+          #jessica-mobile-bar {
+            display: block;
+          }
+        }
+
+        @media (min-width: 768px) {
+          #jessica-mobile-bar {
+            display: none !important;
+          }
+        }
+
+        /* ── Animations ── */
+        @keyframes jessica-float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-8px); }
         }
 
-        @keyframes voiceai-shadow-float-enh {
-          0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-          50% { opacity: 0.3; transform: translateX(-50%) scale(0.85); }
-        }
-
-        @keyframes voiceai-orb-glow-enh {
-          0%, 100% { 
-            box-shadow: 
-              inset 0 -20px 40px #22c55e30,
-              inset 0 20px 40px rgba(255, 255, 255, 0.1),
-              0 0 30px #22c55e60,
-              0 0 60px #22c55e30,
-              0 0 90px #22c55e15,
-              0 10px 30px rgba(0, 0, 0, 0.5);
+        @keyframes jessica-glow {
+          0%, 100% {
+            box-shadow:
+              inset 0 -16px 32px rgba(0,0,0,0.3),
+              0 0 32px rgba(124,58,237,0.6),
+              0 0 64px rgba(124,58,237,0.3),
+              0 8px 24px rgba(0,0,0,0.4);
           }
-          50% { 
-            box-shadow: 
-              inset 0 -20px 40px #22c55e40,
-              inset 0 20px 40px rgba(255, 255, 255, 0.15),
-              0 0 40px #22c55e80,
-              0 0 80px #22c55e40,
-              0 0 120px #22c55e20,
-              0 10px 35px rgba(0, 0, 0, 0.6);
+          50% {
+            box-shadow:
+              inset 0 -16px 32px rgba(0,0,0,0.3),
+              0 0 48px rgba(168,85,247,0.8),
+              0 0 96px rgba(168,85,247,0.4),
+              0 8px 32px rgba(0,0,0,0.5);
           }
         }
 
-        @keyframes voiceai-spin-orb {
+        @keyframes jessica-spin {
           to { transform: rotate(360deg); }
         }
 
-        @keyframes voiceai-pulse-dot-orb {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+        @keyframes jessica-bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.6; }
+          50% { transform: translateY(-4px); opacity: 1; }
         }
 
-        @keyframes pulse-enh { 
-          0%, 100% { opacity: 1; } 
-          50% { opacity: 0.4; } 
+        @keyframes jessica-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.8); }
         }
       `}</style>
     </>
   );
 }
 
+/* ─── Call logic (runs after LiveKit loads) ─────────────────────────── */
 function initJessicaWebCall() {
-  const container = document.getElementById('voiceai-jessica-widget');
-  if (!container) return;
+  const orbBtn = document.getElementById('jessica-orb-btn') as HTMLButtonElement | null;
+  const orbStatus = document.getElementById('jessica-orb-status') as HTMLElement | null;
+  const orbConnected = document.getElementById('jessica-orb-connected') as HTMLElement | null;
+  const mobileBtn = document.getElementById('jessica-mobile-btn') as HTMLButtonElement | null;
+  const mobileStatus = document.getElementById('jessica-mobile-status') as HTMLElement | null;
+  const mobileText = document.getElementById('jessica-mobile-text') as HTMLElement | null;
 
-  const CONFIG = {
-    locationId: 'ycsIlNye8DF4OmblGPj6',
-    agentId: '6a2c5bd995517e66beaeb3d9',
-    apiEndpoint: 'https://services.leadconnectorhq.com/chat-widget/public/start-voice-ai-call/',
-    livekitUrl: 'wss://retell-ai-4ihahnq7.livekit.cloud'
-  };
+  if (!orbBtn && !mobileBtn) return;
 
   let room: any = null;
   let isCallActive = false;
-  const callButton = container.querySelector('.voiceai-orb-enh') as HTMLButtonElement;
-  const statusContainer = container.querySelector('.voiceai-orb-status-enh') as HTMLElement;
-  const statusMsg = container.querySelector('.voiceai-status-msg-orb') as HTMLElement;
-  const connectionIndicator = container.querySelector('.voiceai-connection-orb') as HTMLElement;
+
+  function setStatus(msg: string) {
+    if (orbStatus) orbStatus.textContent = msg;
+    if (mobileStatus) mobileStatus.textContent = msg;
+  }
+
+  function setLoading(loading: boolean) {
+    if (orbBtn) {
+      orbBtn.disabled = loading;
+      orbBtn.classList.toggle('loading', loading);
+    }
+    if (mobileBtn) mobileBtn.disabled = loading;
+  }
+
+  function setActive(active: boolean) {
+    isCallActive = active;
+    if (orbBtn) {
+      orbBtn.classList.toggle('active', active);
+      orbBtn.setAttribute('aria-label', active ? 'End call' : 'Talk to AI Proposal Agent');
+    }
+    if (orbConnected) orbConnected.classList.toggle('visible', active);
+    if (mobileBtn) {
+      mobileBtn.classList.toggle('active', active);
+    }
+    if (mobileText) {
+      mobileText.textContent = active ? '🔴 End Call' : '🎙️ Talk to Jessica';
+    }
+  }
 
   function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
   }
 
   function generateMongoId() {
-    const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
-    const random = Array.from({length: 16}, () => 
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('');
-    return timestamp + random;
+    return Math.floor(Date.now() / 1000).toString(16).padStart(8, '0') +
+      Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
   }
 
   function generateContactId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 20; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  function updateStatus(active: boolean) {
-    if (active) {
-      statusContainer.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.2s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.4s infinite"></span>';
-    } else {
-      statusContainer.innerHTML = '<span class="voiceai-status-dot-enh"></span>';
-    }
-  }
-
-  function showStatusOrb(message: string, type: 'error' | '') {
-    statusMsg.textContent = message;
-    statusMsg.classList.add('visible');
-    if (type === 'error') {
-      statusMsg.style.background = 'rgba(220, 38, 38, 0.9)';
-    } else {
-      statusMsg.style.background = 'rgba(0, 0, 0, 0.8)';
-    }
-    setTimeout(() => statusMsg.classList.remove('visible'), 3000);
+    return Array.from({ length: 20 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
   }
 
   async function startCall() {
-    callButton.disabled = true;
-    callButton.classList.add('loading');
-    showStatusOrb('Initializing call...', '');
+    setLoading(true);
+    setStatus('Connecting...');
 
     try {
       const sessionId = generateUUID();
@@ -325,7 +403,7 @@ function initJessicaWebCall() {
         contactId: generateContactId(),
         callId: generateMongoId(),
         locationId: CONFIG.locationId,
-        sessionId: sessionId,
+        sessionId,
         sessionFingerprint: generateUUID(),
         eventData: {
           source: 'direct',
@@ -333,15 +411,10 @@ function initJessicaWebCall() {
           keyword: '',
           adSource: '',
           url_params: {},
-          page: {
-            url: window.location.href,
-            title: document.title
-          },
+          page: { url: window.location.href, title: document.title },
           timestamp: Date.now(),
           campaign: '',
-          contactSessionIds: {
-            ids: [sessionId]
-          },
+          contactSessionIds: { ids: [sessionId] },
           type: 'page-visit',
           pageVisitType: 'text-widget',
           domain: window.location.hostname,
@@ -349,28 +422,19 @@ function initJessicaWebCall() {
           parentId: '',
           parentName: '',
           fingerprint: null,
-          documentURL: window.location.href
-        }
+          documentURL: window.location.href,
+        },
       };
 
-      console.log('Calling GHL API:', CONFIG.apiEndpoint + CONFIG.agentId);
-      const response = await fetch(CONFIG.apiEndpoint + CONFIG.agentId, {
+      const res = await fetch(CONFIG.apiEndpoint + CONFIG.agentId, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*'
-        },
-        body: JSON.stringify(payload)
+        headers: { 'Content-Type': 'application/json', Accept: '*/*' },
+        body: JSON.stringify(payload),
       });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Got access token:', data.accessToken ? 'yes' : 'no');
-
-      showStatusOrb('Connecting...', '');
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const data = await res.json();
+      if (!data.accessToken) throw new Error('No access token returned');
 
       const LivekitClient = (window as any).LivekitClient;
       room = new LivekitClient.Room({
@@ -379,80 +443,55 @@ function initJessicaWebCall() {
         audioCaptureDefaults: {
           autoGainControl: true,
           echoCancellation: true,
-          noiseSuppression: true
-        }
+          noiseSuppression: true,
+        },
       });
 
-      room.on(LivekitClient.RoomEvent.TrackSubscribed, (track: any, publication: any, participant: any) => {
+      room.on(LivekitClient.RoomEvent.TrackSubscribed, (track: any) => {
         if (track.kind === LivekitClient.Track.Kind.Audio) {
-          const audioElement = track.attach();
-          audioElement.setAttribute('data-voiceai-audio', 'voiceai-jessica-widget');
-          document.body.appendChild(audioElement);
+          const el = track.attach();
+          el.setAttribute('data-jessica-audio', '1');
+          document.body.appendChild(el);
         }
       });
 
       room.on(LivekitClient.RoomEvent.Disconnected, () => {
-        if (isCallActive) {
-          endCall();
-        }
+        if (isCallActive) endCall();
       });
 
       await room.connect(CONFIG.livekitUrl, data.accessToken);
       await room.localParticipant.setMicrophoneEnabled(true);
 
-      isCallActive = true;
-      callButton.classList.remove('loading');
-      callButton.classList.add('active');
-      callButton.setAttribute('aria-label', 'End call');
-      updateStatus(true);
-      callButton.disabled = false;
-      connectionIndicator.classList.add('visible');
-      showStatusOrb('Call connected', '');
+      setLoading(false);
+      setActive(true);
+      setStatus('');
 
-    } catch (error: any) {
-      console.error('Error starting call:', error);
-      showStatusOrb('Call failed: ' + error.message, 'error');
-      callButton.classList.remove('loading');
-      callButton.disabled = false;
+    } catch (err: any) {
+      console.error('[Jessica]', err);
+      setStatus('Could not connect. Please try again.');
+      setLoading(false);
+      setTimeout(() => setStatus(''), 4000);
     }
   }
 
   async function endCall() {
-    callButton.disabled = true;
-
+    setLoading(true);
     try {
-      if (room) {
-        await room.disconnect();
-        room = null;
-      }
-
-      document.querySelectorAll('[data-voiceai-audio="voiceai-jessica-widget"]').forEach(el => el.remove());
-
-      isCallActive = false;
-      callButton.classList.remove('active');
-      callButton.setAttribute('aria-label', 'Voice AI Assistant');
-      updateStatus(false);
-      callButton.disabled = false;
-      connectionIndicator.classList.remove('visible');
-      showStatusOrb('Call ended', '');
-
-    } catch (error: any) {
-      console.error('Error ending call:', error);
-      callButton.disabled = false;
-    }
+      if (room) { await room.disconnect(); room = null; }
+      document.querySelectorAll('[data-jessica-audio]').forEach(el => el.remove());
+    } catch (_) {}
+    setActive(false);
+    setLoading(false);
+    setStatus('Call ended');
+    setTimeout(() => setStatus(''), 3000);
   }
 
-  callButton.addEventListener('click', () => {
-    if (isCallActive) {
-      endCall();
-    } else {
-      startCall();
-    }
-  });
+  function handleClick() {
+    if (isCallActive) endCall(); else startCall();
+  }
 
-  window.addEventListener('beforeunload', () => {
-    if (room) {
-      room.disconnect();
-    }
-  });
+  orbBtn?.addEventListener('click', handleClick);
+  mobileBtn?.addEventListener('click', handleClick);
+
+  window.addEventListener('beforeunload', () => room?.disconnect());
 }
