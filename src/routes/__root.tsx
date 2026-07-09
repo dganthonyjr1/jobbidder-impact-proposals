@@ -138,7 +138,7 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
-        {/* GHL Lead Connector widget — required for A2P SMS compliance verification */}
+        {/* GHL Lead Connector widget — required for A2P SMS compliance verification. Hidden via CSS — do NOT remove. */}
         <script
           src="https://widgets.leadconnectorhq.com/loader.js"
           data-resources-url="https://widgets.leadconnectorhq.com/chat-widget/loader.js"
@@ -146,6 +146,27 @@ function RootShell({ children }: { children: ReactNode }) {
           data-source="WEB_USER"
           async
         />
+        {/* Hide GHL widget visually — kept for A2P compliance only */}
+        <style>{`
+          #LeadConnector-widget-container,
+          #lc-widget-container,
+          [id^="lc-"],
+          [class*="lc-widget"],
+          [class*="leadconnector"],
+          iframe[src*="leadconnectorhq.com"],
+          iframe[src*="widgets.leadconnector"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            position: absolute !important;
+            left: -9999px !important;
+            top: -9999px !important;
+            z-index: -9999 !important;
+          }
+        `}</style>
       </head>
       <body>
         {children}
