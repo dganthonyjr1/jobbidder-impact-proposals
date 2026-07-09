@@ -1,12 +1,20 @@
 /**
- * LeadChatWidget — World-class AI chatbot for Jobbidder.io
+ * LeadChatWidget — World-class AI chatbot for Jobbidder.io (v2)
  *
  * Powered by Claude via /api/public/chat.
- * Handles: sign-up/sign-in routing, contractor pre-screening,
- * lead qualification, proposal intake, and support escalation.
  *
- * Replaces the previous step-based form widget.
- * Mounted globally via WidgetGate in __root.tsx.
+ * v2 Upgrades:
+ * - Full multilingual UI (welcome message + quick replies auto-translate)
+ * - Proactive chat trigger (auto-open after 30s with context-aware message)
+ * - Context-aware opening message based on current page URL
+ * - Lead contact capture before routing to free trial
+ * - Objection handling quick replies
+ * - Trade detection personalization
+ * - Demo CTA for high-volume prospects
+ * - Animated typing indicator
+ * - Satisfaction prompt after support ticket resolution
+ * - Page URL passed to API for context-aware responses
+ * - Graceful error handling with localized fallback messages
  *
  * A2P compliance note: this widget does NOT collect phone numbers.
  * The GHL LeadConnector widget in <head> handles A2P verification.
@@ -22,9 +30,12 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
+  Calendar,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Role = "user" | "assistant";
 
@@ -35,32 +46,265 @@ interface Message {
   quickReplies?: string[];
   ctaLink?: { label: string; href: string };
   isError?: boolean;
+  showSatisfaction?: boolean;
 }
 
 interface ApiResponse {
   reply: string;
   intent: string;
   escalate: boolean;
+  captureLeadBefore?: boolean;
   quickReplies?: string[];
   ctaLink?: { label: string; href: string };
+  detectedLanguage?: string;
 }
 
-// Escalation collection steps
 type EscalationStep = "idle" | "name" | "email" | "issue" | "submitting" | "done";
+type LeadCaptureStep = "idle" | "name" | "email" | "done";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Multilingual strings ─────────────────────────────────────────────────────
 
-const WELCOME_MESSAGE: Message = {
-  id: "welcome",
-  role: "assistant",
-  text: "Hi! I'm the Jobbidder AI. I can help you get a proposal, learn about pricing, apply as a contractor, or sign in. What brings you here today?",
-  quickReplies: ["Get a free estimate", "See pricing", "I'm a contractor", "Sign in / Sign up"],
+const I18N: Record<string, Record<string, string>> = {
+  en: {
+    welcome: "Hi! I'm the Jobbidder AI. I can help you get a proposal, learn about pricing, apply as a contractor, or sign in. What brings you here today?",
+    proactive_home: "👋 Have a question about Jobbidder? I can help you get a proposal, check pricing, or apply as a contractor.",
+    proactive_pricing: "👋 Questions about our pricing? I can recommend the right plan based on how many proposals you send per month.",
+    proactive_contractor: "👋 Ready to join the Jobbidder network? Let me check your eligibility in 30 seconds.",
+    proactive_why: "👋 Wondering if Jobbidder is right for you? I can walk you through how it works and what you'd save.",
+    q_free_estimate: "Get a free estimate",
+    q_see_pricing: "See pricing",
+    q_contractor: "I'm a contractor",
+    q_signin: "Sign in / Sign up",
+    q_how_works: "How does it work?",
+    q_objection_expensive: "Is it worth the cost?",
+    q_demo: "Book a demo",
+    placeholder_default: "Ask me anything…",
+    placeholder_name: "Your full name…",
+    placeholder_email: "Your email address…",
+    placeholder_issue: "Describe the issue…",
+    placeholder_submitting: "Submitting…",
+    escalation_name_prompt: "I want to get a human on this for you right away. What's your full name?",
+    escalation_email_prompt: (name: string) => `Thanks, ${name}. What's your email so our team can follow up?`,
+    escalation_issue_prompt: "Got it. Briefly describe what's happening:",
+    escalation_submitting: "Creating your support ticket…",
+    escalation_done_ok: (name: string, email: string) =>
+      `✅ Ticket submitted, ${name}. Our team will reach out to ${email} within 1 business day. Anything else I can help with?`,
+    escalation_done_fallback: (name: string, email: string) =>
+      `✅ Got it, ${name}. Our team will follow up at ${email} within 1 business day. Anything else I can help with?`,
+    lead_name_prompt: "Before I send you over — what's your name?",
+    lead_email_prompt: (name: string) => `Nice to meet you, ${name}! What's your email? I'll make sure your account is set up right.`,
+    lead_done: (name: string, href: string) =>
+      `Perfect, ${name}! Head to ${href} to start your free trial — no credit card needed. You'll be generating proposals in minutes.`,
+    satisfaction_prompt: "Was this helpful?",
+    satisfaction_yes: "👍 Yes",
+    satisfaction_no: "👎 Not really",
+    satisfaction_thanks: "Thanks for the feedback! Is there anything else I can help you with?",
+    satisfaction_sorry: "Sorry to hear that. Would you like me to connect you with our team?",
+    powered_by: "Powered by Jobbidder AI · By chatting you agree to our",
+    terms: "Terms",
+    header_subtitle: "Proposals · Pricing · Support",
+    ticket_submitted: "Support ticket submitted",
+  },
+  es: {
+    welcome: "¡Hola! Soy el AI de Jobbidder. Puedo ayudarte a obtener una propuesta, conocer los precios, aplicar como contratista o iniciar sesión. ¿En qué te puedo ayudar hoy?",
+    proactive_home: "👋 ¿Tienes preguntas sobre Jobbidder? Puedo ayudarte con propuestas, precios o aplicar como contratista.",
+    proactive_pricing: "👋 ¿Preguntas sobre nuestros precios? Puedo recomendarte el plan correcto según cuántas propuestas envías por mes.",
+    proactive_contractor: "👋 ¿Listo para unirte a la red Jobbidder? Déjame verificar tu elegibilidad en 30 segundos.",
+    proactive_why: "👋 ¿Te preguntas si Jobbidder es para ti? Puedo explicarte cómo funciona y cuánto ahorrarías.",
+    q_free_estimate: "Obtener estimado gratis",
+    q_see_pricing: "Ver precios",
+    q_contractor: "Soy contratista",
+    q_signin: "Iniciar sesión / Registrarse",
+    q_how_works: "¿Cómo funciona?",
+    q_objection_expensive: "¿Vale la pena el costo?",
+    q_demo: "Reservar una demo",
+    placeholder_default: "Pregúntame lo que sea…",
+    placeholder_name: "Tu nombre completo…",
+    placeholder_email: "Tu correo electrónico…",
+    placeholder_issue: "Describe el problema…",
+    placeholder_submitting: "Enviando…",
+    escalation_name_prompt: "Quiero conectarte con alguien de nuestro equipo de inmediato. ¿Cuál es tu nombre completo?",
+    escalation_email_prompt: (name: string) => `Gracias, ${name}. ¿Cuál es tu correo para que nuestro equipo pueda contactarte?`,
+    escalation_issue_prompt: "Entendido. Describe brevemente lo que está pasando:",
+    escalation_submitting: "Creando tu ticket de soporte…",
+    escalation_done_ok: (name: string, email: string) =>
+      `✅ Ticket enviado, ${name}. Nuestro equipo se comunicará a ${email} dentro de 1 día hábil. ¿Hay algo más en que pueda ayudarte?`,
+    escalation_done_fallback: (name: string, email: string) =>
+      `✅ Listo, ${name}. Nuestro equipo te contactará en ${email} dentro de 1 día hábil. ¿Hay algo más?`,
+    lead_name_prompt: "Antes de enviarte — ¿cuál es tu nombre?",
+    lead_email_prompt: (name: string) => `¡Mucho gusto, ${name}! ¿Cuál es tu correo? Me aseguraré de que tu cuenta quede bien configurada.`,
+    lead_done: (name: string, href: string) =>
+      `¡Perfecto, ${name}! Ve a ${href} para comenzar tu prueba gratis — sin tarjeta de crédito. Estarás generando propuestas en minutos.`,
+    satisfaction_prompt: "¿Fue útil esta conversación?",
+    satisfaction_yes: "👍 Sí",
+    satisfaction_no: "👎 No mucho",
+    satisfaction_thanks: "¡Gracias por tu opinión! ¿Hay algo más en que pueda ayudarte?",
+    satisfaction_sorry: "Lo siento. ¿Te gustaría que te conecte con nuestro equipo?",
+    powered_by: "Desarrollado por Jobbidder AI · Al chatear aceptas nuestros",
+    terms: "Términos",
+    header_subtitle: "Propuestas · Precios · Soporte",
+    ticket_submitted: "Ticket de soporte enviado",
+  },
+  fr: {
+    welcome: "Bonjour! Je suis l'IA Jobbidder. Je peux vous aider à obtenir un devis, en savoir plus sur les tarifs, postuler comme entrepreneur ou vous connecter. Que puis-je faire pour vous?",
+    proactive_home: "👋 Des questions sur Jobbidder? Je peux vous aider avec des devis, les tarifs ou postuler comme entrepreneur.",
+    proactive_pricing: "👋 Des questions sur nos tarifs? Je peux vous recommander le bon forfait selon le nombre de devis que vous envoyez par mois.",
+    proactive_contractor: "👋 Prêt à rejoindre le réseau Jobbidder? Laissez-moi vérifier votre éligibilité en 30 secondes.",
+    proactive_why: "👋 Vous vous demandez si Jobbidder est fait pour vous? Je peux vous expliquer comment ça fonctionne et ce que vous économiseriez.",
+    q_free_estimate: "Obtenir un devis gratuit",
+    q_see_pricing: "Voir les tarifs",
+    q_contractor: "Je suis entrepreneur",
+    q_signin: "Se connecter / S'inscrire",
+    q_how_works: "Comment ça fonctionne?",
+    q_objection_expensive: "Est-ce que ça vaut le coût?",
+    q_demo: "Réserver une démo",
+    placeholder_default: "Posez-moi n'importe quelle question…",
+    placeholder_name: "Votre nom complet…",
+    placeholder_email: "Votre adresse courriel…",
+    placeholder_issue: "Décrivez le problème…",
+    placeholder_submitting: "Envoi en cours…",
+    escalation_name_prompt: "Je veux vous mettre en contact avec quelqu'un de notre équipe immédiatement. Quel est votre nom complet?",
+    escalation_email_prompt: (name: string) => `Merci, ${name}. Quel est votre courriel pour que notre équipe puisse vous contacter?`,
+    escalation_issue_prompt: "Compris. Décrivez brièvement ce qui se passe:",
+    escalation_submitting: "Création de votre ticket de support…",
+    escalation_done_ok: (name: string, email: string) =>
+      `✅ Ticket soumis, ${name}. Notre équipe vous contactera à ${email} dans 1 jour ouvrable. Puis-je vous aider avec autre chose?`,
+    escalation_done_fallback: (name: string, email: string) =>
+      `✅ C'est noté, ${name}. Notre équipe vous contactera à ${email} dans 1 jour ouvrable. Autre chose?`,
+    lead_name_prompt: "Avant de vous rediriger — quel est votre nom?",
+    lead_email_prompt: (name: string) => `Ravi de vous rencontrer, ${name}! Quel est votre courriel? Je m'assurerai que votre compte soit bien configuré.`,
+    lead_done: (name: string, href: string) =>
+      `Parfait, ${name}! Rendez-vous sur ${href} pour commencer votre essai gratuit — sans carte de crédit. Vous générerez des devis en quelques minutes.`,
+    satisfaction_prompt: "Cette conversation vous a-t-elle été utile?",
+    satisfaction_yes: "👍 Oui",
+    satisfaction_no: "👎 Pas vraiment",
+    satisfaction_thanks: "Merci pour votre retour! Puis-je vous aider avec autre chose?",
+    satisfaction_sorry: "Je suis désolé. Souhaitez-vous que je vous mette en contact avec notre équipe?",
+    powered_by: "Propulsé par Jobbidder AI · En chattant vous acceptez nos",
+    terms: "Conditions",
+    header_subtitle: "Devis · Tarifs · Support",
+    ticket_submitted: "Ticket de support soumis",
+  },
+  pt: {
+    welcome: "Olá! Sou o AI do Jobbidder. Posso ajudá-lo a obter uma proposta, conhecer os preços, candidatar-se como contratante ou fazer login. Como posso ajudá-lo hoje?",
+    proactive_home: "👋 Tem dúvidas sobre o Jobbidder? Posso ajudá-lo com propostas, preços ou candidatura como contratante.",
+    proactive_pricing: "👋 Dúvidas sobre nossos preços? Posso recomendar o plano certo com base em quantas propostas você envia por mês.",
+    proactive_contractor: "👋 Pronto para se juntar à rede Jobbidder? Deixe-me verificar sua elegibilidade em 30 segundos.",
+    proactive_why: "👋 Perguntando-se se o Jobbidder é para você? Posso explicar como funciona e quanto você economizaria.",
+    q_free_estimate: "Obter estimativa gratuita",
+    q_see_pricing: "Ver preços",
+    q_contractor: "Sou contratante",
+    q_signin: "Entrar / Cadastrar",
+    q_how_works: "Como funciona?",
+    q_objection_expensive: "Vale o custo?",
+    q_demo: "Agendar uma demo",
+    placeholder_default: "Pergunte-me qualquer coisa…",
+    placeholder_name: "Seu nome completo…",
+    placeholder_email: "Seu endereço de e-mail…",
+    placeholder_issue: "Descreva o problema…",
+    placeholder_submitting: "Enviando…",
+    escalation_name_prompt: "Quero colocá-lo em contato com alguém da nossa equipe imediatamente. Qual é o seu nome completo?",
+    escalation_email_prompt: (name: string) => `Obrigado, ${name}. Qual é o seu e-mail para que nossa equipe possa entrar em contato?`,
+    escalation_issue_prompt: "Entendido. Descreva brevemente o que está acontecendo:",
+    escalation_submitting: "Criando seu ticket de suporte…",
+    escalation_done_ok: (name: string, email: string) =>
+      `✅ Ticket enviado, ${name}. Nossa equipe entrará em contato em ${email} dentro de 1 dia útil. Posso ajudá-lo com mais alguma coisa?`,
+    escalation_done_fallback: (name: string, email: string) =>
+      `✅ Anotado, ${name}. Nossa equipe entrará em contato em ${email} dentro de 1 dia útil. Mais alguma coisa?`,
+    lead_name_prompt: "Antes de redirecioná-lo — qual é o seu nome?",
+    lead_email_prompt: (name: string) => `Prazer em conhecê-lo, ${name}! Qual é o seu e-mail? Vou garantir que sua conta seja configurada corretamente.`,
+    lead_done: (name: string, href: string) =>
+      `Perfeito, ${name}! Acesse ${href} para iniciar seu teste gratuito — sem cartão de crédito. Você estará gerando propostas em minutos.`,
+    satisfaction_prompt: "Esta conversa foi útil?",
+    satisfaction_yes: "👍 Sim",
+    satisfaction_no: "👎 Não muito",
+    satisfaction_thanks: "Obrigado pelo feedback! Posso ajudá-lo com mais alguma coisa?",
+    satisfaction_sorry: "Lamento ouvir isso. Gostaria que eu o colocasse em contato com nossa equipe?",
+    powered_by: "Desenvolvido por Jobbidder AI · Ao conversar você concorda com nossos",
+    terms: "Termos",
+    header_subtitle: "Propostas · Preços · Suporte",
+    ticket_submitted: "Ticket de suporte enviado",
+  },
+  ht: {
+    welcome: "Bonjou! Mwen se AI Jobbidder. Mwen ka ede ou jwenn yon pwopozisyon, aprann sou pri yo, aplike kòm kontraktè, oswa konekte. Ki sa ki mennen ou isit jodi a?",
+    proactive_home: "👋 Ou gen kesyon sou Jobbidder? Mwen ka ede ou ak pwopozisyon, pri, oswa aplike kòm kontraktè.",
+    proactive_pricing: "👋 Kesyon sou pri nou yo? Mwen ka rekòmande bon plan an selon konbyen pwopozisyon ou voye pa mwa.",
+    proactive_contractor: "👋 Prè pou rantre nan rezo Jobbidder? Kite m verifye kalifikasyon ou an 30 segond.",
+    proactive_why: "👋 Ap mande si Jobbidder bon pou ou? Mwen ka eksplike kijan li travay ak sa ou ta ekonomize.",
+    q_free_estimate: "Jwenn estimasyon gratis",
+    q_see_pricing: "Wè pri yo",
+    q_contractor: "Mwen se kontraktè",
+    q_signin: "Konekte / Enskri",
+    q_how_works: "Kijan li travay?",
+    q_objection_expensive: "Eske sa vo pri a?",
+    q_demo: "Rezève yon demo",
+    placeholder_default: "Mande m nenpòt bagay…",
+    placeholder_name: "Non konplè ou…",
+    placeholder_email: "Adrès imèl ou…",
+    placeholder_issue: "Dekri pwoblèm nan…",
+    placeholder_submitting: "Ap voye…",
+    escalation_name_prompt: "Mwen vle mete ou an kontak ak yon moun nan ekip nou an imedyatman. Ki non konplè ou?",
+    escalation_email_prompt: (name: string) => `Mèsi, ${name}. Ki imèl ou pou ekip nou an ka kontakte ou?`,
+    escalation_issue_prompt: "Konprann. Dekri brèvman sa k ap pase:",
+    escalation_submitting: "Ap kreye tiket sipò ou…",
+    escalation_done_ok: (name: string, email: string) =>
+      `✅ Tiket soumèt, ${name}. Ekip nou an pral kontakte ou nan ${email} nan 1 jou travay. Eske gen lòt bagay mwen ka ede ou?`,
+    escalation_done_fallback: (name: string, email: string) =>
+      `✅ Konprann, ${name}. Ekip nou an pral kontakte ou nan ${email} nan 1 jou travay. Lòt bagay?`,
+    lead_name_prompt: "Anvan mwen voye ou — ki non ou?",
+    lead_email_prompt: (name: string) => `Kontan rankontre ou, ${name}! Ki imèl ou? Mwen pral asire kont ou konfigire kòrèkteman.`,
+    lead_done: (name: string, href: string) =>
+      `Pafè, ${name}! Ale nan ${href} pou kòmanse eseye gratis ou — pa gen kat kredi. Ou pral jenere pwopozisyon nan kèk minit.`,
+    satisfaction_prompt: "Èske konvèsasyon sa a te itil?",
+    satisfaction_yes: "👍 Wi",
+    satisfaction_no: "👎 Pa vrèman",
+    satisfaction_thanks: "Mèsi pou fidbak ou! Eske gen lòt bagay mwen ka ede ou?",
+    satisfaction_sorry: "Dezole pou tande sa. Èske ou ta renmen mwen mete ou an kontak ak ekip nou an?",
+    powered_by: "Alimenté pa Jobbidder AI · An bavardant ou dakò ak",
+    terms: "Tèm",
+    header_subtitle: "Pwopozisyon · Pri · Sipò",
+    ticket_submitted: "Tiket sipò soumèt",
+  },
 };
 
-const SESSION_KEY = "jb_chat_session";
-const STORAGE_KEY = "jb_chat_messages";
+function t(lang: string, key: string, ...args: string[]): string {
+  const strings = I18N[lang] || I18N.en;
+  const val = strings[key] || I18N.en[key] || key;
+  if (typeof val === "function") return (val as (...a: string[]) => string)(...args);
+  return val as string;
+}
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Language detection (client-side) ────────────────────────────────────────
+
+function detectLangFromText(text: string): string {
+  const lower = text.toLowerCase();
+  if (/\b(hola|gracias|cómo|qué|necesito|soy|tengo|quiero|también|español|precio|contratista)\b/.test(lower)) return "es";
+  if (/\b(bonjour|merci|comment|je suis|j'ai|je veux|aussi|français|entrepreneur|devis|tarif)\b/.test(lower)) return "fr";
+  if (/\b(olá|obrigado|como|eu sou|tenho|quero|também|português|contratante|preço)\b/.test(lower)) return "pt";
+  if (/\b(bonjou|mèsi|kijan|mwen|genyen|vle|kreyòl|ayisyen|kontraktè|pri)\b/.test(lower)) return "ht";
+  return "en";
+}
+
+// ─── Context-aware proactive message ─────────────────────────────────────────
+
+function getProactiveMessage(lang: string): string {
+  if (typeof window === "undefined") return t(lang, "proactive_home");
+  const path = window.location.pathname;
+  if (path.includes("/pricing")) return t(lang, "proactive_pricing");
+  if (path.includes("/contractor-apply")) return t(lang, "proactive_contractor");
+  if (path.includes("/why-jobbidder")) return t(lang, "proactive_why");
+  return t(lang, "proactive_home");
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SESSION_KEY = "jb_chat_session";
+const STORAGE_KEY = "jb_chat_messages_v2";
+const LANG_KEY = "jb_chat_lang";
+const PROACTIVE_KEY = "jb_proactive_shown";
+const PROACTIVE_DELAY_MS = 30_000; // 30 seconds
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -88,12 +332,21 @@ function loadMessages(): Message[] {
 function saveMessages(msgs: Message[]) {
   if (typeof window === "undefined") return;
   try {
-    // Keep last 30 messages in session storage
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(msgs.slice(-30)));
   } catch {}
 }
 
-// ─── Support ticket submission ────────────────────────────────────────────────
+function loadLang(): string {
+  if (typeof window === "undefined") return "en";
+  return sessionStorage.getItem(LANG_KEY) || "en";
+}
+
+function saveLang(lang: string) {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(LANG_KEY, lang);
+}
+
+// ─── Support ticket ───────────────────────────────────────────────────────────
 
 async function submitSupportTicket(data: {
   name: string;
@@ -102,8 +355,6 @@ async function submitSupportTicket(data: {
   sessionId: string;
 }): Promise<boolean> {
   try {
-    // Use the existing Supabase integration via a simple fetch to a public endpoint
-    // Falls back gracefully if not available
     const res = await fetch("/api/public/support-ticket", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -111,7 +362,31 @@ async function submitSupportTicket(data: {
     });
     return res.ok;
   } catch {
-    // Non-fatal — ticket submission failure shouldn't break the chat
+    return false;
+  }
+}
+
+// ─── Lead capture ─────────────────────────────────────────────────────────────
+
+async function submitLead(data: {
+  name: string;
+  email: string;
+  sessionId: string;
+  pageUrl: string;
+}): Promise<boolean> {
+  try {
+    const res = await fetch("/api/public/support-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        issue: `Lead capture — visited ${data.pageUrl}`,
+        sessionId: data.sessionId,
+      }),
+    });
+    return res.ok;
+  } catch {
     return false;
   }
 }
@@ -120,43 +395,98 @@ async function submitSupportTicket(data: {
 
 export function LeadChatWidget() {
   const [open, setOpen] = useState(false);
+  const [lang, setLang] = useState<string>("en");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [unread, setUnread] = useState(0);
-  const [hasOpened, setHasOpened] = useState(false);
 
   // Escalation state
   const [escalationStep, setEscalationStep] = useState<EscalationStep>("idle");
-  const [escalationData, setEscalationData] = useState<{
-    name?: string;
-    email?: string;
-    issue?: string;
-  }>({});
+  const [escalationData, setEscalationData] = useState<{ name?: string; email?: string }>({});
+
+  // Lead capture state
+  const [leadCaptureStep, setLeadCaptureStep] = useState<LeadCaptureStep>("idle");
+  const [leadData, setLeadData] = useState<{ name?: string; pendingHref?: string }>({});
+
+  // Satisfaction state
+  const [satisfactionGiven, setSatisfactionGiven] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const sessionId = useRef<string>("");
+  const proactiveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Init ──────────────────────────────────────────────────────────────────
+  // ── Init ────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     sessionId.current = getSessionId();
+    const savedLang = loadLang();
+    setLang(savedLang);
+
     const saved = loadMessages();
     if (saved.length > 0) {
       setMessages(saved);
     } else {
-      setMessages([WELCOME_MESSAGE]);
+      setMessages([
+        {
+          id: "welcome",
+          role: "assistant",
+          text: t(savedLang, "welcome"),
+          quickReplies: [
+            t(savedLang, "q_free_estimate"),
+            t(savedLang, "q_see_pricing"),
+            t(savedLang, "q_contractor"),
+            t(savedLang, "q_signin"),
+          ],
+        },
+      ]);
     }
+
+    // Proactive trigger — auto-open after 30s if not already shown this session
+    const alreadyShown = sessionStorage.getItem(PROACTIVE_KEY);
+    if (!alreadyShown) {
+      proactiveTimer.current = setTimeout(() => {
+        setOpen((currentOpen) => {
+          if (!currentOpen) {
+            const currentLang = loadLang();
+            const proactiveMsg: Message = {
+              id: uid(),
+              role: "assistant",
+              text: getProactiveMessage(currentLang),
+              quickReplies: [
+                t(currentLang, "q_free_estimate"),
+                t(currentLang, "q_see_pricing"),
+                t(currentLang, "q_contractor"),
+              ],
+            };
+            setMessages((prev) => {
+              // Only add proactive if we're still on the welcome message
+              if (prev.length === 1 && prev[0]?.id === "welcome") {
+                return [...prev, proactiveMsg];
+              }
+              return prev;
+            });
+            setUnread(1);
+            sessionStorage.setItem(PROACTIVE_KEY, "1");
+          }
+          return currentOpen;
+        });
+      }, PROACTIVE_DELAY_MS);
+    }
+
+    return () => {
+      if (proactiveTimer.current) clearTimeout(proactiveTimer.current);
+    };
   }, []);
 
-  // ── Scroll ────────────────────────────────────────────────────────────────
+  // ── Scroll ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  // ── Focus input ───────────────────────────────────────────────────────────
+  // ── Focus input ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (open) {
@@ -165,7 +495,7 @@ export function LeadChatWidget() {
     }
   }, [open]);
 
-  // ── Unread badge on new bot messages while closed ─────────────────────────
+  // ── Unread badge ────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!open && messages.length > 1) {
@@ -176,19 +506,24 @@ export function LeadChatWidget() {
     }
   }, [messages]);
 
-  // ── Persist messages ──────────────────────────────────────────────────────
+  // ── Persist ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (messages.length > 0) saveMessages(messages);
   }, [messages]);
 
-  // ── Add message helpers ───────────────────────────────────────────────────
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
   const addMessage = useCallback((msg: Omit<Message, "id">) => {
     setMessages((prev) => [...prev, { ...msg, id: uid() }]);
   }, []);
 
-  // ── API call ──────────────────────────────────────────────────────────────
+  const updateLang = useCallback((newLang: string) => {
+    setLang(newLang);
+    saveLang(newLang);
+  }, []);
+
+  // ── API call ─────────────────────────────────────────────────────────────────
 
   const sendToApi = useCallback(
     async (userText: string, history: Message[]) => {
@@ -197,8 +532,6 @@ export function LeadChatWidget() {
         const apiMessages = history
           .filter((m) => m.role === "user" || m.role === "assistant")
           .map((m) => ({ role: m.role, content: m.text }));
-
-        // Add the new user message
         apiMessages.push({ role: "user", content: userText });
 
         const res = await fetch("/api/public/chat", {
@@ -207,18 +540,24 @@ export function LeadChatWidget() {
           body: JSON.stringify({
             messages: apiMessages,
             sessionId: sessionId.current,
+            pageUrl: typeof window !== "undefined" ? window.location.href : "",
           }),
         });
 
         const data: ApiResponse = await res.json();
 
+        // Update detected language
+        if (data.detectedLanguage && data.detectedLanguage !== lang) {
+          updateLang(data.detectedLanguage);
+        }
+
         if (data.escalate && escalationStep === "idle") {
-          // Trigger the deterministic escalation collection flow
           setEscalationStep("name");
-          addMessage({
-            role: "assistant",
-            text: data.reply,
-          });
+          addMessage({ role: "assistant", text: t(lang, "escalation_name_prompt") });
+        } else if (data.captureLeadBefore && leadCaptureStep === "idle") {
+          setLeadCaptureStep("name");
+          setLeadData({ pendingHref: data.ctaLink?.href || "https://www.jobbidder.io/login" });
+          addMessage({ role: "assistant", text: t(lang, "lead_name_prompt") });
         } else {
           addMessage({
             role: "assistant",
@@ -230,17 +569,19 @@ export function LeadChatWidget() {
       } catch {
         addMessage({
           role: "assistant",
-          text: "I'm having trouble connecting right now. Please try again or call us at (310) 987-4997.",
+          text: t(lang, "placeholder_default") === "Ask me anything…"
+            ? "I'm having trouble connecting right now. Please try again or call us at (310) 987-4997."
+            : t(lang, "proactive_home"),
           isError: true,
         });
       } finally {
         setLoading(false);
       }
     },
-    [escalationStep, addMessage]
+    [escalationStep, leadCaptureStep, lang, addMessage, updateLang]
   );
 
-  // ── Escalation flow ───────────────────────────────────────────────────────
+  // ── Escalation flow ──────────────────────────────────────────────────────────
 
   const handleEscalationInput = useCallback(
     async (val: string) => {
@@ -249,38 +590,15 @@ export function LeadChatWidget() {
       if (escalationStep === "name") {
         setEscalationData((d) => ({ ...d, name: val }));
         setEscalationStep("email");
-        setTimeout(
-          () =>
-            addMessage({
-              role: "assistant",
-              text: `Thanks, ${val.split(" ")[0]}. What's your email address so our team can follow up?`,
-            }),
-          300
-        );
+        setTimeout(() => addMessage({ role: "assistant", text: t(lang, "escalation_email_prompt", val.split(" ")[0] || val) }), 300);
       } else if (escalationStep === "email") {
         setEscalationData((d) => ({ ...d, email: val }));
         setEscalationStep("issue");
-        setTimeout(
-          () =>
-            addMessage({
-              role: "assistant",
-              text: "Got it. Briefly describe the issue you're running into:",
-            }),
-          300
-        );
+        setTimeout(() => addMessage({ role: "assistant", text: t(lang, "escalation_issue_prompt") }), 300);
       } else if (escalationStep === "issue") {
         const finalData = { ...escalationData, issue: val };
-        setEscalationData(finalData);
         setEscalationStep("submitting");
-
-        setTimeout(
-          () =>
-            addMessage({
-              role: "assistant",
-              text: "Creating your support ticket…",
-            }),
-          300
-        );
+        setTimeout(() => addMessage({ role: "assistant", text: t(lang, "escalation_submitting") }), 300);
 
         const ok = await submitSupportTicket({
           name: finalData.name || "Unknown",
@@ -290,23 +608,64 @@ export function LeadChatWidget() {
         });
 
         setEscalationStep("done");
+        const firstName = finalData.name?.split(" ")[0] || "there";
+        const email = finalData.email || "";
         setTimeout(
           () =>
             addMessage({
               role: "assistant",
               text: ok
-                ? `✅ Your ticket has been submitted, ${finalData.name?.split(" ")[0] || "there"}. Our team will reach out to ${finalData.email} within 1 business day. Is there anything else I can help you with?`
-                : `✅ Got it, ${finalData.name?.split(" ")[0] || "there"}. Our team will follow up at ${finalData.email} within 1 business day. Is there anything else I can help you with?`,
-              quickReplies: ["See pricing", "Get a free estimate", "I'm a contractor"],
+                ? t(lang, "escalation_done_ok", firstName, email)
+                : t(lang, "escalation_done_fallback", firstName, email),
+              quickReplies: [t(lang, "q_see_pricing"), t(lang, "q_free_estimate"), t(lang, "q_contractor")],
+              showSatisfaction: true,
             }),
           500
         );
       }
     },
-    [escalationStep, escalationData, addMessage]
+    [escalationStep, escalationData, lang, addMessage]
   );
 
-  // ── Main send handler ─────────────────────────────────────────────────────
+  // ── Lead capture flow ────────────────────────────────────────────────────────
+
+  const handleLeadCaptureInput = useCallback(
+    async (val: string) => {
+      addMessage({ role: "user", text: val });
+
+      if (leadCaptureStep === "name") {
+        setLeadData((d) => ({ ...d, name: val }));
+        setLeadCaptureStep("email");
+        setTimeout(() => addMessage({ role: "assistant", text: t(lang, "lead_email_prompt", val.split(" ")[0] || val) }), 300);
+      } else if (leadCaptureStep === "email") {
+        const finalData = { ...leadData, email: val };
+        setLeadCaptureStep("done");
+
+        // Store lead in background (non-blocking)
+        submitLead({
+          name: finalData.name || "Unknown",
+          email: val,
+          sessionId: sessionId.current,
+          pageUrl: typeof window !== "undefined" ? window.location.href : "",
+        });
+
+        const href = finalData.pendingHref || "https://www.jobbidder.io/login";
+        const firstName = finalData.name?.split(" ")[0] || "there";
+        setTimeout(
+          () =>
+            addMessage({
+              role: "assistant",
+              text: t(lang, "lead_done", firstName, href),
+              ctaLink: { label: t(lang, "q_signin"), href },
+            }),
+          400
+        );
+      }
+    },
+    [leadCaptureStep, leadData, lang, addMessage]
+  );
+
+  // ── Main send handler ────────────────────────────────────────────────────────
 
   const handleSend = useCallback(
     async (text?: string) => {
@@ -314,16 +673,26 @@ export function LeadChatWidget() {
       if (!val || loading) return;
       setInput("");
 
-      // If in escalation flow, handle deterministically
+      // Detect language from user input
+      const detectedLang = detectLangFromText(val);
+      if (detectedLang !== "en" || lang !== "en") {
+        if (detectedLang !== lang) updateLang(detectedLang);
+      }
+
       if (escalationStep !== "idle" && escalationStep !== "done") {
         await handleEscalationInput(val);
+        return;
+      }
+
+      if (leadCaptureStep !== "idle" && leadCaptureStep !== "done") {
+        await handleLeadCaptureInput(val);
         return;
       }
 
       addMessage({ role: "user", text: val });
       await sendToApi(val, messages);
     },
-    [input, loading, escalationStep, handleEscalationInput, addMessage, sendToApi, messages]
+    [input, loading, escalationStep, leadCaptureStep, lang, handleEscalationInput, handleLeadCaptureInput, addMessage, sendToApi, messages, updateLang]
   );
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -333,34 +702,45 @@ export function LeadChatWidget() {
     }
   };
 
-  // ── Open/close ────────────────────────────────────────────────────────────
+  // ── Satisfaction handler ─────────────────────────────────────────────────────
 
-  const toggleOpen = () => {
-    setOpen((o) => {
-      if (!o && !hasOpened) setHasOpened(true);
-      return !o;
-    });
-  };
+  const handleSatisfaction = useCallback(
+    (positive: boolean) => {
+      setSatisfactionGiven(true);
+      setTimeout(
+        () =>
+          addMessage({
+            role: "assistant",
+            text: positive ? t(lang, "satisfaction_thanks") : t(lang, "satisfaction_sorry"),
+            quickReplies: positive
+              ? [t(lang, "q_see_pricing"), t(lang, "q_free_estimate")]
+              : undefined,
+          }),
+        200
+      );
+    },
+    [lang, addMessage]
+  );
 
-  // ── Input placeholder ─────────────────────────────────────────────────────
+  // ── Placeholder ──────────────────────────────────────────────────────────────
 
   const getPlaceholder = () => {
-    if (escalationStep === "name") return "Your full name…";
-    if (escalationStep === "email") return "Your email address…";
-    if (escalationStep === "issue") return "Describe the issue…";
-    if (escalationStep === "submitting") return "Submitting…";
-    return "Ask me anything…";
+    if (escalationStep === "name" || leadCaptureStep === "name") return t(lang, "placeholder_name");
+    if (escalationStep === "email" || leadCaptureStep === "email") return t(lang, "placeholder_email");
+    if (escalationStep === "issue") return t(lang, "placeholder_issue");
+    if (escalationStep === "submitting") return t(lang, "placeholder_submitting");
+    return t(lang, "placeholder_default");
   };
 
   const isInputDisabled = escalationStep === "submitting" || loading;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
     <>
       {/* ── Launcher button ── */}
       <button
-        onClick={toggleOpen}
+        onClick={() => setOpen((o) => !o)}
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95"
         aria-label={open ? "Close chat" : "Open Jobbidder AI chat"}
       >
@@ -376,7 +756,6 @@ export function LeadChatWidget() {
         >
           <ChevronDown className="h-6 w-6" />
         </span>
-        {/* Unread badge */}
         {!open && unread > 0 && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow">
             {unread > 9 ? "9+" : unread}
@@ -388,28 +767,33 @@ export function LeadChatWidget() {
       <div
         className="fixed bottom-24 right-6 z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl transition-all duration-300 origin-bottom-right"
         style={{
-          width: "360px",
-          maxWidth: "calc(100vw - 1.5rem)",
-          maxHeight: "calc(100vh - 8rem)",
+          width: "min(380px, calc(100vw - 1.5rem))",
+          maxHeight: "min(560px, calc(100vh - 8rem))",
           opacity: open ? 1 : 0,
           transform: open ? "scale(1) translateY(0)" : "scale(0.95) translateY(8px)",
-          pointerEvents: open ? "all" : "none",
+          pointerEvents: open ? "auto" : "none",
         }}
         role="dialog"
         aria-label="Jobbidder AI Assistant"
+        aria-hidden={!open}
       >
         {/* Header */}
         <div className="flex items-center gap-3 rounded-t-2xl bg-primary px-4 py-3 shrink-0">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20">
             <MessageCircle className="h-5 w-5 text-white" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-white leading-tight">Jobbidder AI</p>
-            <p className="text-xs text-white/70 leading-tight">Proposals · Pricing · Support</p>
+            <p className="text-xs text-white/70 leading-tight">{t(lang, "header_subtitle")}</p>
+          </div>
+          {/* Online indicator */}
+          <div className="flex items-center gap-1.5 mr-1">
+            <span className="h-2 w-2 rounded-full bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.8)]" />
+            <span className="text-[10px] text-white/60">Online</span>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/20 hover:text-white transition"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/20 hover:text-white transition"
             aria-label="Close chat"
           >
             <X className="h-4 w-4" />
@@ -417,10 +801,7 @@ export function LeadChatWidget() {
         </div>
 
         {/* Messages */}
-        <div
-          className="flex flex-col gap-3 overflow-y-auto p-4 flex-1"
-          style={{ minHeight: "200px", maxHeight: "400px" }}
-        >
+        <div className="flex flex-col gap-3 overflow-y-auto p-4 flex-1" style={{ minHeight: "200px" }}>
           {messages.map((m) => (
             <div key={m.id} className={`flex flex-col gap-2 ${m.role === "user" ? "items-end" : "items-start"}`}>
               <div
@@ -451,7 +832,7 @@ export function LeadChatWidget() {
 
               {/* Quick replies */}
               {m.quickReplies && m.quickReplies.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 max-w-[85%]">
+                <div className="flex flex-wrap gap-1.5 max-w-[90%]">
                   {m.quickReplies.map((qr) => (
                     <button
                       key={qr}
@@ -464,16 +845,37 @@ export function LeadChatWidget() {
                   ))}
                 </div>
               )}
+
+              {/* Satisfaction prompt */}
+              {m.showSatisfaction && !satisfactionGiven && (
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-muted-foreground">{t(lang, "satisfaction_prompt")}</span>
+                  <button
+                    onClick={() => handleSatisfaction(true)}
+                    className="flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-100 transition"
+                  >
+                    <ThumbsUp className="h-3 w-3" />
+                    {t(lang, "satisfaction_yes")}
+                  </button>
+                  <button
+                    onClick={() => handleSatisfaction(false)}
+                    className="flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition"
+                  >
+                    <ThumbsDown className="h-3 w-3" />
+                    {t(lang, "satisfaction_no")}
+                  </button>
+                </div>
+              )}
             </div>
           ))}
 
-          {/* Typing indicator */}
+          {/* Animated typing indicator */}
           {loading && (
             <div className="flex items-start">
-              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-muted px-3.5 py-2.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-sm bg-muted px-3.5 py-3">
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:160ms]" />
+                <span className="h-2 w-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:320ms]" />
               </div>
             </div>
           )}
@@ -482,7 +884,7 @@ export function LeadChatWidget() {
           {escalationStep === "done" && (
             <div className="flex items-center justify-center gap-2 rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-xs font-semibold text-green-700">
               <CheckCircle2 className="h-4 w-4 shrink-0" />
-              Support ticket submitted
+              {t(lang, "ticket_submitted")}
             </div>
           )}
 
@@ -514,9 +916,9 @@ export function LeadChatWidget() {
         {/* Footer */}
         <div className="rounded-b-2xl border-t border-border/50 px-4 py-2 text-center shrink-0">
           <p className="text-[10px] text-muted-foreground/60">
-            Powered by Jobbidder AI · By chatting you agree to our{" "}
+            {t(lang, "powered_by")}{" "}
             <a href="/terms" className="underline hover:text-muted-foreground transition">
-              Terms
+              {t(lang, "terms")}
             </a>
           </p>
         </div>
