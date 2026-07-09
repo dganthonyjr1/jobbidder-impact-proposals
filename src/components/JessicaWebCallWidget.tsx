@@ -11,8 +11,15 @@ const CONFIG = {
   colorDark: '#5B21B6',
 };
 
+// Prevent multiple initializations
+let isJessicaInitialized = false;
+
 export function JessicaWebCallWidget() {
   useEffect(() => {
+    // Only initialize once
+    if (isJessicaInitialized) return;
+    isJessicaInitialized = true;
+
     // Load LiveKit SDK if not already loaded
     if (typeof (window as any).LivekitClient === 'undefined') {
       const script = document.createElement('script');
@@ -490,8 +497,17 @@ function initJessicaWebCall() {
     if (isCallActive) endCall(); else startCall();
   }
 
-  orbBtn?.addEventListener('click', handleClick);
-  mobileBtn?.addEventListener('click', handleClick);
+  // Remove any existing listeners first to prevent duplicates
+  if (orbBtn) {
+    const newOrbBtn = orbBtn.cloneNode(true) as HTMLButtonElement;
+    orbBtn.parentNode?.replaceChild(newOrbBtn, orbBtn);
+    newOrbBtn.addEventListener('click', handleClick);
+  }
+  if (mobileBtn) {
+    const newMobileBtn = mobileBtn.cloneNode(true) as HTMLButtonElement;
+    mobileBtn.parentNode?.replaceChild(newMobileBtn, mobileBtn);
+    newMobileBtn.addEventListener('click', handleClick);
+  }
 
   window.addEventListener('beforeunload', () => room?.disconnect());
 }
