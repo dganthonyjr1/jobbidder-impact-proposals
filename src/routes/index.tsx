@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat, Phone } from "lucide-react";
-import { WebCallButton } from "@/components/WebCallButton";
+import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/")({
@@ -54,7 +54,7 @@ function Index() {
             ))}
           </div>
           <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row flex-wrap gap-3">
-            <WebCallButton />
+            <JessicaWebCallWidget />
             <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
               <Link to="/login">Start free trial <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
