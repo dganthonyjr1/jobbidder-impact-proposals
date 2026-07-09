@@ -80,9 +80,24 @@ export const generateProposal = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: contractor } = await supabaseAdmin
       .from("contractors")
-      .select("id, business_name, license_number, business_address, service_states")
+      .select("id, business_name, license_number, business_address, service_states, tier")
       .eq("user_id", userId).single();
     if (!contractor) throw new Error("Contractor profile not found");
+
+    // FIX: Enforce 2-proposal limit for free trial (apprentice tier)
+    if (contractor.tier === "apprentice" || !contractor.tier) {
+      const { data: existingProposals, error: countError } = await supabaseAdmin
+        .from("proposals")
+        .select("id", { count: "exact", head: true })
+        .eq("contractor_id", contractor.id);
+      
+      if (countError) console.warn("Failed to count proposals:", countError);
+      const proposalCount = existingProposals?.length ?? 0;
+      
+      if (proposalCount >= 2) {
+        throw new Error("Free trial limit reached: 2 proposals maximum. Please upgrade to create more proposals.");
+      }
+    }
 
     const prevailingWage = evaluatePrevailingWage({
       flag: data.prevailing_wage_flag,
@@ -187,14 +202,25 @@ export const generateProposal = createServerFn({ method: "POST" })
 export const listProposals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
+    // Get contractor_id for this user to filter proposals
+    const { data: contractor, error: contractorError } = await supabase
+      .from("contractors")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    
+    if (contractorError) throw new Error(contractorError.message);
+    if (!contractor) return []; // User has no contractor, return empty
+    
     const { data, error } = await supabase
       .from("proposals")
       .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address, raw_input")
+      .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const rows = data ?? [];
-    if (rows.length === 0) return rows.map((r) => ({ ...r, view_count: 0, last_viewed_at: null as string | null }));
+    if (rows.length === 0) return [];
 
     const ids = rows.map((r) => r.id);
     const { data: views } = await supabase

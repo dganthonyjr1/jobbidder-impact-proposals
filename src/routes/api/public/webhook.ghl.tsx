@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
 import { sendEmailViaGHL, sendSmsViaGHL, type GhlCredentials } from "@/lib/ghl.server";
@@ -102,11 +101,11 @@ async function callGroqAI(opts: {
 }): Promise<AIProposalShape | null> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    console.warn("[webhook.ghl] GROQ_API_KEY not set — skipping AI generation");
+    console.warn("[webhook.ghl] GROQ_API_KEY not configured");
     return null;
   }
 
-  const sys = `You are an expert contractor estimator for ${opts.businessName} (${opts.tradeType || "general contracting"}). Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
+  const sys = `You are an expert contractor estimator for ${opts.tradeType || "general contracting"}. Build the estimate the way a real ${opts.tradeType || "contractor"} would — using the right materials, labor phases, units, and considerations for this trade. Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
   const user = `Job for ${opts.clientName} at ${opts.jobAddress || "TBD"} (state: ${opts.jobState || "n/a"}).\nTrade: ${opts.tradeType || "general"}\nDescription: ${opts.jobDescription}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
 
   try {
@@ -120,13 +119,14 @@ async function callGroqAI(opts: {
         { role: "user", content: user },
       ],
     });
+
     const raw = completion.choices?.[0]?.message?.content || "{}";
     const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     const content = jsonMatch ? jsonMatch[0] : cleaned;
     return JSON.parse(content) as AIProposalShape;
   } catch (e) {
-    console.error("[webhook.ghl] Groq AI call failed:", (e as Error).message);
+    console.error("[webhook.ghl] AI generation failed:", e);
     return null;
   }
 }
@@ -161,10 +161,10 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         const jobState = normalizeState(firstString(custom(body, "state", "job_state", "jobState"), body.state, body.contact?.state));
         const tradeType = firstString(custom(body, "trade_type", "tradeType", "service", "project_type"), body.trade_type);
 
-        // Load contractor for business name
+        // Load contractor for business name and tier
         const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name")
+          .select("id, business_name, tier")
           .eq("id", contractorId)
           .maybeSingle();
         if (contractorError) console.warn("[webhook.ghl] Contractor lookup failed:", contractorError.message);
@@ -172,11 +172,9 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         // Use provided GHL credentials or load from database
         let mergedContractor: any = contractor || {};
         if (ghlToken && ghlLocationId) {
-          // Use provided credentials
           mergedContractor.ghl_api_token = ghlToken;
           mergedContractor.ghl_location_id = ghlLocationId;
         } else {
-          // Load from database
           const { data: ghlIntegration, error: ghlError } = await supabaseAdmin
             .from("contractor_integrations")
             .select("ghl_api_token, ghl_location_id, sms_from_number, email_from")
@@ -188,89 +186,170 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
           }
         }
 
-        const businessName = contractor?.business_name || "Jobbidder";
+        // FIX: Use "Jobbidder" for free trial, contractor name for paid
+        const isFreeAccount = contractor?.tier === "apprentice" || !contractor?.tier;
+        const businessName = isFreeAccount ? "Jobbidder" : (contractor?.business_name || "Jobbidder");
 
-        // Call Groq AI to generate the full proposal content
-        const ai = await callGroqAI({
-          clientName,
-          jobAddress,
-          jobState,
-          tradeType,
-          jobDescription: jobDescription || "GHL voice-agent lead",
-          businessName,
-        });
+        // Check for multiple scopes in contact.proposal_line_items
+        const proposalLineItems = custom(body, "proposal_line_items", "proposalLineItems");
+        const scopes = proposalLineItems
+          ? String(proposalLineItems)
+              .split("\n")
+              .map((line: string) => line.trim())
+              .filter((line: string) => line.length > 0)
+          : [];
 
-        const validThrough = new Date();
-        validThrough.setDate(validThrough.getDate() + 30);
+        const createdProposals: any[] = [];
 
-        const insert = {
-          contractor_id: contractorId,
-          proposal_number: generateProposalNumber(),
-          status: "draft",
-          source: "ghl",
-          client_name: clientName,
-          client_email: clientEmail,
-          client_phone: clientPhone,
-          job_address: jobAddress,
-          job_state: jobState,
-          trade_type: tradeType,
-          job_description: jobDescription,
-          raw_input: body,
-          valid_through: validThrough.toISOString().slice(0, 10),
-          // AI-generated fields (fallback to raw description if AI failed)
-          scope_of_work: ai?.scope_of_work || jobDescription || "",
-          timeline: ai?.timeline || "",
-          warranty: ai?.warranty || "",
-          exclusions: ai?.exclusions || [],
-          materials: ai?.materials || [],
-          labor: ai?.labor || [],
-          tiers: ai?.tiers || {},
-        };
+        // If multiple scopes, create a proposal for each
+        if (scopes.length > 1) {
+          for (const scope of scopes) {
+            const parts = scope.split("|").map((p: string) => p.trim());
+            const scopeDescription = parts.slice(1).join(" | ") || scope;
 
-        const { data: created, error } = await supabaseAdmin
-          .from("proposals")
-          .insert(insert)
-          .select("id, proposal_number")
-          .single();
+            const ai = await callGroqAI({
+              clientName,
+              jobAddress,
+              jobState,
+              tradeType,
+              jobDescription: scopeDescription,
+              businessName,
+            });
 
-        if (error) {
-          console.error("GHL webhook proposal insert failed", error);
-          return Response.json({ ok: false, error: error.message }, { status: 500, headers: cors() });
+            const validThrough = new Date();
+            validThrough.setDate(validThrough.getDate() + 30);
+
+            const insert = {
+              contractor_id: contractorId,
+              proposal_number: generateProposalNumber(),
+              status: "draft",
+              source: "ghl",
+              client_name: clientName,
+              client_email: clientEmail,
+              client_phone: clientPhone,
+              job_address: jobAddress,
+              job_state: jobState,
+              trade_type: tradeType,
+              job_description: scopeDescription,
+              raw_input: body,
+              valid_through: validThrough.toISOString().slice(0, 10),
+              scope_of_work: ai?.scope_of_work || scopeDescription || "",
+              timeline: ai?.timeline || "",
+              warranty: ai?.warranty || "",
+              exclusions: ai?.exclusions || [],
+              materials: ai?.materials || [],
+              labor: ai?.labor || [],
+              tiers: ai?.tiers || {},
+            };
+
+            const { data: created, error } = await supabaseAdmin
+              .from("proposals")
+              .insert(insert)
+              .select("id, proposal_number")
+              .single();
+
+            if (error) {
+              console.error("[webhook.ghl] Proposal insert failed for scope:", scopeDescription, error);
+              continue;
+            }
+
+            createdProposals.push(created);
+          }
+        } else {
+          // Single proposal (original logic)
+          const ai = await callGroqAI({
+            clientName,
+            jobAddress,
+            jobState,
+            tradeType,
+            jobDescription: jobDescription || "GHL voice-agent lead",
+            businessName,
+          });
+
+          const validThrough = new Date();
+          validThrough.setDate(validThrough.getDate() + 30);
+
+          const insert = {
+            contractor_id: contractorId,
+            proposal_number: generateProposalNumber(),
+            status: "draft",
+            source: "ghl",
+            client_name: clientName,
+            client_email: clientEmail,
+            client_phone: clientPhone,
+            job_address: jobAddress,
+            job_state: jobState,
+            trade_type: tradeType,
+            job_description: jobDescription,
+            raw_input: body,
+            valid_through: validThrough.toISOString().slice(0, 10),
+            scope_of_work: ai?.scope_of_work || jobDescription || "",
+            timeline: ai?.timeline || "",
+            warranty: ai?.warranty || "",
+            exclusions: ai?.exclusions || [],
+            materials: ai?.materials || [],
+            labor: ai?.labor || [],
+            tiers: ai?.tiers || {},
+          };
+
+          const { data: created, error } = await supabaseAdmin
+            .from("proposals")
+            .insert(insert)
+            .select("id, proposal_number")
+            .single();
+
+          if (error) {
+            console.error("[webhook.ghl] Proposal insert failed:", error);
+            return Response.json({ ok: false, error: error.message }, { status: 500, headers: cors() });
+          }
+
+          createdProposals.push(created);
         }
 
-        const proposalUrl = `${origin}/p/${created.id}`;
+        if (createdProposals.length === 0) {
+          return Response.json({ ok: false, error: "No proposals created" }, { status: 500, headers: cors() });
+        }
+
+        // Send notifications for all created proposals
         const notify = body.notify !== false && body.send_notifications !== false;
         const emailOnly = wantsEmailOnly(body);
-        const ghlCredentials = toGhlCredentials(contractor);
+        const ghlCredentials = toGhlCredentials(mergedContractor);
         const smsAllowed = !emailOnly;
-        let email: any = { skipped: !clientEmail ? "no email" : "disabled" };
-        let sms: any = { skipped: !clientPhone ? "no phone" : emailOnly ? "email-only delivery" : "disabled" };
+        const results: any[] = [];
 
-        if (notify && clientEmail) {
-          email = await sendEmailViaGHL({
-            to: clientEmail,
-            subject: `Your Jobbidder proposal ${created.proposal_number}`,
-            text: `Hi ${clientName}, your proposal ${created.proposal_number} is ready to review: ${proposalUrl}`,
-            html: `<p>Hi ${clientName},</p><p>Your proposal <strong>${created.proposal_number}</strong> is ready to review.</p><p><a href="${proposalUrl}">Open proposal</a></p>`,
-            contactName: clientName,
-            contactPhone: clientPhone,
-            tags: ["jobbidder", "proposal-ready"],
-            credentials: ghlCredentials,
-          });
+        for (const created of createdProposals) {
+          const proposalUrl = `${origin}/p/${created.id}`;
+          let email: any = { skipped: !clientEmail ? "no email" : "disabled" };
+          let sms: any = { skipped: !clientPhone ? "no phone" : emailOnly ? "email-only delivery" : "disabled" };
+
+          if (notify && clientEmail) {
+            email = await sendEmailViaGHL({
+              to: clientEmail,
+              subject: `Your Jobbidder proposal ${created.proposal_number}`,
+              text: `Hi ${clientName}, your proposal ${created.proposal_number} is ready to review: ${proposalUrl}`,
+              html: `<p>Hi ${clientName},</p><p>Your proposal <strong>${created.proposal_number}</strong> is ready to review.</p><p><a href="${proposalUrl}">Open proposal</a></p>`,
+              contactName: clientName,
+              contactPhone: clientPhone,
+              tags: ["jobbidder", "proposal-ready"],
+              credentials: ghlCredentials,
+            });
+          }
+
+          if (notify && clientPhone && smsAllowed) {
+            sms = await sendSmsViaGHL({
+              to: clientPhone,
+              body: `Your Jobbidder proposal ${created.proposal_number} is ready: ${proposalUrl}`,
+              contactName: clientName,
+              contactEmail: clientEmail || undefined,
+              tags: ["jobbidder", "proposal-ready"],
+              credentials: ghlCredentials,
+            });
+          }
+
+          results.push({ proposal_id: created.id, proposal_number: created.proposal_number, proposal_url: proposalUrl, email, sms });
         }
 
-        if (notify && clientPhone && smsAllowed) {
-          sms = await sendSmsViaGHL({
-            to: clientPhone,
-            body: `Your Jobbidder proposal ${created.proposal_number} is ready: ${proposalUrl}`,
-            contactName: clientName,
-            contactEmail: clientEmail || undefined,
-            tags: ["jobbidder", "proposal-ready"],
-            credentials: ghlCredentials,
-          });
-        }
-
-        return Response.json({ ok: true, proposal_id: created.id, proposal_number: created.proposal_number, proposal_url: proposalUrl, ai_generated: !!ai, email, sms }, { headers: cors() });
+        return Response.json({ ok: true, proposals_created: createdProposals.length, results }, { headers: cors() });
       },
       OPTIONS: async () => new Response(null, { status: 204, headers: cors() }),
     },
