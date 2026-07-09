@@ -191,6 +191,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         const businessName = isFreeAccount ? "Jobbidder" : (contractor?.business_name || "Jobbidder");
 
         // Check for multiple scopes in contact.proposal_line_items
+        // If present, combine them all into ONE proposal with multiple line items
         const proposalLineItems = custom(body, "proposal_line_items", "proposalLineItems");
         const scopes = proposalLineItems
           ? String(proposalLineItems)
@@ -199,157 +200,95 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
               .filter((line: string) => line.length > 0)
           : [];
 
-        const createdProposals: any[] = [];
+        // Combine all scopes into a single job description for AI processing
+        const combinedJobDescription = scopes.length > 0
+          ? scopes.map((scope: string) => {
+              // Parse scope line: "SCOPE N | Trade: ... | Description: ... | Price: $... | ..."
+              const parts = scope.split("|").map((p: string) => p.trim());
+              return parts.slice(1).join(" | ") || scope;
+            }).join("\n\n")
+          : jobDescription;
 
-        // If multiple scopes, create a proposal for each
-        if (scopes.length > 1) {
-          for (const scope of scopes) {
-            const parts = scope.split("|").map((p: string) => p.trim());
-            const scopeDescription = parts.slice(1).join(" | ") || scope;
+        // Call Groq AI with combined description
+        const ai = await callGroqAI({
+          clientName,
+          jobAddress,
+          jobState,
+          tradeType,
+          jobDescription: combinedJobDescription || "GHL voice-agent lead",
+          businessName,
+        });
 
-            const ai = await callGroqAI({
-              clientName,
-              jobAddress,
-              jobState,
-              tradeType,
-              jobDescription: scopeDescription,
-              businessName,
-            });
+        const validThrough = new Date();
+        validThrough.setDate(validThrough.getDate() + 30);
 
-            const validThrough = new Date();
-            validThrough.setDate(validThrough.getDate() + 30);
+        const insert = {
+          contractor_id: contractorId,
+          proposal_number: generateProposalNumber(),
+          status: "draft",
+          source: "ghl",
+          client_name: clientName,
+          client_email: clientEmail,
+          client_phone: clientPhone,
+          job_address: jobAddress,
+          job_state: jobState,
+          trade_type: tradeType,
+          job_description: combinedJobDescription,
+          raw_input: body,
+          valid_through: validThrough.toISOString().slice(0, 10),
+          scope_of_work: ai?.scope_of_work || combinedJobDescription || "",
+          timeline: ai?.timeline || "",
+          warranty: ai?.warranty || "",
+          exclusions: ai?.exclusions || [],
+          materials: ai?.materials || [],
+          labor: ai?.labor || [],
+          tiers: ai?.tiers || {},
+        };
 
-            const insert = {
-              contractor_id: contractorId,
-              proposal_number: generateProposalNumber(),
-              status: "draft",
-              source: "ghl",
-              client_name: clientName,
-              client_email: clientEmail,
-              client_phone: clientPhone,
-              job_address: jobAddress,
-              job_state: jobState,
-              trade_type: tradeType,
-              job_description: scopeDescription,
-              raw_input: body,
-              valid_through: validThrough.toISOString().slice(0, 10),
-              scope_of_work: ai?.scope_of_work || scopeDescription || "",
-              timeline: ai?.timeline || "",
-              warranty: ai?.warranty || "",
-              exclusions: ai?.exclusions || [],
-              materials: ai?.materials || [],
-              labor: ai?.labor || [],
-              tiers: ai?.tiers || {},
-            };
+        const { data: created, error } = await supabaseAdmin
+          .from("proposals")
+          .insert(insert)
+          .select("id, proposal_number")
+          .single();
 
-            const { data: created, error } = await supabaseAdmin
-              .from("proposals")
-              .insert(insert)
-              .select("id, proposal_number")
-              .single();
-
-            if (error) {
-              console.error("[webhook.ghl] Proposal insert failed for scope:", scopeDescription, error);
-              continue;
-            }
-
-            createdProposals.push(created);
-          }
-        } else {
-          // Single proposal (original logic)
-          const ai = await callGroqAI({
-            clientName,
-            jobAddress,
-            jobState,
-            tradeType,
-            jobDescription: jobDescription || "GHL voice-agent lead",
-            businessName,
-          });
-
-          const validThrough = new Date();
-          validThrough.setDate(validThrough.getDate() + 30);
-
-          const insert = {
-            contractor_id: contractorId,
-            proposal_number: generateProposalNumber(),
-            status: "draft",
-            source: "ghl",
-            client_name: clientName,
-            client_email: clientEmail,
-            client_phone: clientPhone,
-            job_address: jobAddress,
-            job_state: jobState,
-            trade_type: tradeType,
-            job_description: jobDescription,
-            raw_input: body,
-            valid_through: validThrough.toISOString().slice(0, 10),
-            scope_of_work: ai?.scope_of_work || jobDescription || "",
-            timeline: ai?.timeline || "",
-            warranty: ai?.warranty || "",
-            exclusions: ai?.exclusions || [],
-            materials: ai?.materials || [],
-            labor: ai?.labor || [],
-            tiers: ai?.tiers || {},
-          };
-
-          const { data: created, error } = await supabaseAdmin
-            .from("proposals")
-            .insert(insert)
-            .select("id, proposal_number")
-            .single();
-
-          if (error) {
-            console.error("[webhook.ghl] Proposal insert failed:", error);
-            return Response.json({ ok: false, error: error.message }, { status: 500, headers: cors() });
-          }
-
-          createdProposals.push(created);
+        if (error) {
+          console.error("[webhook.ghl] Proposal insert failed:", error);
+          return Response.json({ ok: false, error: error.message }, { status: 500, headers: cors() });
         }
 
-        if (createdProposals.length === 0) {
-          return Response.json({ ok: false, error: "No proposals created" }, { status: 500, headers: cors() });
-        }
-
-        // Send notifications for all created proposals
+        const proposalUrl = `${origin}/p/${created.id}`;
         const notify = body.notify !== false && body.send_notifications !== false;
         const emailOnly = wantsEmailOnly(body);
         const ghlCredentials = toGhlCredentials(mergedContractor);
         const smsAllowed = !emailOnly;
-        const results: any[] = [];
+        let email: any = { skipped: !clientEmail ? "no email" : "disabled" };
+        let sms: any = { skipped: !clientPhone ? "no phone" : emailOnly ? "email-only delivery" : "disabled" };
 
-        for (const created of createdProposals) {
-          const proposalUrl = `${origin}/p/${created.id}`;
-          let email: any = { skipped: !clientEmail ? "no email" : "disabled" };
-          let sms: any = { skipped: !clientPhone ? "no phone" : emailOnly ? "email-only delivery" : "disabled" };
-
-          if (notify && clientEmail) {
-            email = await sendEmailViaGHL({
-              to: clientEmail,
-              subject: `Your Jobbidder proposal ${created.proposal_number}`,
-              text: `Hi ${clientName}, your proposal ${created.proposal_number} is ready to review: ${proposalUrl}`,
-              html: `<p>Hi ${clientName},</p><p>Your proposal <strong>${created.proposal_number}</strong> is ready to review.</p><p><a href="${proposalUrl}">Open proposal</a></p>`,
-              contactName: clientName,
-              contactPhone: clientPhone,
-              tags: ["jobbidder", "proposal-ready"],
-              credentials: ghlCredentials,
-            });
-          }
-
-          if (notify && clientPhone && smsAllowed) {
-            sms = await sendSmsViaGHL({
-              to: clientPhone,
-              body: `Your Jobbidder proposal ${created.proposal_number} is ready: ${proposalUrl}`,
-              contactName: clientName,
-              contactEmail: clientEmail || undefined,
-              tags: ["jobbidder", "proposal-ready"],
-              credentials: ghlCredentials,
-            });
-          }
-
-          results.push({ proposal_id: created.id, proposal_number: created.proposal_number, proposal_url: proposalUrl, email, sms });
+        if (notify && clientEmail) {
+          email = await sendEmailViaGHL({
+            to: clientEmail,
+            subject: `Your Jobbidder proposal ${created.proposal_number}`,
+            text: `Hi ${clientName}, your proposal ${created.proposal_number} is ready to review: ${proposalUrl}`,
+            html: `<p>Hi ${clientName},</p><p>Your proposal <strong>${created.proposal_number}</strong> is ready to review.</p><p><a href="${proposalUrl}">Open proposal</a></p>`,
+            contactName: clientName,
+            contactPhone: clientPhone,
+            tags: ["jobbidder", "proposal-ready"],
+            credentials: ghlCredentials,
+          });
         }
 
-        return Response.json({ ok: true, proposals_created: createdProposals.length, results }, { headers: cors() });
+        if (notify && clientPhone && smsAllowed) {
+          sms = await sendSmsViaGHL({
+            to: clientPhone,
+            body: `Your Jobbidder proposal ${created.proposal_number} is ready: ${proposalUrl}`,
+            contactName: clientName,
+            contactEmail: clientEmail || undefined,
+            tags: ["jobbidder", "proposal-ready"],
+            credentials: ghlCredentials,
+          });
+        }
+
+        return Response.json({ ok: true, proposal_id: created.id, proposal_number: created.proposal_number, proposal_url: proposalUrl, ai_generated: !!ai, email, sms }, { headers: cors() });
       },
       OPTIONS: async () => new Response(null, { status: 204, headers: cors() }),
     },
