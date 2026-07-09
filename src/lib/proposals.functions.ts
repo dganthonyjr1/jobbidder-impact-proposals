@@ -22,6 +22,7 @@ import { generateProposalNumber } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { checkAndDeductCredit } from "@/lib/credits.server";
 import Groq from "groq-sdk";
 
 const aiInput = z.object({
@@ -80,9 +81,22 @@ export const generateProposal = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: contractor } = await supabaseAdmin
       .from("contractors")
-      .select("id, business_name, license_number, business_address, service_states")
+      .select("id, business_name, license_number, business_address, service_states, subscription_tier")
       .eq("user_id", userId).single();
     if (!contractor) throw new Error("Contractor profile not found");
+
+    // Enforce the plan limit (apprentice = 2 lifetime AI actions; journeyman+
+    // unlimited proposals). Without this the in-app New Proposal button let any
+    // tier generate unlimited proposals for free.
+    const credit = await checkAndDeductCredit(
+      contractor.id,
+      contractor.subscription_tier ?? "apprentice",
+      "proposal",
+      `Proposal for ${data.client_name}`,
+    );
+    if (!credit.allowed) {
+      throw new Error(credit.message ?? "You've reached your plan limit. Please upgrade to continue.");
+    }
 
     const prevailingWage = evaluatePrevailingWage({
       flag: data.prevailing_wage_flag,
@@ -187,17 +201,30 @@ export const generateProposal = createServerFn({ method: "POST" })
 export const listProposals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
-    const { data, error } = await supabase
+    const { userId } = context;
+
+    // Scope strictly to the signed-in contractor. We resolve the contractor
+    // from the validated userId and filter explicitly with the admin client,
+    // rather than relying on RLS/token forwarding, so a proposal can never
+    // leak across accounts.
+    const { data: contractor } = await supabaseAdmin
+      .from("contractors")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!contractor) return [] as Array<Record<string, any> & { view_count: number; last_viewed_at: string | null }>;
+
+    const { data, error } = await supabaseAdmin
       .from("proposals")
       .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address, raw_input")
+      .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     const rows = data ?? [];
     if (rows.length === 0) return rows.map((r) => ({ ...r, view_count: 0, last_viewed_at: null as string | null }));
 
     const ids = rows.map((r) => r.id);
-    const { data: views } = await supabase
+    const { data: views } = await supabaseAdmin
       .from("proposal_views")
       .select("proposal_id, viewed_at")
       .in("proposal_id", ids);
