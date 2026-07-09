@@ -41,17 +41,22 @@ import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/em
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
 import { Route as ApiPublicTestEmailGhlRouteImport } from './routes/api/public/test-email-ghl'
+import { Route as ApiPublicSupportTicketRouteImport } from './routes/api/public/support-ticket'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
+import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
+import { Route as ApiPublicEstimateRouteImport } from './routes/api/public/estimate'
 import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
+import { Route as ApiPublicCreateWebCallRouteImport } from './routes/api/public/create-web-call'
 import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
 import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
 import { Route as ApiPublicContractorPortalSessionRouteImport } from './routes/api/public/contractor-portal-session'
 import { Route as ApiPublicContractorPortalRequestRouteImport } from './routes/api/public/contractor-portal-request'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
+import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -230,6 +235,11 @@ const ApiPublicTestEmailGhlRoute = ApiPublicTestEmailGhlRouteImport.update({
   path: '/api/public/test-email-ghl',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSupportTicketRoute = ApiPublicSupportTicketRouteImport.update({
+  id: '/api/public/support-ticket',
+  path: '/api/public/support-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSendProposalEmailRoute =
   ApiPublicSendProposalEmailRouteImport.update({
     id: '/api/public/send-proposal-email',
@@ -246,9 +256,19 @@ const ApiPublicProposalRoute = ApiPublicProposalRouteImport.update({
   path: '/api/public/proposal',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
+  id: '/api/public/leads',
+  path: '/api/public/leads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicIntakeSubmitRoute = ApiPublicIntakeSubmitRouteImport.update({
   id: '/api/public/intake-submit',
   path: '/api/public/intake-submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEstimateRoute = ApiPublicEstimateRouteImport.update({
+  id: '/api/public/estimate',
+  path: '/api/public/estimate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicDefaultContractorRoute =
@@ -263,6 +283,11 @@ const ApiPublicDeclineProposalRoute =
     path: '/api/public/decline-proposal',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCreateWebCallRoute = ApiPublicCreateWebCallRouteImport.update({
+  id: '/api/public/create-web-call',
+  path: '/api/public/create-web-call',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCreateDepositInvoiceRoute =
   ApiPublicCreateDepositInvoiceRouteImport.update({
     id: '/api/public/create-deposit-invoice',
@@ -293,6 +318,11 @@ const ApiPublicContractorApplyRoute =
     path: '/api/public/contractor-apply',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
+  id: '/api/public/chat',
+  path: '/api/public/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAcceptProposalRoute = ApiPublicAcceptProposalRouteImport.update({
   id: '/api/public/accept-proposal',
   path: '/api/public/accept-proposal',
@@ -406,17 +436,22 @@ export interface FileRoutesByFullPath {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate': typeof ApiPublicEstimateRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -464,17 +499,22 @@ export interface FileRoutesByTo {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate': typeof ApiPublicEstimateRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -524,17 +564,22 @@ export interface FileRoutesById {
   '/proposal/$id': typeof ProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
   '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
+  '/api/public/estimate': typeof ApiPublicEstimateRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -584,17 +629,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -642,17 +692,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -701,17 +756,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
     | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
+    | '/api/public/estimate'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -750,17 +810,22 @@ export interface RootRouteChildren {
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
+  ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorPortalRequestRoute: typeof ApiPublicContractorPortalRequestRoute
   ApiPublicContractorPortalSessionRoute: typeof ApiPublicContractorPortalSessionRoute
   ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
   ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
+  ApiPublicCreateWebCallRoute: typeof ApiPublicCreateWebCallRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
   ApiPublicDefaultContractorRoute: typeof ApiPublicDefaultContractorRoute
+  ApiPublicEstimateRoute: typeof ApiPublicEstimateRoute
   ApiPublicIntakeSubmitRoute: typeof ApiPublicIntakeSubmitRoute
+  ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
+  ApiPublicSupportTicketRoute: typeof ApiPublicSupportTicketRoute
   ApiPublicTestEmailGhlRoute: typeof ApiPublicTestEmailGhlRoute
   ApiPublicTestProposalFlowRoute: typeof ApiPublicTestProposalFlowRoute
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
@@ -1005,6 +1070,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTestEmailGhlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/support-ticket': {
+      id: '/api/public/support-ticket'
+      path: '/api/public/support-ticket'
+      fullPath: '/api/public/support-ticket'
+      preLoaderRoute: typeof ApiPublicSupportTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/send-proposal-email': {
       id: '/api/public/send-proposal-email'
       path: '/api/public/send-proposal-email'
@@ -1026,11 +1098,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicProposalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/leads': {
+      id: '/api/public/leads'
+      path: '/api/public/leads'
+      fullPath: '/api/public/leads'
+      preLoaderRoute: typeof ApiPublicLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/intake-submit': {
       id: '/api/public/intake-submit'
       path: '/api/public/intake-submit'
       fullPath: '/api/public/intake-submit'
       preLoaderRoute: typeof ApiPublicIntakeSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/estimate': {
+      id: '/api/public/estimate'
+      path: '/api/public/estimate'
+      fullPath: '/api/public/estimate'
+      preLoaderRoute: typeof ApiPublicEstimateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/default-contractor': {
@@ -1045,6 +1131,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/decline-proposal'
       fullPath: '/api/public/decline-proposal'
       preLoaderRoute: typeof ApiPublicDeclineProposalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/create-web-call': {
+      id: '/api/public/create-web-call'
+      path: '/api/public/create-web-call'
+      fullPath: '/api/public/create-web-call'
+      preLoaderRoute: typeof ApiPublicCreateWebCallRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/create-deposit-invoice': {
@@ -1080,6 +1173,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/contractor-apply'
       fullPath: '/api/public/contractor-apply'
       preLoaderRoute: typeof ApiPublicContractorApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/chat': {
+      id: '/api/public/chat'
+      path: '/api/public/chat'
+      fullPath: '/api/public/chat'
+      preLoaderRoute: typeof ApiPublicChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/accept-proposal': {
@@ -1236,17 +1336,22 @@ const rootRouteChildren: RootRouteChildren = {
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
+  ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorPortalRequestRoute: ApiPublicContractorPortalRequestRoute,
   ApiPublicContractorPortalSessionRoute: ApiPublicContractorPortalSessionRoute,
   ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
   ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
+  ApiPublicCreateWebCallRoute: ApiPublicCreateWebCallRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
   ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
+  ApiPublicEstimateRoute: ApiPublicEstimateRoute,
   ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
+  ApiPublicLeadsRoute: ApiPublicLeadsRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
+  ApiPublicSupportTicketRoute: ApiPublicSupportTicketRoute,
   ApiPublicTestEmailGhlRoute: ApiPublicTestEmailGhlRoute,
   ApiPublicTestProposalFlowRoute: ApiPublicTestProposalFlowRoute,
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,

@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { upgradeEstimate } from "@/lib/estimates.functions";
 import { Button } from "@/components/ui/button";
@@ -26,18 +25,18 @@ function PublicEstimate() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("estimates").select("*").eq("id", id).maybeSingle();
-      if (!data) { setLoading(false); return; }
-      setEstimate(data);
-      if (data.contractor_id) {
-        const { data: c } = await supabase.from("contractors").select("*").eq("id", data.contractor_id).maybeSingle();
-        setContractor(c);
+      try {
+        const res = await fetch(`/api/public/estimate?id=${encodeURIComponent(id)}`);
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setEstimate(json.estimate);
+          setContractor(json.contractor ?? null);
+        }
+      } catch {
+        // fall through to the not-found state
+      } finally {
+        setLoading(false);
       }
-      supabase.from("estimate_views").insert({ estimate_id: id, user_agent: navigator.userAgent });
-      if (data.status === "draft" || data.status === "sent") {
-        supabase.from("estimates").update({ status: "viewed" }).eq("id", id);
-      }
-      setLoading(false);
     })();
   }, [id]);
 

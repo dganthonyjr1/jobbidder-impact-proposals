@@ -7,10 +7,22 @@ import { upgradeEstimateToProposal } from "@/lib/estimates.server";
 export const listEstimates = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
-    const { data, error } = await supabase
+    const { userId } = context;
+
+    // Scope strictly to the signed-in contractor via the admin client, rather
+    // than relying on RLS/token forwarding, so estimates can't leak across
+    // accounts.
+    const { data: contractor } = await supabaseAdmin
+      .from("contractors")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!contractor) return [];
+
+    const { data, error } = await supabaseAdmin
       .from("estimates")
       .select("id, estimate_number, client_name, status, created_at, job_state, trade_type, total_low, total_high, upgraded_to_proposal_id")
+      .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
