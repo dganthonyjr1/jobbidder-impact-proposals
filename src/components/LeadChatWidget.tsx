@@ -1,20 +1,17 @@
 /**
- * LeadChatWidget — World-class AI chatbot for Jobbidder.io (v2)
+ * LeadChatWidget — World-class AI chatbot for Jobbidder.io (v3)
  *
- * Powered by Claude via /api/public/chat.
- *
- * v2 Upgrades:
- * - Full multilingual UI (welcome message + quick replies auto-translate)
- * - Proactive chat trigger (auto-open after 30s with context-aware message)
- * - Context-aware opening message based on current page URL
- * - Lead contact capture before routing to free trial
- * - Objection handling quick replies
- * - Trade detection personalization
- * - Demo CTA for high-volume prospects
- * - Animated typing indicator
- * - Satisfaction prompt after support ticket resolution
- * - Page URL passed to API for context-aware responses
- * - Graceful error handling with localized fallback messages
+ * v3 Fixes:
+ * 1. Welcome quick replies re-render dynamically when language changes
+ * 2. Error fallback uses proper localized FALLBACK_REPLIES
+ * 3. Lead capture posts to /api/public/leads (not support-ticket)
+ * 4. Email validation before accepting email step
+ * 5. Proactive trigger skips if user already has conversation history
+ * 6. Business hours online/offline status (9am–6pm PST Mon–Fri)
+ * 7. URLs in Claude replies rendered as clickable links
+ * 8. Markdown stripped from Claude replies (no raw asterisks)
+ * 9. "New conversation" button in header
+ * 10. French (and all language) detection expanded with more patterns
  *
  * A2P compliance note: this widget does NOT collect phone numbers.
  * The GHL LeadConnector widget in <head> handles A2P verification.
@@ -30,9 +27,9 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
-  Calendar,
   ThumbsUp,
   ThumbsDown,
+  RotateCcw,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -64,7 +61,7 @@ type LeadCaptureStep = "idle" | "name" | "email" | "done";
 
 // ─── Multilingual strings ─────────────────────────────────────────────────────
 
-const I18N: Record<string, Record<string, string>> = {
+const I18N: Record<string, Record<string, string | ((...args: string[]) => string)>> = {
   en: {
     welcome: "Hi! I'm the Jobbidder AI. I can help you get a proposal, learn about pricing, apply as a contractor, or sign in. What brings you here today?",
     proactive_home: "👋 Have a question about Jobbidder? I can help you get a proposal, check pricing, or apply as a contractor.",
@@ -104,6 +101,11 @@ const I18N: Record<string, Record<string, string>> = {
     terms: "Terms",
     header_subtitle: "Proposals · Pricing · Support",
     ticket_submitted: "Support ticket submitted",
+    new_conversation: "New conversation",
+    online: "Online",
+    offline: "Away",
+    email_invalid: "Please enter a valid email address.",
+    error_fallback: "I'm having trouble connecting right now. Please try again or call us at (310) 987-4997.",
   },
   es: {
     welcome: "¡Hola! Soy el AI de Jobbidder. Puedo ayudarte a obtener una propuesta, conocer los precios, aplicar como contratista o iniciar sesión. ¿En qué te puedo ayudar hoy?",
@@ -144,6 +146,11 @@ const I18N: Record<string, Record<string, string>> = {
     terms: "Términos",
     header_subtitle: "Propuestas · Precios · Soporte",
     ticket_submitted: "Ticket de soporte enviado",
+    new_conversation: "Nueva conversación",
+    online: "En línea",
+    offline: "No disponible",
+    email_invalid: "Por favor ingresa un correo electrónico válido.",
+    error_fallback: "Tengo problemas para conectarme ahora mismo. Por favor intenta de nuevo o llámanos al (310) 987-4997.",
   },
   fr: {
     welcome: "Bonjour! Je suis l'IA Jobbidder. Je peux vous aider à obtenir un devis, en savoir plus sur les tarifs, postuler comme entrepreneur ou vous connecter. Que puis-je faire pour vous?",
@@ -184,6 +191,11 @@ const I18N: Record<string, Record<string, string>> = {
     terms: "Conditions",
     header_subtitle: "Devis · Tarifs · Support",
     ticket_submitted: "Ticket de support soumis",
+    new_conversation: "Nouvelle conversation",
+    online: "En ligne",
+    offline: "Absent",
+    email_invalid: "Veuillez entrer une adresse courriel valide.",
+    error_fallback: "J'ai du mal à me connecter en ce moment. Veuillez réessayer ou appelez-nous au (310) 987-4997.",
   },
   pt: {
     welcome: "Olá! Sou o AI do Jobbidder. Posso ajudá-lo a obter uma proposta, conhecer os preços, candidatar-se como contratante ou fazer login. Como posso ajudá-lo hoje?",
@@ -224,6 +236,11 @@ const I18N: Record<string, Record<string, string>> = {
     terms: "Termos",
     header_subtitle: "Propostas · Preços · Suporte",
     ticket_submitted: "Ticket de suporte enviado",
+    new_conversation: "Nova conversa",
+    online: "Online",
+    offline: "Ausente",
+    email_invalid: "Por favor, insira um endereço de e-mail válido.",
+    error_fallback: "Estou com problemas de conexão agora. Por favor tente novamente ou ligue para (310) 987-4997.",
   },
   ht: {
     welcome: "Bonjou! Mwen se AI Jobbidder. Mwen ka ede ou jwenn yon pwopozisyon, aprann sou pri yo, aplike kòm kontraktè, oswa konekte. Ki sa ki mennen ou isit jodi a?",
@@ -264,25 +281,91 @@ const I18N: Record<string, Record<string, string>> = {
     terms: "Tèm",
     header_subtitle: "Pwopozisyon · Pri · Sipò",
     ticket_submitted: "Tiket sipò soumèt",
+    new_conversation: "Nouvo konvèsasyon",
+    online: "Anliy",
+    offline: "Pa disponib",
+    email_invalid: "Tanpri antre yon adrès imèl valid.",
+    error_fallback: "Mwen gen pwoblèm koneksyon kounye a. Tanpri eseye ankò oswa rele nou nan (310) 987-4997.",
   },
 };
 
 function t(lang: string, key: string, ...args: string[]): string {
   const strings = I18N[lang] || I18N.en;
-  const val = strings[key] || I18N.en[key] || key;
+  const val = strings[key] ?? (I18N.en[key] ?? key);
   if (typeof val === "function") return (val as (...a: string[]) => string)(...args);
   return val as string;
 }
 
-// ─── Language detection (client-side) ────────────────────────────────────────
+// ─── Language detection (expanded patterns) ───────────────────────────────────
 
 function detectLangFromText(text: string): string {
   const lower = text.toLowerCase();
-  if (/\b(hola|gracias|cómo|qué|necesito|soy|tengo|quiero|también|español|precio|contratista)\b/.test(lower)) return "es";
-  if (/\b(bonjour|merci|comment|je suis|j'ai|je veux|aussi|français|entrepreneur|devis|tarif)\b/.test(lower)) return "fr";
-  if (/\b(olá|obrigado|como|eu sou|tenho|quero|também|português|contratante|preço)\b/.test(lower)) return "pt";
-  if (/\b(bonjou|mèsi|kijan|mwen|genyen|vle|kreyòl|ayisyen|kontraktè|pri)\b/.test(lower)) return "ht";
+  // Spanish — expanded
+  if (/\b(hola|gracias|cómo|como|qué|que|necesito|soy|tengo|quiero|también|tambien|español|precio|contratista|buenos|días|dias|buenas|tardes|noches|ayuda|quiero|puedo|puede|cuánto|cuanto|cuál|cual)\b/.test(lower)) return "es";
+  // French — expanded (including common contractions and words without accents)
+  if (/\b(bonjour|merci|comment|je suis|j'ai|j'ai|je veux|aussi|français|francais|entrepreneur|devis|tarif|bonsoir|salut|oui|non|est-ce|qu'est|quel|quelle|combien|puis-je|pouvez|voulez|avez|nous|vous|ils|elles|mon|ma|mes|votre|vos|leur|leurs|avec|pour|dans|sur|par|mais|donc|car|parce|quand|comment|pourquoi|qui|que|quoi)\b/.test(lower)) return "fr";
+  // Portuguese — expanded
+  if (/\b(olá|ola|obrigado|obrigada|como|eu sou|tenho|quero|também|tambem|português|portugues|contratante|preço|preco|bom dia|boa tarde|boa noite|sim|não|nao|pode|posso|qual|quanto|onde|quando|porque|para|com|mas|ou|se|que|uma|um|são|sao|está|esta|tem|ter|ser|fazer|ir|vir)\b/.test(lower)) return "pt";
+  // Haitian Creole — expanded
+  if (/\b(bonjou|mèsi|mesi|kijan|mwen|genyen|vle|kreyòl|kreyol|ayisyen|kontraktè|kontrakте|pri|bonswa|wi|non|ka|pou|nan|ak|ou|li|nou|yo|sa|ki|kote|kilè|poukisa|konbyen|eske|men|avèk|avek)\b/.test(lower)) return "ht";
   return "en";
+}
+
+// ─── Business hours check (9am–6pm PST, Mon–Fri) ─────────────────────────────
+
+function isBusinessHours(): boolean {
+  try {
+    const now = new Date();
+    const pst = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+    const day = pst.getDay(); // 0=Sun, 6=Sat
+    const hour = pst.getHours();
+    return day >= 1 && day <= 5 && hour >= 9 && hour < 18;
+  } catch {
+    return true; // default to online if timezone check fails
+  }
+}
+
+// ─── Strip markdown from Claude replies ──────────────────────────────────────
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")   // **bold**
+    .replace(/\*(.+?)\*/g, "$1")        // *italic*
+    .replace(/^#+\s+/gm, "")            // # headings
+    .replace(/^[-*]\s+/gm, "• ")        // bullet points → •
+    .replace(/\[(.+?)\]\((.+?)\)/g, "$1 ($2)") // [text](url) → text (url)
+    .trim();
+}
+
+// ─── Parse URLs in text into clickable segments ───────────────────────────────
+
+function parseTextWithLinks(text: string): React.ReactNode[] {
+  const urlRegex = /(https?:\/\/[^\s)]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      urlRegex.lastIndex = 0;
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noreferrer"
+          className="underline text-primary/80 hover:text-primary break-all"
+        >
+          {part}
+        </a>
+      );
+    }
+    urlRegex.lastIndex = 0;
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+}
+
+// ─── Email validation ─────────────────────────────────────────────────────────
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
 // ─── Context-aware proactive message ─────────────────────────────────────────
@@ -299,10 +382,10 @@ function getProactiveMessage(lang: string): string {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SESSION_KEY = "jb_chat_session";
-const STORAGE_KEY = "jb_chat_messages_v2";
+const STORAGE_KEY = "jb_chat_messages_v3";
 const LANG_KEY = "jb_chat_lang";
 const PROACTIVE_KEY = "jb_proactive_shown";
-const PROACTIVE_DELAY_MS = 30_000; // 30 seconds
+const PROACTIVE_DELAY_MS = 30_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -346,7 +429,21 @@ function saveLang(lang: string) {
   sessionStorage.setItem(LANG_KEY, lang);
 }
 
-// ─── Support ticket ───────────────────────────────────────────────────────────
+function buildWelcomeMessage(lang: string): Message {
+  return {
+    id: "welcome",
+    role: "assistant",
+    text: t(lang, "welcome"),
+    quickReplies: [
+      t(lang, "q_free_estimate"),
+      t(lang, "q_see_pricing"),
+      t(lang, "q_contractor"),
+      t(lang, "q_signin"),
+    ],
+  };
+}
+
+// ─── API calls ────────────────────────────────────────────────────────────────
 
 async function submitSupportTicket(data: {
   name: string;
@@ -366,8 +463,6 @@ async function submitSupportTicket(data: {
   }
 }
 
-// ─── Lead capture ─────────────────────────────────────────────────────────────
-
 async function submitLead(data: {
   name: string;
   email: string;
@@ -375,15 +470,10 @@ async function submitLead(data: {
   pageUrl: string;
 }): Promise<boolean> {
   try {
-    const res = await fetch("/api/public/support-ticket", {
+    const res = await fetch("/api/public/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: data.name,
-        email: data.email,
-        issue: `Lead capture — visited ${data.pageUrl}`,
-        sessionId: data.sessionId,
-      }),
+      body: JSON.stringify(data),
     });
     return res.ok;
   } catch {
@@ -400,6 +490,7 @@ export function LeadChatWidget() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [online, setOnline] = useState(true);
 
   // Escalation state
   const [escalationStep, setEscalationStep] = useState<EscalationStep>("idle");
@@ -423,54 +514,36 @@ export function LeadChatWidget() {
     sessionId.current = getSessionId();
     const savedLang = loadLang();
     setLang(savedLang);
+    setOnline(isBusinessHours());
 
     const saved = loadMessages();
     if (saved.length > 0) {
       setMessages(saved);
     } else {
-      setMessages([
-        {
-          id: "welcome",
-          role: "assistant",
-          text: t(savedLang, "welcome"),
-          quickReplies: [
-            t(savedLang, "q_free_estimate"),
-            t(savedLang, "q_see_pricing"),
-            t(savedLang, "q_contractor"),
-            t(savedLang, "q_signin"),
-          ],
-        },
-      ]);
+      setMessages([buildWelcomeMessage(savedLang)]);
     }
 
-    // Proactive trigger — auto-open after 30s if not already shown this session
+    // Proactive trigger — only if no existing conversation
     const alreadyShown = sessionStorage.getItem(PROACTIVE_KEY);
     if (!alreadyShown) {
       proactiveTimer.current = setTimeout(() => {
-        setOpen((currentOpen) => {
-          if (!currentOpen) {
-            const currentLang = loadLang();
-            const proactiveMsg: Message = {
-              id: uid(),
-              role: "assistant",
-              text: getProactiveMessage(currentLang),
-              quickReplies: [
-                t(currentLang, "q_free_estimate"),
-                t(currentLang, "q_see_pricing"),
-                t(currentLang, "q_contractor"),
-              ],
-            };
-            setMessages((prev) => {
-              // Only add proactive if we're still on the welcome message
-              if (prev.length === 1 && prev[0]?.id === "welcome") {
-                return [...prev, proactiveMsg];
-              }
-              return prev;
-            });
-            setUnread(1);
-            sessionStorage.setItem(PROACTIVE_KEY, "1");
-          }
-          return currentOpen;
+        setMessages((prev) => {
+          // Fix #5: skip if user already has a conversation (more than just welcome)
+          if (prev.length > 1) return prev;
+          const currentLang = loadLang();
+          const proactiveMsg: Message = {
+            id: uid(),
+            role: "assistant",
+            text: getProactiveMessage(currentLang),
+            quickReplies: [
+              t(currentLang, "q_free_estimate"),
+              t(currentLang, "q_see_pricing"),
+              t(currentLang, "q_contractor"),
+            ],
+          };
+          sessionStorage.setItem(PROACTIVE_KEY, "1");
+          setUnread((n) => n + 1);
+          return [...prev, proactiveMsg];
         });
       }, PROACTIVE_DELAY_MS);
     }
@@ -521,7 +594,38 @@ export function LeadChatWidget() {
   const updateLang = useCallback((newLang: string) => {
     setLang(newLang);
     saveLang(newLang);
+    // Fix #1: re-render welcome message quick replies in new language
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === "welcome"
+          ? { ...m, text: t(newLang, "welcome"), quickReplies: [
+              t(newLang, "q_free_estimate"),
+              t(newLang, "q_see_pricing"),
+              t(newLang, "q_contractor"),
+              t(newLang, "q_signin"),
+            ]}
+          : m
+      )
+    );
   }, []);
+
+  // ── New conversation ─────────────────────────────────────────────────────────
+
+  const handleNewConversation = useCallback(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(PROACTIVE_KEY);
+    }
+    sessionId.current = getSessionId();
+    setMessages([buildWelcomeMessage(lang)]);
+    setEscalationStep("idle");
+    setEscalationData({});
+    setLeadCaptureStep("idle");
+    setLeadData({});
+    setSatisfactionGiven(false);
+    setInput("");
+  }, [lang]);
 
   // ── API call ─────────────────────────────────────────────────────────────────
 
@@ -544,34 +648,40 @@ export function LeadChatWidget() {
           }),
         });
 
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const data: ApiResponse = await res.json();
 
-        // Update detected language
-        if (data.detectedLanguage && data.detectedLanguage !== lang) {
-          updateLang(data.detectedLanguage);
+        // Fix #1: update lang from API response and re-render welcome quick replies
+        const newLang = data.detectedLanguage || lang;
+        if (newLang !== lang) {
+          updateLang(newLang);
         }
+
+        const activeLang = newLang;
 
         if (data.escalate && escalationStep === "idle") {
           setEscalationStep("name");
-          addMessage({ role: "assistant", text: t(lang, "escalation_name_prompt") });
+          addMessage({ role: "assistant", text: t(activeLang, "escalation_name_prompt") });
         } else if (data.captureLeadBefore && leadCaptureStep === "idle") {
           setLeadCaptureStep("name");
           setLeadData({ pendingHref: data.ctaLink?.href || "https://www.jobbidder.io/login" });
-          addMessage({ role: "assistant", text: t(lang, "lead_name_prompt") });
+          addMessage({ role: "assistant", text: t(activeLang, "lead_name_prompt") });
         } else {
+          // Fix #8: strip markdown from reply
+          const cleanReply = stripMarkdown(data.reply);
           addMessage({
             role: "assistant",
-            text: data.reply,
+            text: cleanReply,
             quickReplies: data.quickReplies,
             ctaLink: data.ctaLink,
           });
         }
       } catch {
+        // Fix #2: use proper localized error fallback
         addMessage({
           role: "assistant",
-          text: t(lang, "placeholder_default") === "Ask me anything…"
-            ? "I'm having trouble connecting right now. Please try again or call us at (310) 987-4997."
-            : t(lang, "proactive_home"),
+          text: t(lang, "error_fallback"),
           isError: true,
         });
       } finally {
@@ -592,6 +702,11 @@ export function LeadChatWidget() {
         setEscalationStep("email");
         setTimeout(() => addMessage({ role: "assistant", text: t(lang, "escalation_email_prompt", val.split(" ")[0] || val) }), 300);
       } else if (escalationStep === "email") {
+        // Fix #4: validate email
+        if (!isValidEmail(val)) {
+          setTimeout(() => addMessage({ role: "assistant", text: t(lang, "email_invalid"), isError: true }), 200);
+          return;
+        }
         setEscalationData((d) => ({ ...d, email: val }));
         setEscalationStep("issue");
         setTimeout(() => addMessage({ role: "assistant", text: t(lang, "escalation_issue_prompt") }), 300);
@@ -638,10 +753,15 @@ export function LeadChatWidget() {
         setLeadCaptureStep("email");
         setTimeout(() => addMessage({ role: "assistant", text: t(lang, "lead_email_prompt", val.split(" ")[0] || val) }), 300);
       } else if (leadCaptureStep === "email") {
+        // Fix #4: validate email
+        if (!isValidEmail(val)) {
+          setTimeout(() => addMessage({ role: "assistant", text: t(lang, "email_invalid"), isError: true }), 200);
+          return;
+        }
         const finalData = { ...leadData, email: val };
         setLeadCaptureStep("done");
 
-        // Store lead in background (non-blocking)
+        // Fix #3: post to /api/public/leads (not support-ticket)
         submitLead({
           name: finalData.name || "Unknown",
           email: val,
@@ -673,10 +793,10 @@ export function LeadChatWidget() {
       if (!val || loading) return;
       setInput("");
 
-      // Detect language from user input
+      // Fix #10: detect language from user input and update UI immediately
       const detectedLang = detectLangFromText(val);
-      if (detectedLang !== "en" || lang !== "en") {
-        if (detectedLang !== lang) updateLang(detectedLang);
+      if (detectedLang !== "en" && detectedLang !== lang) {
+        updateLang(detectedLang);
       }
 
       if (escalationStep !== "idle" && escalationStep !== "done") {
@@ -786,11 +906,22 @@ export function LeadChatWidget() {
             <p className="text-sm font-bold text-white leading-tight">Jobbidder AI</p>
             <p className="text-xs text-white/70 leading-tight">{t(lang, "header_subtitle")}</p>
           </div>
-          {/* Online indicator */}
+          {/* Fix #6: business hours online/offline indicator */}
           <div className="flex items-center gap-1.5 mr-1">
-            <span className="h-2 w-2 rounded-full bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.8)]" />
-            <span className="text-[10px] text-white/60">Online</span>
+            <span
+              className={`h-2 w-2 rounded-full ${online ? "bg-green-400 shadow-[0_0_4px_rgba(74,222,128,0.8)]" : "bg-yellow-400"}`}
+            />
+            <span className="text-[10px] text-white/60">{t(lang, online ? "online" : "offline")}</span>
           </div>
+          {/* Fix #9: New conversation button */}
+          <button
+            onClick={handleNewConversation}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/20 hover:text-white transition"
+            aria-label={t(lang, "new_conversation")}
+            title={t(lang, "new_conversation")}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
           <button
             onClick={() => setOpen(false)}
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white/70 hover:bg-white/20 hover:text-white transition"
@@ -814,7 +945,8 @@ export function LeadChatWidget() {
                 }`}
               >
                 {m.isError && <AlertCircle className="inline h-3.5 w-3.5 mr-1 -mt-0.5" />}
-                {m.text}
+                {/* Fix #7: render URLs as clickable links */}
+                {parseTextWithLinks(m.text)}
               </div>
 
               {/* CTA Link */}
