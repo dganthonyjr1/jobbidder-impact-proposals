@@ -1,4 +1,28 @@
+import { useEffect } from 'react';
+
 export function JessicaWebCallWidget() {
+  useEffect(() => {
+    // Load LiveKit SDK if not already loaded
+    if (typeof (window as any).LivekitClient === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@1.15.4/dist/livekit-client.umd.min.js';
+      script.defer = true;
+      document.head.appendChild(script);
+      script.onload = () => initJessicaWebCall();
+      script.onerror = () => {
+        console.error('Failed to load LiveKit SDK');
+      };
+    } else {
+      initJessicaWebCall();
+    }
+
+    return () => {
+      // Cleanup on unmount
+      const audioElements = document.querySelectorAll('[data-voiceai-audio="voiceai-jessica-widget"]');
+      audioElements.forEach(el => el.remove());
+    };
+  }, []);
+
   return (
     <>
       <div id="voiceai-jessica-widget" className="voiceai-orb-wrapper-enh">
@@ -139,6 +163,7 @@ export function JessicaWebCallWidget() {
           pointer-events: none;
           transition: opacity 0.3s;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          z-index: 1000;
         }
 
         #voiceai-jessica-widget .voiceai-status-msg-orb.visible {
@@ -163,6 +188,7 @@ export function JessicaWebCallWidget() {
           pointer-events: none;
           transition: opacity 0.3s;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          z-index: 1000;
         }
 
         #voiceai-jessica-widget .voiceai-connection-orb.visible {
@@ -222,228 +248,211 @@ export function JessicaWebCallWidget() {
           50% { opacity: 0.4; } 
         }
       `}</style>
-
-      <script dangerouslySetInnerHTML={{__html: `
-        (function() {
-          'use strict';
-          
-          if (typeof window.LivekitClient === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@1.15.4/dist/livekit-client.umd.min.js';
-            script.defer = true;
-            document.head.appendChild(script);
-            script.onload = () => initJessicaWebCall();
-            script.onerror = () => {
-              console.error('Failed to load LiveKit SDK');
-              showStatusOrb('SDK load failed', 'error');
-            };
-          } else {
-            initJessicaWebCall();
-          }
-          
-          function initJessicaWebCall() {
-            const container = document.getElementById('voiceai-jessica-widget');
-            if (!container) return;
-            
-            const CONFIG = {
-              locationId: 'ycsIlNye8DF4OmblGPj6',
-              agentId: '6a2c5bd995517e66beaeb3d9',
-              apiEndpoint: 'https://services.leadconnectorhq.com/chat-widget/public/start-voice-ai-call/',
-              livekitUrl: 'wss://retell-ai-4ihahnq7.livekit.cloud'
-            };
-            
-            let room = null;
-            let isCallActive = false;
-            const callButton = container.querySelector('.voiceai-orb-enh');
-            const statusContainer = container.querySelector('.voiceai-orb-status-enh');
-            const statusMsg = container.querySelector('.voiceai-status-msg-orb');
-            const connectionIndicator = container.querySelector('.voiceai-connection-orb');
-            
-            function generateUUID() {
-              return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-              });
-            }
-            
-            function generateMongoId() {
-              const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
-              const random = Array.from({length: 16}, () => 
-                Math.floor(Math.random() * 16).toString(16)
-              ).join('');
-              return timestamp + random;
-            }
-            
-            function generateContactId() {
-              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-              let result = '';
-              for (let i = 0; i < 20; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-              }
-              return result;
-            }
-            
-            function updateStatus(active) {
-              if (active) {
-                statusContainer.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.2s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.4s infinite"></span>';
-              } else {
-                statusContainer.innerHTML = '<span class="voiceai-status-dot-enh"></span>';
-              }
-            }
-            
-            function showStatusOrb(message, type) {
-              statusMsg.textContent = message;
-              statusMsg.classList.add('visible');
-              if (type === 'error') {
-                statusMsg.style.background = 'rgba(220, 38, 38, 0.9)';
-              } else {
-                statusMsg.style.background = 'rgba(0, 0, 0, 0.8)';
-              }
-              setTimeout(() => statusMsg.classList.remove('visible'), 3000);
-            }
-            
-            async function startCall() {
-              callButton.disabled = true;
-              callButton.classList.add('loading');
-              showStatusOrb('Initializing call...', '');
-              
-              try {
-                const sessionId = generateUUID();
-                const payload = {
-                  contactId: generateContactId(),
-                  callId: generateMongoId(),
-                  locationId: CONFIG.locationId,
-                  sessionId: sessionId,
-                  sessionFingerprint: generateUUID(),
-                  eventData: {
-                    source: 'direct',
-                    referrer: document.referrer || '',
-                    keyword: '',
-                    adSource: '',
-                    url_params: {},
-                    page: {
-                      url: window.location.href,
-                      title: document.title
-                    },
-                    timestamp: Date.now(),
-                    campaign: '',
-                    contactSessionIds: {
-                      ids: [sessionId]
-                    },
-                    type: 'page-visit',
-                    pageVisitType: 'text-widget',
-                    domain: window.location.hostname,
-                    version: 'v3',
-                    parentId: '',
-                    parentName: '',
-                    fingerprint: null,
-                    documentURL: window.location.href
-                  }
-                };
-                
-                const response = await fetch(CONFIG.apiEndpoint + CONFIG.agentId, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': '*/*'
-                  },
-                  body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                  throw new Error('API error: ' + response.status);
-                }
-                
-                const data = await response.json();
-                
-                showStatusOrb('Connecting...', '');
-                
-                room = new window.LivekitClient.Room({
-                  adaptiveStream: true,
-                  dynacast: true,
-                  audioCaptureDefaults: {
-                    autoGainControl: true,
-                    echoCancellation: true,
-                    noiseSuppression: true
-                  }
-                });
-                
-                room.on(window.LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-                  if (track.kind === window.LivekitClient.Track.Kind.Audio) {
-                    const audioElement = track.attach();
-                    audioElement.setAttribute('data-voiceai-audio', 'voiceai-jessica-widget');
-                    document.body.appendChild(audioElement);
-                  }
-                });
-                
-                room.on(window.LivekitClient.RoomEvent.Disconnected, () => {
-                  if (isCallActive) {
-                    endCall();
-                  }
-                });
-                
-                await room.connect(CONFIG.livekitUrl, data.accessToken);
-                await room.localParticipant.setMicrophoneEnabled(true);
-                
-                isCallActive = true;
-                callButton.classList.remove('loading');
-                callButton.classList.add('active');
-                callButton.setAttribute('aria-label', 'End call');
-                updateStatus(true);
-                callButton.disabled = false;
-                connectionIndicator.classList.add('visible');
-                showStatusOrb('Call connected', '');
-                
-              } catch (error) {
-                console.error('Error starting call:', error);
-                showStatusOrb('Call failed: ' + error.message, 'error');
-                callButton.classList.remove('loading');
-                callButton.disabled = false;
-              }
-            }
-            
-            async function endCall() {
-              callButton.disabled = true;
-              
-              try {
-                if (room) {
-                  await room.disconnect();
-                  room = null;
-                }
-                
-                document.querySelectorAll('[data-voiceai-audio="voiceai-jessica-widget"]').forEach(el => el.remove());
-                
-                isCallActive = false;
-                callButton.classList.remove('active');
-                callButton.setAttribute('aria-label', 'Voice AI Assistant');
-                updateStatus(false);
-                callButton.disabled = false;
-                connectionIndicator.classList.remove('visible');
-                showStatusOrb('Call ended', '');
-                
-              } catch (error) {
-                console.error('Error ending call:', error);
-                callButton.disabled = false;
-              }
-            }
-            
-            callButton.addEventListener('click', () => {
-              if (isCallActive) {
-                endCall();
-              } else {
-                startCall();
-              }
-            });
-            
-            window.addEventListener('beforeunload', () => {
-              if (room) {
-                room.disconnect();
-              }
-            });
-          }
-        })();
-      `}} />
     </>
   );
+}
+
+function initJessicaWebCall() {
+  const container = document.getElementById('voiceai-jessica-widget');
+  if (!container) return;
+
+  const CONFIG = {
+    locationId: 'ycsIlNye8DF4OmblGPj6',
+    agentId: '6a2c5bd995517e66beaeb3d9',
+    apiEndpoint: 'https://services.leadconnectorhq.com/chat-widget/public/start-voice-ai-call/',
+    livekitUrl: 'wss://retell-ai-4ihahnq7.livekit.cloud'
+  };
+
+  let room: any = null;
+  let isCallActive = false;
+  const callButton = container.querySelector('.voiceai-orb-enh') as HTMLButtonElement;
+  const statusContainer = container.querySelector('.voiceai-orb-status-enh') as HTMLElement;
+  const statusMsg = container.querySelector('.voiceai-status-msg-orb') as HTMLElement;
+  const connectionIndicator = container.querySelector('.voiceai-connection-orb') as HTMLElement;
+
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  function generateMongoId() {
+    const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+    const random = Array.from({length: 16}, () => 
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('');
+    return timestamp + random;
+  }
+
+  function generateContactId() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 20; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  function updateStatus(active: boolean) {
+    if (active) {
+      statusContainer.innerHTML = '<span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.2s infinite"></span><span style="width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse-enh 0.8s 0.4s infinite"></span>';
+    } else {
+      statusContainer.innerHTML = '<span class="voiceai-status-dot-enh"></span>';
+    }
+  }
+
+  function showStatusOrb(message: string, type: 'error' | '') {
+    statusMsg.textContent = message;
+    statusMsg.classList.add('visible');
+    if (type === 'error') {
+      statusMsg.style.background = 'rgba(220, 38, 38, 0.9)';
+    } else {
+      statusMsg.style.background = 'rgba(0, 0, 0, 0.8)';
+    }
+    setTimeout(() => statusMsg.classList.remove('visible'), 3000);
+  }
+
+  async function startCall() {
+    callButton.disabled = true;
+    callButton.classList.add('loading');
+    showStatusOrb('Initializing call...', '');
+
+    try {
+      const sessionId = generateUUID();
+      const payload = {
+        contactId: generateContactId(),
+        callId: generateMongoId(),
+        locationId: CONFIG.locationId,
+        sessionId: sessionId,
+        sessionFingerprint: generateUUID(),
+        eventData: {
+          source: 'direct',
+          referrer: document.referrer || '',
+          keyword: '',
+          adSource: '',
+          url_params: {},
+          page: {
+            url: window.location.href,
+            title: document.title
+          },
+          timestamp: Date.now(),
+          campaign: '',
+          contactSessionIds: {
+            ids: [sessionId]
+          },
+          type: 'page-visit',
+          pageVisitType: 'text-widget',
+          domain: window.location.hostname,
+          version: 'v3',
+          parentId: '',
+          parentName: '',
+          fingerprint: null,
+          documentURL: window.location.href
+        }
+      };
+
+      console.log('Calling GHL API:', CONFIG.apiEndpoint + CONFIG.agentId);
+      const response = await fetch(CONFIG.apiEndpoint + CONFIG.agentId, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': '*/*'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Got access token:', data.accessToken ? 'yes' : 'no');
+
+      showStatusOrb('Connecting...', '');
+
+      const LivekitClient = (window as any).LivekitClient;
+      room = new LivekitClient.Room({
+        adaptiveStream: true,
+        dynacast: true,
+        audioCaptureDefaults: {
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+
+      room.on(LivekitClient.RoomEvent.TrackSubscribed, (track: any, publication: any, participant: any) => {
+        if (track.kind === LivekitClient.Track.Kind.Audio) {
+          const audioElement = track.attach();
+          audioElement.setAttribute('data-voiceai-audio', 'voiceai-jessica-widget');
+          document.body.appendChild(audioElement);
+        }
+      });
+
+      room.on(LivekitClient.RoomEvent.Disconnected, () => {
+        if (isCallActive) {
+          endCall();
+        }
+      });
+
+      await room.connect(CONFIG.livekitUrl, data.accessToken);
+      await room.localParticipant.setMicrophoneEnabled(true);
+
+      isCallActive = true;
+      callButton.classList.remove('loading');
+      callButton.classList.add('active');
+      callButton.setAttribute('aria-label', 'End call');
+      updateStatus(true);
+      callButton.disabled = false;
+      connectionIndicator.classList.add('visible');
+      showStatusOrb('Call connected', '');
+
+    } catch (error: any) {
+      console.error('Error starting call:', error);
+      showStatusOrb('Call failed: ' + error.message, 'error');
+      callButton.classList.remove('loading');
+      callButton.disabled = false;
+    }
+  }
+
+  async function endCall() {
+    callButton.disabled = true;
+
+    try {
+      if (room) {
+        await room.disconnect();
+        room = null;
+      }
+
+      document.querySelectorAll('[data-voiceai-audio="voiceai-jessica-widget"]').forEach(el => el.remove());
+
+      isCallActive = false;
+      callButton.classList.remove('active');
+      callButton.setAttribute('aria-label', 'Voice AI Assistant');
+      updateStatus(false);
+      callButton.disabled = false;
+      connectionIndicator.classList.remove('visible');
+      showStatusOrb('Call ended', '');
+
+    } catch (error: any) {
+      console.error('Error ending call:', error);
+      callButton.disabled = false;
+    }
+  }
+
+  callButton.addEventListener('click', () => {
+    if (isCallActive) {
+      endCall();
+    } else {
+      startCall();
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (room) {
+      room.disconnect();
+    }
+  });
 }
