@@ -858,10 +858,10 @@ export function LeadChatWidget() {
 
   return (
     <>
-      {/* ── Launcher button ── */}
+      {/* ── Launcher button — hidden on mobile (Jessica takes over) ── */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95"
+        className="fixed bottom-6 right-6 z-[9997] hidden sm:flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-200 hover:scale-105 hover:shadow-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 active:scale-95"
         aria-label={open ? "Close chat" : "Open Jobbidder AI chat"}
       >
         <span
@@ -883,9 +883,9 @@ export function LeadChatWidget() {
         )}
       </button>
 
-      {/* ── Chat panel ── */}
+      {/* ── Chat panel — hidden on mobile (Jessica takes over) ── */}
       <div
-        className="fixed bottom-24 right-6 z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl transition-all duration-300 origin-bottom-right"
+        className="fixed bottom-24 right-6 z-[9997] hidden sm:flex flex-col rounded-2xl border border-border bg-card shadow-2xl transition-all duration-300 origin-bottom-right"
         style={{
           width: "min(380px, calc(100vw - 1.5rem))",
           maxHeight: "min(560px, calc(100vh - 8rem))",
