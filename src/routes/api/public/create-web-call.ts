@@ -20,11 +20,21 @@ async function createGHLWebCall(agentId: string): Promise<{ url: string; token: 
   const ghlApiToken = process.env.GHL_API_TOKEN;
   const ghlLocationId = process.env.GHL_LOCATION_ID;
 
+  console.log("[WebCall] Creating web call for agent:", agentId);
+  console.log("[WebCall] GHL Token configured:", !!ghlApiToken);
+  console.log("[WebCall] GHL Location ID configured:", !!ghlLocationId);
+
   if (!ghlApiToken || !ghlLocationId) {
     throw new Error("GHL_API_TOKEN or GHL_LOCATION_ID not configured");
   }
 
-  // GHL API endpoint to create a web call session for an agent
+  // Try the standard GHL web call endpoint
+  const payload = {
+    agent_id: agentId,
+  };
+
+  console.log("[WebCall] Calling GHL API with payload:", JSON.stringify(payload));
+
   const response = await fetch("https://rest.gohighlevel.com/v1/agents/web-call", {
     method: "POST",
     headers: {
@@ -32,20 +42,34 @@ async function createGHLWebCall(agentId: string): Promise<{ url: string; token: 
       Authorization: `Bearer ${ghlApiToken}`,
       "X-GHL-Location-Id": ghlLocationId,
     },
-    body: JSON.stringify({
-      agent_id: agentId,
-    }),
+    body: JSON.stringify(payload),
   });
 
+  const responseText = await response.text();
+  console.log(`[WebCall] GHL API response (${response.status}):`, responseText);
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`GHL API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    throw new Error(`GHL API error: ${response.status} - ${responseText}`);
   }
 
-  const data = await response.json();
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    throw new Error(`Failed to parse GHL response: ${responseText}`);
+  }
+
+  console.log("[WebCall] Parsed GHL response:", JSON.stringify(data));
+
+  // GHL returns the web call URL in different possible formats
+  const webCallUrl = data.url || data.web_call_url || data.webCallUrl || data.data?.url;
+  if (!webCallUrl) {
+    throw new Error(`No web call URL in GHL response: ${JSON.stringify(data)}`);
+  }
+
   return {
-    url: data.url || data.web_call_url,
-    token: data.token || data.access_token || "",
+    url: webCallUrl,
+    token: data.token || data.access_token || data.data?.token || "",
   };
 }
 
