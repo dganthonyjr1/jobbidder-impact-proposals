@@ -16,17 +16,21 @@ function cors(extra: Record<string, string> = {}) {
   };
 }
 
-async function getRetellAccessToken(agentId: string): Promise<string> {
-  const retellApiKey = process.env.RETELL_API_KEY;
-  if (!retellApiKey) {
-    throw new Error("RETELL_API_KEY not configured");
+async function createGHLWebCall(agentId: string): Promise<{ url: string; token: string }> {
+  const ghlApiToken = process.env.GHL_API_TOKEN;
+  const ghlLocationId = process.env.GHL_LOCATION_ID;
+
+  if (!ghlApiToken || !ghlLocationId) {
+    throw new Error("GHL_API_TOKEN or GHL_LOCATION_ID not configured");
   }
 
-  const response = await fetch("https://api.retellai.com/create-web-call", {
+  // GHL API endpoint to create a web call session for an agent
+  const response = await fetch("https://rest.gohighlevel.com/v1/agents/web-call", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${retellApiKey}`,
+      Authorization: `Bearer ${ghlApiToken}`,
+      "X-GHL-Location-Id": ghlLocationId,
     },
     body: JSON.stringify({
       agent_id: agentId,
@@ -35,11 +39,14 @@ async function getRetellAccessToken(agentId: string): Promise<string> {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(`Retell API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    throw new Error(`GHL API error: ${response.status} - ${JSON.stringify(errorData)}`);
   }
 
   const data = await response.json();
-  return data.access_token;
+  return {
+    url: data.url || data.web_call_url,
+    token: data.token || data.access_token || "",
+  };
 }
 
 async function logWebCallEvent(
@@ -84,14 +91,17 @@ export const Route = createFileRoute("/api/public/create-web-call")({
         }
 
         try {
-          // Get access token from Retell
-          const accessToken = await getRetellAccessToken(input.agent_id);
+          // Create web call session via GHL API
+          const webCallSession = await createGHLWebCall(input.agent_id);
 
           // Log successful initiation
           await logWebCallEvent(request, input.agent_id, "initiated");
 
           return Response.json(
-            { access_token: accessToken },
+            {
+              url: webCallSession.url,
+              token: webCallSession.token,
+            },
             { status: 200, headers: cors() }
           );
         } catch (error) {
