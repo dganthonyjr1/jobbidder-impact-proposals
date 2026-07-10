@@ -6,8 +6,8 @@ import { sendSms } from "@/lib/twilio.server";
 import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const SITE_NAME = "Jobbidder";
-const SENDER_DOMAIN = "notify.suddenimpactagency.io";
-const FROM_DOMAIN = "suddenimpactagency.io";
+const SENDER_DOMAIN = "notify.jobbidder.io";
+const FROM_DOMAIN = "jobbidder.io";
 
 function genToken(): string {
   const b = new Uint8Array(32);

@@ -8,8 +8,8 @@ import { computeTotals, fmt, generateProposalNumber, type MaterialLine, type Lab
 import { sendSmsViaGHL } from "@/lib/ghl.server";
 
 const SITE_NAME = "Jobbidder";
-const SENDER_DOMAIN = "notify.suddenimpactagency.io";
-const FROM_DOMAIN = "suddenimpactagency.io";
+const SENDER_DOMAIN = "notify.jobbidder.io";
+const FROM_DOMAIN = "jobbidder.io";
 
 const BodySchema = z.object({
   contractorId: z.string().uuid(),
