@@ -78,22 +78,25 @@ export const generateProposal = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => aiInput.parse(input))
   .handler(async ({ data, context }) => {
     const { userId } = context;
-    const { data: contractor } = await supabaseAdmin
+    const { data: contractor, error: contractorError } = await supabaseAdmin
       .from("contractors")
-      .select("id, business_name, license_number, business_address, service_states, tier")
+      .select("id, business_name, license_number, business_address, service_states, subscription_tier")
       .eq("user_id", userId).single();
-    if (!contractor) throw new Error("Contractor profile not found");
+    if (contractorError || !contractor) {
+      console.error("[generateProposal] contractor lookup failed:", contractorError);
+      throw new Error(`Contractor profile not found: ${contractorError?.message ?? "no row for user " + userId}`);
+    }
 
-    // FIX: Enforce 2-proposal limit for free trial (apprentice tier)
-    if (contractor.tier === "apprentice" || !contractor.tier) {
-      const { data: existingProposals, error: countError } = await supabaseAdmin
+    // Enforce free-trial proposal limit (apprentice tier)
+    if (contractor.subscription_tier === "apprentice" || !contractor.subscription_tier) {
+      const { count, error: countError } = await supabaseAdmin
         .from("proposals")
         .select("id", { count: "exact", head: true })
         .eq("contractor_id", contractor.id);
-      
+
       if (countError) console.warn("Failed to count proposals:", countError);
-      const proposalCount = existingProposals?.length ?? 0;
-      
+      const proposalCount = count ?? 0;
+
       if (proposalCount >= 2) {
         throw new Error("Free trial limit reached: 2 proposals maximum. Please upgrade to create more proposals.");
       }
