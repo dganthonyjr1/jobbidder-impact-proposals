@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { checkAndDeductCredit } from "@/lib/credits.server";
 /**
  * ============================================================================
  * JOBBIDDER.IO - PROPRIETARY AND CONFIDENTIAL
@@ -87,20 +88,18 @@ export const generateProposal = createServerFn({ method: "POST" })
       throw new Error(`Contractor profile not found: ${contractorError?.message ?? "no row for user " + userId}`);
     }
 
-    // Enforce free-trial proposal limit (apprentice tier)
-    if (contractor.subscription_tier === "apprentice" || !contractor.subscription_tier) {
-      const { count, error: countError } = await supabaseAdmin
-        .from("proposals")
-        .select("id", { count: "exact", head: true })
-        .eq("contractor_id", contractor.id);
-
-      if (countError) console.warn("Failed to count proposals:", countError);
-      const proposalCount = count ?? 0;
-
-      if (proposalCount >= 2) {
-        throw new Error("Free trial limit reached: 2 proposals maximum. Please upgrade to create more proposals.");
-      }
-    }
+// Single source of truth for plan limits: ledger + packs + overage.
+    // Do NOT hand-count the proposals table here — it can't see purchased packs.
+    const creditResult = await checkAndDeductCredit(
+      contractor.id,
+      contractor.subscription_tier ?? "apprentice",
+      "proposal",
+      `Proposal for ${data.client_name}`,
+    );
+    if (!creditResult.allowed) {
+      throw new Error(creditResult.message ?? "Plan limit reached. Please upgrade or purchase a proposal pack.");
+    }    
+    
 
     const prevailingWage = evaluatePrevailingWage({
       flag: data.prevailing_wage_flag,
