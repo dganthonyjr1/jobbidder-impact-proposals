@@ -164,7 +164,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         // Load contractor for business name and tier
         const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, tier")
+          .select("id, business_name, subscription_tier")
           .eq("id", contractorId)
           .maybeSingle();
         if (contractorError) console.warn("[webhook.ghl] Contractor lookup failed:", contractorError.message);
