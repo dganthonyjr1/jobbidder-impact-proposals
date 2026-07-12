@@ -3,6 +3,7 @@ import { Wand2, Zap, Tag, FileText, Maximize2, Trash2, Palette, Loader, FileChec
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EnhancementOption {
   id: string;
@@ -113,9 +114,17 @@ export function PhotoEnhancementPanel({
     onEnhancementStart?.(enhancementId);
 
     try {
-      const response = await fetch("/api/media/enhance", {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch("/api/public/media-enhance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           mediaId,
           enhancementType: enhancementId,
