@@ -11,20 +11,14 @@ import { z } from "zod";
 const getContractorPipeline = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const [recruitsRes, applicationsRes, voiceRes, docsRes] = await Promise.all([
-    supabaseAdmin.from("contractor_recruits").select("id,name,phone,trade_type,service_niche,service_state,status,created_at").order("created_at", { ascending: false }),
+  const [applicationsRes, docsRes] = await Promise.all([
     supabaseAdmin.from("contractor_applications").select("id,name,phone,email,trade_type,service_area,status,qualification_status,created_at").order("created_at", { ascending: false }),
-    supabaseAdmin.from("voice_prequal_calls").select("phone,call_disposition,created_at"),
     supabaseAdmin.from("contractor_documents").select("contractor_id,status"),
   ]);
 
-  const recruits = recruitsRes.data ?? [];
   const applications = applicationsRes.data ?? [];
-  const voiceCalls = voiceRes.data ?? [];
   const docs = docsRes.data ?? [];
 
-  const calledPhones = new Set(voiceCalls.map((v: any) => v.phone));
-  const appPhones = new Set(applications.map((a: any) => a.phone));
   const docsByContractor: Record<string, any[]> = {};
   for (const d of docs) {
     if (!docsByContractor[d.contractor_id]) docsByContractor[d.contractor_id] = [];
@@ -32,22 +26,10 @@ const getContractorPipeline = createServerFn({ method: "GET" }).handler(async ()
   }
 
   const stages: Record<string, any[]> = {
-    recruited: [],
-    called: [],
     applied: [],
     docs_review: [],
     active: [],
   };
-
-  for (const r of recruits) {
-    if (!appPhones.has(r.phone)) {
-      if (calledPhones.has(r.phone)) {
-        stages.called.push({ ...r, _type: "recruit" });
-      } else {
-        stages.recruited.push({ ...r, _type: "recruit" });
-      }
-    }
-  }
 
   for (const a of applications) {
     const contractorDocs = docsByContractor[a.id] ?? [];
@@ -104,8 +86,6 @@ const moveDeal = createServerFn({ method: "POST" })
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const CONTRACTOR_STAGES = [
-  { key: "recruited", label: "Recruited", color: "bg-slate-100 border-slate-300", dot: "bg-slate-400" },
-  { key: "called", label: "AI Called", color: "bg-blue-50 border-blue-300", dot: "bg-blue-400" },
   { key: "applied", label: "Applied", color: "bg-yellow-50 border-yellow-300", dot: "bg-yellow-400" },
   { key: "docs_review", label: "Docs Review", color: "bg-orange-50 border-orange-300", dot: "bg-orange-400" },
   { key: "active", label: "Active ✓", color: "bg-green-50 border-green-300", dot: "bg-green-500" },
