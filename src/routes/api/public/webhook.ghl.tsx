@@ -187,7 +187,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         }
 
         // FIX: Use "Jobbidder" for free trial, contractor name for paid
-        const isFreeAccount = contractor?.tier === "apprentice" || !contractor?.tier;
+        const isFreeAccount = contractor?.subscription_tier === "apprentice" || !contractor?.subscription_tier;
         const businessName = isFreeAccount ? "Jobbidder" : (contractor?.business_name || "Jobbidder");
 
         // Check for multiple scopes in contact.proposal_line_items
