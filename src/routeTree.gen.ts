@@ -34,7 +34,6 @@ import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
-import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
 import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -53,7 +52,6 @@ import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/pub
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
 import { Route as ApiPublicCreateWebCallRouteImport } from './routes/api/public/create-web-call'
 import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
-import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
 import { Route as ApiPublicContractorPortalSessionRouteImport } from './routes/api/public/contractor-portal-session'
 import { Route as ApiPublicContractorPortalRequestRouteImport } from './routes/api/public/contractor-portal-request'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
@@ -199,12 +197,6 @@ const AuthenticatedContractorVerificationRoute =
     path: '/contractor-verification',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedContractorSearchRoute =
-  AuthenticatedContractorSearchRouteImport.update({
-    id: '/contractor-search',
-    path: '/contractor-search',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
   id: '/affiliate',
   path: '/affiliate',
@@ -298,12 +290,6 @@ const ApiPublicCreateDepositInvoiceRoute =
   ApiPublicCreateDepositInvoiceRouteImport.update({
     id: '/api/public/create-deposit-invoice',
     path: '/api/public/create-deposit-invoice',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicContractorRecruitRoute =
-  ApiPublicContractorRecruitRouteImport.update({
-    id: '/api/public/contractor-recruit',
-    path: '/api/public/contractor-recruit',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicContractorPortalSessionRoute =
@@ -426,7 +412,6 @@ export interface FileRoutesByFullPath {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -446,7 +431,6 @@ export interface FileRoutesByFullPath {
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -490,7 +474,6 @@ export interface FileRoutesByTo {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -510,7 +493,6 @@ export interface FileRoutesByTo {
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -556,7 +538,6 @@ export interface FileRoutesById {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
-  '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
@@ -576,7 +557,6 @@ export interface FileRoutesById {
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
   '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
@@ -622,7 +602,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
@@ -642,7 +621,6 @@ export interface FileRouteTypes {
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
@@ -686,7 +664,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
@@ -706,7 +683,6 @@ export interface FileRouteTypes {
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
@@ -751,7 +727,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/_authenticated/account'
     | '/_authenticated/affiliate'
-    | '/_authenticated/contractor-search'
     | '/_authenticated/contractor-verification'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
@@ -771,7 +746,6 @@ export interface FileRouteTypes {
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
     | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
@@ -826,7 +800,6 @@ export interface RootRouteChildren {
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorPortalRequestRoute: typeof ApiPublicContractorPortalRequestRoute
   ApiPublicContractorPortalSessionRoute: typeof ApiPublicContractorPortalSessionRoute
-  ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
   ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
   ApiPublicCreateWebCallRoute: typeof ApiPublicCreateWebCallRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
@@ -1034,13 +1007,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractorVerificationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/contractor-search': {
-      id: '/_authenticated/contractor-search'
-      path: '/contractor-search'
-      fullPath: '/contractor-search'
-      preLoaderRoute: typeof AuthenticatedContractorSearchRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/affiliate': {
       id: '/_authenticated/affiliate'
       path: '/affiliate'
@@ -1165,13 +1131,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/create-deposit-invoice'
       fullPath: '/api/public/create-deposit-invoice'
       preLoaderRoute: typeof ApiPublicCreateDepositInvoiceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/contractor-recruit': {
-      id: '/api/public/contractor-recruit'
-      path: '/api/public/contractor-recruit'
-      fullPath: '/api/public/contractor-recruit'
-      preLoaderRoute: typeof ApiPublicContractorRecruitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/contractor-portal-session': {
@@ -1306,7 +1265,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
-  AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
@@ -1320,7 +1278,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
-  AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedContractorVerificationRoute:
     AuthenticatedContractorVerificationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1360,7 +1317,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorPortalRequestRoute: ApiPublicContractorPortalRequestRoute,
   ApiPublicContractorPortalSessionRoute: ApiPublicContractorPortalSessionRoute,
-  ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
   ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
   ApiPublicCreateWebCallRoute: ApiPublicCreateWebCallRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
