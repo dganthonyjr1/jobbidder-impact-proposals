@@ -909,6 +909,48 @@ export type Database = {
           },
         ]
       }
+      document_renewal_requests: {
+        Row: {
+          contractor_id: string
+          created_at: string
+          document_id: string
+          document_type: string
+          id: string
+          sms_sent: boolean
+        }
+        Insert: {
+          contractor_id: string
+          created_at?: string
+          document_id: string
+          document_type: string
+          id?: string
+          sms_sent?: boolean
+        }
+        Update: {
+          contractor_id?: string
+          created_at?: string
+          document_id?: string
+          document_type?: string
+          id?: string
+          sms_sent?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_renewal_requests_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_renewal_requests_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "contractor_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       document_traces: {
         Row: {
           account_id: string
