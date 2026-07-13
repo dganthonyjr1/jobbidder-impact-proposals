@@ -70,13 +70,14 @@ export async function checkAndDeductCredit(
 
       // Free actions used up — draw from a purchased proposal pack (FIFO).
       // Packs never expire, so any pack with credits remaining is valid.
-      const { data: packs } = await supabaseAdmin
+      const { data: packs, error: packsError } = await supabaseAdmin
         .from("credit_pack_purchases")
         .select("id, credits_remaining")
         .eq("contractor_id", contractorId)
         .gt("credits_remaining", 0)
         .order("purchased_at", { ascending: true })
         .limit(1);
+      if (packsError) console.error("[checkAndDeductCredit] Credit pack lookup failed:", packsError.message);
 
       if (packs && packs.length > 0) {
         const pack = packs[0];
@@ -130,12 +131,13 @@ export async function checkAndDeductCredit(
     const allotment = MONTHLY_ALLOTMENT[normalizedTier] ?? 500;
 
     // Count credits used this period (not overage)
-    const { data: usedRows } = await supabaseAdmin
+    const { data: usedRows, error: usedRowsError } = await supabaseAdmin
       .from("credit_ledger")
       .select("credits_used")
       .eq("contractor_id", contractorId)
       .eq("billing_period", billingPeriod)
       .eq("is_overage", false);
+    if (usedRowsError) console.error("[checkAndDeductCredit] Credit ledger lookup failed:", usedRowsError.message);
 
     const usedThisPeriod = (usedRows ?? []).reduce((s, r) => s + (r.credits_used ?? 0), 0);
 
@@ -153,13 +155,14 @@ export async function checkAndDeductCredit(
     }
 
     // Over allotment — check add-on packs (FIFO)
-    const { data: packs } = await supabaseAdmin
+    const { data: packs, error: packsError } = await supabaseAdmin
       .from("credit_pack_purchases")
       .select("id, credits_remaining")
       .eq("contractor_id", contractorId)
       .gt("credits_remaining", 0)
       .order("purchased_at", { ascending: true })
       .limit(1);
+    if (packsError) console.error("[checkAndDeductCredit] Credit pack lookup failed:", packsError.message);
 
     if (packs && packs.length > 0) {
       const pack = packs[0];
@@ -203,11 +206,12 @@ export const getCreditUsage = createServerFn({ method: "GET" })
     const { userId } = context;
     const billingPeriod = new Date().toISOString().slice(0, 7);
 
-    const { data: contractor } = await supabaseAdmin
+    const { data: contractor, error: contractorError } = await supabaseAdmin
       .from("contractors")
       .select("id, subscription_tier")
       .eq("user_id", userId)
       .maybeSingle();
+    if (contractorError) console.error("[getCreditUsage] Contractor lookup failed:", contractorError.message);
 
     if (!contractor) return null;
 
@@ -215,11 +219,12 @@ export const getCreditUsage = createServerFn({ method: "GET" })
     const allotment = MONTHLY_ALLOTMENT[tier] ?? 0;
 
     // Credits used this billing period (non-overage)
-    const { data: ledgerRows } = await supabaseAdmin
+    const { data: ledgerRows, error: ledgerRowsError } = await supabaseAdmin
       .from("credit_ledger")
       .select("credits_used, is_overage, action_type")
       .eq("contractor_id", contractor.id)
       .eq("billing_period", billingPeriod);
+    if (ledgerRowsError) console.error("[getCreditUsage] Credit ledger lookup failed:", ledgerRowsError.message);
 
     const rows = ledgerRows ?? [];
     const usedThisPeriod = rows
@@ -237,12 +242,13 @@ export const getCreditUsage = createServerFn({ method: "GET" })
       : null;
 
     // Add-on pack credits remaining
-    const { data: packs } = await supabaseAdmin
+    const { data: packs, error: packsError } = await supabaseAdmin
       .from("credit_pack_purchases")
       .select("pack_name, credits_total, credits_remaining, purchased_at")
       .eq("contractor_id", contractor.id)
       .gt("credits_remaining", 0)
       .order("purchased_at", { ascending: true });
+    if (packsError) console.error("[getCreditUsage] Credit pack lookup failed:", packsError.message);
 
     const packCreditsRemaining = (packs ?? []).reduce((s, p) => s + p.credits_remaining, 0);
 
@@ -263,15 +269,16 @@ export const getCreditHistory = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { userId } = context;
 
-    const { data: contractor } = await supabaseAdmin
+    const { data: contractor, error: contractorError } = await supabaseAdmin
       .from("contractors")
       .select("id, subscription_tier")
       .eq("user_id", userId)
       .maybeSingle();
+    if (contractorError) console.error("[getCreditHistory] Contractor lookup failed:", contractorError.message);
 
     if (!contractor) return { ledger: [], packs: [] };
 
-    const [{ data: ledger }, { data: packs }] = await Promise.all([
+    const [{ data: ledger, error: ledgerError }, { data: packs, error: packsError }] = await Promise.all([
       supabaseAdmin
         .from("credit_ledger")
         .select("id, action_type, credits_used, is_overage, billing_period, description, created_at")
@@ -285,6 +292,8 @@ export const getCreditHistory = createServerFn({ method: "GET" })
         .order("purchased_at", { ascending: false })
         .limit(20),
     ]);
+    if (ledgerError) console.error("[getCreditHistory] Credit ledger lookup failed:", ledgerError.message);
+    if (packsError) console.error("[getCreditHistory] Credit pack lookup failed:", packsError.message);
 
     return {
       ledger: ledger ?? [],

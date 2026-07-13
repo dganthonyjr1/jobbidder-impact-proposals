@@ -70,15 +70,16 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
         const rawLang = body.language ?? body.contact?.language ?? answers.language ?? answers.lang ?? null;
         const lang = resolveLang(rawLang);
 
-        const { data: existing } = await supabaseAdmin
+        const { data: existing, error: existingError } = await supabaseAdmin
           .from("contractor_applications")
           .select("id, name")
           .eq("phone", phone)
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
+        if (existingError) console.error("[webhook.ghl-voice-prequal] Contractor application lookup failed:", existingError.message);
 
-        const { data: callRow } = await supabaseAdmin.from("voice_prequal_calls").insert({
+        const { data: callRow, error: callRowError } = await supabaseAdmin.from("voice_prequal_calls").insert({
           contractor_id:     existing?.id ?? null,
           phone,
           ghl_contact_id:    ghlContactId,
@@ -93,6 +94,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-prequal")({
           raw_payload:       body as any,
           sms_upload_link_sent: false,
         }).select("id").single();
+        if (callRowError) console.error("[webhook.ghl-voice-prequal] Voice prequal call insert failed:", callRowError.message);
 
         if (disposition === "not_qualified") {
           return Response.json({ received: true, action: "none", reason: "not_qualified" });

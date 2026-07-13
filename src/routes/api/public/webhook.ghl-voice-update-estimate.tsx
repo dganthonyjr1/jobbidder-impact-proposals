@@ -75,11 +75,12 @@ export const Route = createFileRoute("/api/public/webhook/ghl-voice-update-estim
         }
 
         // Resolve contractor
-        const { data: contractor } = await supabaseAdmin
+        const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
           .select("id, business_name, email, pricing_settings")
           .eq("slug", slug)
           .maybeSingle();
+        if (contractorError) console.error("[webhook.ghl-voice-update-estimate] Contractor lookup failed:", contractorError.message);
         if (!contractor) {
           return Response.json({ error: "Contractor not found" }, { status: 404 });
         }

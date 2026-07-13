@@ -14,8 +14,9 @@ function genToken() {
 }
 
 async function ensureUnsubToken(email: string): Promise<string | null> {
-  const { data: existing } = await supabaseAdmin
+  const { data: existing, error: existingError } = await supabaseAdmin
     .from("email_unsubscribe_tokens").select("token, used_at").eq("email", email).maybeSingle();
+  if (existingError) console.error("[process-followups] Unsubscribe token lookup failed:", existingError.message);
   if (existing?.used_at) return null;
   if (existing?.token) return existing.token;
   const t = genToken();
@@ -25,8 +26,9 @@ async function ensureUnsubToken(email: string): Promise<string | null> {
 
 async function enqueueFollowupEmail(opts: { to: string; subject: string; html: string; followupId: string }) {
   const normalized = opts.to.toLowerCase().trim();
-  const { data: suppressed } = await supabaseAdmin
+  const { data: suppressed, error: suppressedError } = await supabaseAdmin
     .from("suppressed_emails").select("email").eq("email", normalized).maybeSingle();
+  if (suppressedError) console.error("[process-followups] Suppression check failed:", suppressedError.message);
   if (suppressed) return { skipped: "suppressed" };
   const token = await ensureUnsubToken(normalized);
   if (!token) return { skipped: "unsubscribed" };
@@ -78,11 +80,12 @@ export const Route = createFileRoute("/api/public/hooks/process-followups")({
         const results: any[] = [];
         for (const row of due) {
           // Load proposal + contractor
-          const { data: proposal } = await supabaseAdmin
+          const { data: proposal, error: proposalError } = await supabaseAdmin
             .from("proposals")
             .select("id, client_name, client_email, client_phone, status, contractor_id, proposal_number")
             .eq("id", row.proposal_id)
             .maybeSingle();
+          if (proposalError) console.error("[process-followups] Proposal lookup failed:", proposalError.message);
           if (!proposal) {
             await supabaseAdmin.from("proposal_followups").update({
               status: "cancelled", error: "proposal missing",

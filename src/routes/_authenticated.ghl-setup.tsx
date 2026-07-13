@@ -23,7 +23,8 @@ function GhlSetup() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("contractors").select("id").eq("user_id", user.id).single();
+      const { data, error } = await supabase.from("contractors").select("id").eq("user_id", user.id).single();
+      if (error) console.error("[ghl-setup] Contractor lookup failed:", error.message);
       if (data?.id) {
         setContractorId(data.id);
         setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data.id}`);

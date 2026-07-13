@@ -148,11 +148,12 @@ export const syncContractorToGhl = createServerFn({ method: "POST" })
     if (fetchError) throw new Error("Contractor not found");
 
     // Fetch performance metrics
-    const { data: metrics } = await supabaseAdmin
+    const { data: metrics, error: metricsError } = await supabaseAdmin
       .from("contractor_performance_metrics")
       .select("metrics")
       .eq("contractor_id", contractor_id)
       .single();
+    if (metricsError) console.error("[ghl-integration-enhanced] Performance metrics lookup failed:", metricsError.message);
 
     // Prepare custom fields for GHL
     const custom_fields = {

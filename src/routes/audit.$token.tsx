@@ -32,12 +32,13 @@ const loadAuditData = createServerFn({ method: "POST" })
   .handler(async ({ data: { token } }): Promise<AuditPayload | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: link } = await supabaseAdmin
+    const { data: link, error: linkError } = await supabaseAdmin
       .from("audit_access_links")
       .select("*")
       .eq("token", token)
       .eq("is_active", true)
       .maybeSingle();
+    if (linkError) console.error("[audit] Access link lookup failed:", linkError.message);
 
     if (!link) return null;
 
@@ -49,19 +50,21 @@ const loadAuditData = createServerFn({ method: "POST" })
       .update({ last_accessed_at: new Date().toISOString() })
       .eq("id", link.id);
 
-    const { data: refCode } = await supabaseAdmin
+    const { data: refCode, error: refCodeError } = await supabaseAdmin
       .from("referral_codes")
       .select("code, company_name")
       .eq("user_id", link.user_id)
       .maybeSingle();
+    if (refCodeError) console.error("[audit] Referral code lookup failed:", refCodeError.message);
 
     if (!refCode) return null;
 
-    const { data: transactions } = await supabaseAdmin
+    const { data: transactions, error: transactionsError } = await supabaseAdmin
       .from("affiliate_transactions")
       .select("id, transaction_type, amount_cents, description, billing_period, status, created_at")
       .eq("referrer_code", refCode.code)
       .order("created_at", { ascending: false });
+    if (transactionsError) console.error("[audit] Affiliate transactions lookup failed:", transactionsError.message);
 
     return {
       companyName: refCode.company_name,

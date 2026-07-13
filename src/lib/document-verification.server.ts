@@ -223,11 +223,12 @@ export const requestDocumentRenewal = createServerFn({ method: "POST" })
       smsSent = true;
     } catch { /* log but don't throw — renewal request still recorded */ }
 
-    const { data: renewal } = await supabaseAdmin
+    const { data: renewal, error: renewalError } = await supabaseAdmin
       .from("document_renewal_requests")
       .insert({ document_id, contractor_id, document_type: doc.document_type, sms_sent: smsSent })
       .select()
       .single();
+    if (renewalError) console.error("[requestDocumentRenewal] Renewal insert failed:", renewalError.message);
 
     await supabaseAdmin.from("compliance_audit_trail").insert({
       contractor_id,
@@ -247,10 +248,11 @@ export const getContractorComplianceStatus = createServerFn({ method: "GET" })
     z.object({ contractor_id: z.string().uuid() }).parse(input)
   )
   .handler(async ({ input }) => {
-    const { data: documents } = await supabaseAdmin
+    const { data: documents, error: documentsError } = await supabaseAdmin
       .from("contractor_documents")
       .select("*")
       .eq("contractor_id", input.contractor_id);
+    if (documentsError) console.error("[getContractorComplianceStatus] Documents lookup failed:", documentsError.message);
 
     const docs = documents ?? [];
     const verified = docs.filter((d) => d.status === "verified").length;

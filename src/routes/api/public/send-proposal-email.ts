@@ -80,11 +80,12 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
             : null
 
         // 2. Suppression check
-        const { data: suppressed } = await supabaseAdmin
+        const { data: suppressed, error: suppressedError } = await supabaseAdmin
           .from('suppressed_emails')
           .select('email')
           .eq('email', normalizedEmail)
           .maybeSingle()
+        if (suppressedError) console.error('[send-proposal-email] Suppression check failed:', suppressedError.message)
         if (suppressed) {
           return Response.json({ success: false, reason: 'email_suppressed' }, { status: 200 })
         }

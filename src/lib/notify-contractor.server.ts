@@ -16,11 +16,12 @@ function genToken(): string {
 }
 
 async function ensureUnsubToken(email: string): Promise<string | null> {
-  const { data: existing } = await supabaseAdmin
+  const { data: existing, error: existingError } = await supabaseAdmin
     .from("email_unsubscribe_tokens")
     .select("token, used_at")
     .eq("email", email)
     .maybeSingle();
+  if (existingError) console.error("[notify-contractor] Unsubscribe token lookup failed:", existingError.message);
   if (existing?.used_at) return null;
   if (existing?.token) return existing.token;
   const t = genToken();
@@ -37,11 +38,12 @@ export async function notifyContractorOfDecision(opts: {
   signerName?: string | null;
   declineReason?: string | null;
 }) {
-  const { data: proposal } = await supabaseAdmin
+  const { data: proposal, error: proposalError } = await supabaseAdmin
     .from("proposals")
     .select("id, client_name, client_phone, job_address, proposal_number, contractor_id, selected_tier")
     .eq("id", opts.proposalId)
     .maybeSingle();
+  if (proposalError) console.error("[notify-contractor] Proposal lookup failed:", proposalError.message);
   if (!proposal) return { ok: false, error: "proposal not found" };
 
   const { data: contractor } = proposal.contractor_id

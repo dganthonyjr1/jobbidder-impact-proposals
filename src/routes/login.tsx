@@ -20,18 +20,20 @@ const recordReferralSignup = createServerFn({ method: "POST" })
   .handler(async ({ data: { referralCode, referredEmail, referredCompany } }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: codeRow } = await supabaseAdmin
+    const { data: codeRow, error: codeRowError } = await supabaseAdmin
       .from("referral_codes")
       .select("code")
       .eq("code", referralCode)
       .maybeSingle();
+    if (codeRowError) console.error("[login] Referral code lookup failed:", codeRowError.message);
     if (!codeRow) return { ok: false };
 
-    const { data: existing } = await supabaseAdmin
+    const { data: existing, error: existingError } = await supabaseAdmin
       .from("referrals")
       .select("id")
       .eq("referred_email", referredEmail.toLowerCase())
       .maybeSingle();
+    if (existingError) console.error("[login] Existing referral lookup failed:", existingError.message);
     if (existing) return { ok: true, duplicate: true };
 
     await supabaseAdmin.from("referrals").insert({

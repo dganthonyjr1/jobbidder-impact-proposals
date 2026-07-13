@@ -47,10 +47,11 @@ const getContractorPipeline = createServerFn({ method: "GET" }).handler(async ()
 
 const getClientDeals = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("client_deals")
     .select("*")
     .order("created_at", { ascending: false });
+  if (error) console.error("[getClientDeals] Client deals lookup failed:", error.message);
   return data ?? [];
 });
 

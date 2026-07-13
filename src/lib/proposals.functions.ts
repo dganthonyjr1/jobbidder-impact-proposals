@@ -225,10 +225,11 @@ export const listProposals = createServerFn({ method: "GET" })
     if (rows.length === 0) return [];
 
     const ids = rows.map((r) => r.id);
-    const { data: views } = await supabase
+    const { data: views, error: viewsError } = await supabase
       .from("proposal_views")
       .select("proposal_id, viewed_at")
       .in("proposal_id", ids);
+    if (viewsError) console.error("[proposals.functions] Proposal views lookup failed:", viewsError.message);
     const stats = new Map<string, { count: number; last: string | null }>();
     for (const v of views ?? []) {
       const s = stats.get(v.proposal_id) || { count: 0, last: null };

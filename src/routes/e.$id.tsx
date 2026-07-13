@@ -26,11 +26,13 @@ function PublicEstimate() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("estimates").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await supabase.from("estimates").select("*").eq("id", id).maybeSingle();
+      if (error) console.error("[estimate view] Estimate lookup failed:", error.message);
       if (!data) { setLoading(false); return; }
       setEstimate(data);
       if (data.contractor_id) {
-        const { data: c } = await supabase.from("contractors").select("*").eq("id", data.contractor_id).maybeSingle();
+        const { data: c, error: contractorError } = await supabase.from("contractors").select("*").eq("id", data.contractor_id).maybeSingle();
+        if (contractorError) console.error("[estimate view] Contractor lookup failed:", contractorError.message);
         setContractor(c);
       }
       supabase.from("estimate_views").insert({ estimate_id: id, user_agent: navigator.userAgent });
