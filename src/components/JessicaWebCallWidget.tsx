@@ -11,26 +11,29 @@ const CONFIG = {
   colorDark: '#5B21B6',
 };
 
-// Prevent multiple initializations
-let isJessicaInitialized = false;
+// Load the LiveKit SDK at most once across mounts; init runs on every mount.
+let jessicaScriptPromise: Promise<void> | null = null;
 
-export function JessicaWebCallWidget() {
-  useEffect(() => {
-    // Only initialize once
-    if (isJessicaInitialized) return;
-    isJessicaInitialized = true;
-
-    // Load LiveKit SDK if not already loaded
-    if (typeof (window as any).LivekitClient === 'undefined') {
+function loadLivekitScript(): Promise<void> {
+  if (typeof (window as any).LivekitClient !== 'undefined') return Promise.resolve();
+  if (!jessicaScriptPromise) {
+    jessicaScriptPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/livekit-client@1.15.4/dist/livekit-client.umd.min.js';
       script.defer = true;
       document.head.appendChild(script);
-      script.onload = () => initJessicaWebCall();
-      script.onerror = () => console.error('[Jessica] Failed to load LiveKit SDK');
-    } else {
-      initJessicaWebCall();
-    }
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load LiveKit SDK'));
+    });
+  }
+  return jessicaScriptPromise;
+}
+
+export function JessicaWebCallWidget() {
+  useEffect(() => {
+    loadLivekitScript()
+      .then(() => initJessicaWebCall())
+      .catch(err => console.error('[Jessica]', err));
 
     return () => {
       document.querySelectorAll('[data-jessica-audio]').forEach(el => el.remove());
