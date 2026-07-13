@@ -76,7 +76,8 @@ function SettingsPage() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from("contractors").select("*").eq("user_id", user.id).single();
+      const { data, error } = await supabase.from("contractors").select("*").eq("user_id", user.id).single();
+      if (error) console.error("[settings] Contractor lookup failed:", error.message);
       setContractor(data);
       setLoading(false);
       setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data?.id}`);
@@ -87,11 +88,12 @@ function SettingsPage() {
       }
 
       if (data?.id) {
-        const { data: existingIntegration } = await supabase
+        const { data: existingIntegration, error: integrationError } = await supabase
           .from("contractor_integrations")
           .select("*")
           .eq("contractor_id", data.id)
           .maybeSingle();
+        if (integrationError) console.error("[settings] Integration lookup failed:", integrationError.message);
         setIntegration(existingIntegration || { contractor_id: data.id, contractor_sms_notifications_enabled: false });
       }
     })();

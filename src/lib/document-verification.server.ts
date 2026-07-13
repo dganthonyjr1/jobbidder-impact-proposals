@@ -41,8 +41,8 @@ export const uploadContractorDocument = createServerFn({ method: "POST" })
       file_mime: z.string().default("application/octet-stream"),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
-    const { contractor_id, document_type, file_url, file_name, file_mime } = input;
+  .handler(async ({ data }) => {
+    const { contractor_id, document_type, file_url, file_name, file_mime } = data;
 
     // Run AI extraction immediately (sync for simplicity; move to queue for scale)
     const extracted = await extractDocumentData(file_url, document_type as DocType, file_mime);
@@ -71,15 +71,19 @@ export const uploadContractorDocument = createServerFn({ method: "POST" })
 
     if (error) throw new Error(`Document upload failed: ${error.message}`);
 
-    // Compliance audit trail
-    await supabaseAdmin.from("compliance_audit_trail").insert({
-      contractor_id,
-      event_type: "document_uploaded",
-      document_type: document_type === "liability_insurance" ? "coi" : document_type as any,
-      status: status as any,
-      details: { document_id: doc.id, ai_confidence: extracted.confidence, file_name },
-      created_by: contractor_id,
-    }).catch(() => { /* audit trail is best-effort */ });
+    // Compliance audit trail (best-effort — don't fail the upload over a logging error)
+    try {
+      await supabaseAdmin.from("compliance_audit_trail").insert({
+        contractor_id,
+        event_type: "document_uploaded",
+        document_type: document_type === "liability_insurance" ? "coi" : document_type as any,
+        status: status as any,
+        details: { document_id: doc.id, ai_confidence: extracted.confidence, file_name },
+        created_by: contractor_id,
+      });
+    } catch (auditError) {
+      console.error("[uploadContractorDocument] Audit trail insert failed:", auditError);
+    }
 
     return {
       document_id: doc.id,
@@ -100,8 +104,8 @@ export const adminVerifyDocument = createServerFn({ method: "POST" })
       notes: z.string().optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
-    const { document_id, verdict, notes } = input;
+  .handler(async ({ data }) => {
+    const { document_id, verdict, notes } = data;
 
     const { data: doc, error: fetchErr } = await supabaseAdmin
       .from("contractor_documents")
@@ -122,14 +126,18 @@ export const adminVerifyDocument = createServerFn({ method: "POST" })
 
     if (error) throw new Error("Failed to update document");
 
-    await supabaseAdmin.from("compliance_audit_trail").insert({
-      contractor_id: doc.contractor_id,
-      event_type: verdict === "verified" ? "document_verified" : "compliance_check_failed",
-      document_type: doc.document_type as any,
-      status: verdict as any,
-      details: { document_id, notes },
-      created_by: doc.contractor_id,
-    }).catch(() => {});
+    try {
+      await supabaseAdmin.from("compliance_audit_trail").insert({
+        contractor_id: doc.contractor_id,
+        event_type: verdict === "verified" ? "document_verified" : "compliance_check_failed",
+        document_type: doc.document_type as any,
+        status: verdict as any,
+        details: { document_id, notes },
+        created_by: doc.contractor_id,
+      });
+    } catch (auditError) {
+      console.error("[adminVerifyDocument] Audit trail insert failed:", auditError);
+    }
 
     return { document_id, status: verdict };
   });
@@ -139,15 +147,15 @@ export const getContractorDocuments = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ contractor_id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data }) => {
     const { data: documents, error } = await supabaseAdmin
       .from("contractor_documents")
       .select("*")
-      .eq("contractor_id", input.contractor_id)
+      .eq("contractor_id", data.contractor_id)
       .order("created_at", { ascending: false });
 
     if (error) throw new Error("Failed to fetch documents");
-    return { contractor_id: input.contractor_id, documents: documents ?? [], total: documents?.length ?? 0 };
+    return { contractor_id: data.contractor_id, documents: documents ?? [], total: documents?.length ?? 0 };
   });
 
 /** Get all contractors with their compliance roll-up for the admin dashboard. */
@@ -174,8 +182,8 @@ export const checkExpiringDocuments = createServerFn({ method: "GET" })
       days_until_expiration: z.number().default(30),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
-    const threshold = new Date(Date.now() + input.days_until_expiration * 86_400_000).toISOString();
+  .handler(async ({ data }) => {
+    const threshold = new Date(Date.now() + data.days_until_expiration * 86_400_000).toISOString();
 
     let q = supabaseAdmin
       .from("contractor_documents")
@@ -184,7 +192,7 @@ export const checkExpiringDocuments = createServerFn({ method: "GET" })
       .gte("expiration_date", new Date().toISOString())
       .order("expiration_date", { ascending: true });
 
-    if (input.contractor_id) q = q.eq("contractor_id", input.contractor_id);
+    if (data.contractor_id) q = q.eq("contractor_id", data.contractor_id);
 
     const { data: documents, error } = await q;
     if (error) throw new Error("Failed to fetch expiring documents");
@@ -199,8 +207,8 @@ export const requestDocumentRenewal = createServerFn({ method: "POST" })
       contractor_id: z.string().uuid(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
-    const { document_id, contractor_id } = input;
+  .handler(async ({ data }) => {
+    const { document_id, contractor_id } = data;
 
     const [{ data: doc }, { data: contractor }] = await Promise.all([
       supabaseAdmin.from("contractor_documents").select("document_type").eq("id", document_id).single(),
@@ -215,28 +223,38 @@ export const requestDocumentRenewal = createServerFn({ method: "POST" })
 
     let smsSent = false;
     try {
-      await sendSmsViaGHL(
-        { apiToken: process.env.GHL_API_TOKEN!, locationId: process.env.GHL_LOCATION_ID!, fromNumber: process.env.GHL_FROM_NUMBER! },
-        contractor.phone,
-        msg
-      );
-      smsSent = true;
+      const smsResult = await sendSmsViaGHL({
+        to: contractor.phone,
+        body: msg,
+        contactName: contractor.name ?? undefined,
+        credentials: {
+          apiToken: process.env.GHL_API_TOKEN,
+          locationId: process.env.GHL_LOCATION_ID,
+          fromNumber: process.env.GHL_FROM_NUMBER,
+        },
+      });
+      smsSent = smsResult.ok;
     } catch { /* log but don't throw — renewal request still recorded */ }
 
-    const { data: renewal } = await supabaseAdmin
+    const { data: renewal, error: renewalError } = await supabaseAdmin
       .from("document_renewal_requests")
       .insert({ document_id, contractor_id, document_type: doc.document_type, sms_sent: smsSent })
       .select()
       .single();
+    if (renewalError) console.error("[requestDocumentRenewal] Renewal insert failed:", renewalError.message);
 
-    await supabaseAdmin.from("compliance_audit_trail").insert({
-      contractor_id,
-      event_type: "renewal_requested",
-      document_type: doc.document_type as any,
-      status: "pending",
-      details: { document_id, renewal_id: renewal?.id, sms_sent: smsSent },
-      created_by: contractor_id,
-    }).catch(() => {});
+    try {
+      await supabaseAdmin.from("compliance_audit_trail").insert({
+        contractor_id,
+        event_type: "renewal_requested",
+        document_type: doc.document_type as any,
+        status: "pending",
+        details: { document_id, renewal_id: renewal?.id, sms_sent: smsSent },
+        created_by: contractor_id,
+      });
+    } catch (auditError) {
+      console.error("[requestDocumentRenewal] Audit trail insert failed:", auditError);
+    }
 
     return { renewal_id: renewal?.id, sms_sent: smsSent, message: "Renewal request created" };
   });
@@ -246,11 +264,12 @@ export const getContractorComplianceStatus = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ contractor_id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
-    const { data: documents } = await supabaseAdmin
+  .handler(async ({ data }) => {
+    const { data: documents, error: documentsError } = await supabaseAdmin
       .from("contractor_documents")
       .select("*")
-      .eq("contractor_id", input.contractor_id);
+      .eq("contractor_id", data.contractor_id);
+    if (documentsError) console.error("[getContractorComplianceStatus] Documents lookup failed:", documentsError.message);
 
     const docs = documents ?? [];
     const verified = docs.filter((d) => d.status === "verified").length;
@@ -264,5 +283,5 @@ export const getContractorComplianceStatus = createServerFn({ method: "GET" })
       : pending > 0                 ? "pending"
       : "compliant";
 
-    return { contractor_id: input.contractor_id, overall_status, verified, expired, invalid, pending, total: docs.length, documents: docs };
+    return { contractor_id: data.contractor_id, overall_status, verified, expired, invalid, pending, total: docs.length, documents: docs };
   });

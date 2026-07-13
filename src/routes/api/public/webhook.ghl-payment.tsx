@@ -83,12 +83,13 @@ function tierFromPayload(p: any): string | null {
 async function processAffiliateCommission(payerEmail: string, tier: string) {
   try {
     // Find a pending/active referral for this email
-    const { data: referral } = await supabaseAdmin
+    const { data: referral, error: referralError } = await supabaseAdmin
       .from("referrals")
       .select("id, referrer_code, referred_company, status, activated_at")
       .eq("referred_email", payerEmail)
       .neq("status", "churned")
       .maybeSingle();
+    if (referralError) console.error("[webhook.ghl-payment] Referral lookup failed:", referralError.message);
 
     if (!referral) return;
 
@@ -99,13 +100,14 @@ async function processAffiliateCommission(payerEmail: string, tier: string) {
     if (commission === 0) return; // apprentice is free, no commission
 
     // Idempotency: don't write duplicate commission for same referral + period
-    const { data: dupe } = await supabaseAdmin
+    const { data: dupe, error: dupeError } = await supabaseAdmin
       .from("affiliate_transactions")
       .select("id")
       .eq("referral_id", referral.id)
       .eq("billing_period", billingPeriod)
       .eq("transaction_type", "commission_earned")
       .maybeSingle();
+    if (dupeError) console.error("[webhook.ghl-payment] Duplicate commission check failed:", dupeError.message);
 
     if (dupe) return;
 
@@ -223,12 +225,13 @@ export const Route = createFileRoute("/api/public/webhook/ghl-payment")({
         // ── Credit pack purchase ──────────────────────────────────────────────
         const pack = packFromPayload(body);
         if (pack) {
-          const { data: pkContractor } = await supabaseAdmin
+          const { data: pkContractor, error: pkContractorError } = await supabaseAdmin
             .from("contractors")
             .select("id")
             .or(`email.eq.${lower},billing_email.eq.${lower}`)
             .limit(1)
             .maybeSingle();
+          if (pkContractorError) console.error("[webhook.ghl-payment] Contractor lookup failed:", pkContractorError.message);
           if (!pkContractor) {
             console.log("[ghl-payment] credit pack: no contractor for", lower);
             return Response.json({ ok: true, matched: false, type: "credit_pack" });

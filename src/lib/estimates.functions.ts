@@ -25,7 +25,8 @@ export const upgradeEstimate = createServerFn({ method: "POST" })
 export const getEstimateContractor = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ estimateId: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
-    const { data: est } = await supabaseAdmin
+    const { data: est, error } = await supabaseAdmin
       .from("estimates").select("contractor_id").eq("id", data.estimateId).maybeSingle();
+    if (error) console.error("[getEstimateContractor] Estimate lookup failed:", error.message);
     return { contractor_id: est?.contractor_id ?? null };
   });

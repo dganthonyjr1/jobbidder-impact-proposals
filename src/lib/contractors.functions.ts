@@ -49,11 +49,12 @@ export const getContractorProposals = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ contractor_id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: rows } = await supabaseAdmin
+    const { data: rows, error } = await supabaseAdmin
       .from("contractor_applications")
       .select("id, name, status, created_at")
       .eq("id", data.contractor_id)
       .limit(1);
+    if (error) console.error("[getContractorProposals] Lookup failed:", error.message);
     return rows ?? [];
   });
 
@@ -61,14 +62,16 @@ export const getContractorStats = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ contractor_id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: docs } = await supabaseAdmin
+    const { data: docs, error: docsError } = await supabaseAdmin
       .from("contractor_documents")
       .select("id, status, document_type")
       .eq("contractor_id", data.contractor_id);
-    const { data: events } = await supabaseAdmin
+    if (docsError) console.error("[getContractorStats] Documents lookup failed:", docsError.message);
+    const { data: events, error: eventsError } = await supabaseAdmin
       .from("contractor_performance_events")
       .select("id, event_type")
       .eq("contractor_id", data.contractor_id);
+    if (eventsError) console.error("[getContractorStats] Performance events lookup failed:", eventsError.message);
     return {
       documents_uploaded: docs?.length ?? 0,
       documents_verified: docs?.filter((d: any) => d.status === "verified" || d.status === "ai_extracted").length ?? 0,

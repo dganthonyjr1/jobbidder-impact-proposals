@@ -13,11 +13,12 @@ export type ContractorBranding = {
 export const getBrandingBySlug = createServerFn({ method: "GET" })
   .inputValidator((slug: string) => slug)
   .handler(async ({ data: slug }): Promise<ContractorBranding | null> => {
-    const { data: c } = await supabaseAdmin
+    const { data: c, error } = await supabaseAdmin
       .from("contractors")
       .select("slug, business_name, logo_url, primary_color, subscription_tier")
       .eq("slug", slug)
       .maybeSingle();
+    if (error) console.error("[getBrandingBySlug] Contractor lookup failed:", error.message);
 
     if (!c || !WHITE_LABEL_TIERS.includes(c.subscription_tier ?? "")) return null;
 

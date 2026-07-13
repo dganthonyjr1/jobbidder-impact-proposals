@@ -3,6 +3,7 @@ import { Upload, X, Image as ImageIcon, Video as VideoIcon, Loader } from "lucid
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MediaUploadProps {
   onUploadComplete?: (mediaId: string, url: string) => void;
@@ -83,9 +84,17 @@ export function MediaUpload({
       const fileType = file.type.startsWith("image/") ? "photo" : "video";
 
       // Get upload URL from server
-      const response = await fetch("/api/media/upload", {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const response = await fetch("/api/public/media-upload", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           fileName: file.name,
           fileType,

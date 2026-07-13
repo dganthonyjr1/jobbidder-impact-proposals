@@ -38,11 +38,12 @@ export const Route = createFileRoute("/api/public/intake-submit")({
         }
 
         // Fetch contractor including pricing_settings
-        const { data: contractor } = await supabaseAdmin
+        const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
           .select("id, business_name, email, pricing_settings, subscription_tier, license_number, business_address, service_states")
           .eq("slug", input.slug)
           .maybeSingle();
+        if (contractorError) console.error("[intake-submit] Contractor lookup failed:", contractorError.message);
         if (!contractor) return Response.json({ success: false, error: "Contractor not found" }, { status: 404 });
 
         // Credit check — block if limit reached

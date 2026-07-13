@@ -91,10 +91,11 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
         const supabase: SupabaseClient<any, any> = createClient(supabaseUrl, supabaseServiceKey)
 
         // 1. Check rate-limit cooldown and read queue config
-        const { data: state } = await supabase
+        const { data: state, error: stateError } = await supabase
           .from('email_send_state')
           .select('retry_after_until, batch_size, send_delay_ms, auth_email_ttl_minutes, transactional_email_ttl_minutes')
           .single()
+        if (stateError) console.error('[email-queue] Failed to load send state:', stateError.message)
 
         if (state?.retry_after_until && new Date(state.retry_after_until) > new Date()) {
           return Response.json({ skipped: true, reason: 'rate_limited' })
@@ -196,12 +197,13 @@ export const Route = createFileRoute("/lovable/email/queue/process")({
 
             // Guard: skip if another worker already sent this message (VT expired race)
             if (payload.message_id) {
-              const { data: alreadySent } = await supabase
+              const { data: alreadySent, error: alreadySentError } = await supabase
                 .from('email_send_log')
                 .select('id')
                 .eq('message_id', payload.message_id)
                 .eq('status', 'sent')
                 .maybeSingle()
+              if (alreadySentError) console.error('[email-queue] Duplicate-send check failed:', alreadySentError.message)
 
               if (alreadySent) {
                 console.warn('Skipping duplicate send (already sent)', {

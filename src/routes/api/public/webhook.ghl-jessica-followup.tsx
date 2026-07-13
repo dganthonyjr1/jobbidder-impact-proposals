@@ -86,12 +86,13 @@ export const Route = createFileRoute("/api/public/webhook/ghl-jessica-followup")
         }
 
         // Idempotency: skip if this contact is already queued or called
-        const { data: existing } = await supabaseAdmin
+        const { data: existing, error: existingError } = await supabaseAdmin
           .from("jessica_followup_queue")
           .select("id, status")
           .eq("contact_id", contactId)
           .in("status", ["pending", "called"])
           .maybeSingle();
+        if (existingError) console.error("[webhook.ghl-jessica-followup] Idempotency check failed:", existingError.message);
 
         if (existing) {
           return Response.json(

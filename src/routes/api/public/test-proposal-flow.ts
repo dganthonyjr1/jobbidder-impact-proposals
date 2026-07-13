@@ -117,10 +117,11 @@ export const Route = createFileRoute("/api/public/test-proposal-flow")({
         const anthropicKey = (contractor.anthropic_api_key && contractor.anthropic_api_key.trim()) || process.env.ANTHROPIC_API_KEY || "";
         if (!anthropicKey) return Response.json({ error: "No Anthropic API key configured" }, { status: 500 });
 
-        const { data: catalogRaw } = await supabaseAdmin
+        const { data: catalogRaw, error: catalogError } = await supabaseAdmin
           .from("materials")
           .select("id, category, name, description, unit, sia_price, retail_price, restricted_states")
           .order("sort_order", { ascending: true });
+        if (catalogError) console.error("[test-proposal-flow] Materials catalog lookup failed:", catalogError.message);
         const catalog = (catalogRaw || []).filter((m: any) => !(m.restricted_states || []).includes(input.jobState));
 
         const job = {
@@ -174,11 +175,13 @@ export const Route = createFileRoute("/api/public/test-proposal-flow")({
         // 4. Send email (queued via existing pipeline)
         const normalizedEmail = input.recipientEmail.toLowerCase().trim();
         let emailResult: any = { skipped: false };
-        const { data: suppressed } = await supabaseAdmin.from("suppressed_emails").select("email").eq("email", normalizedEmail).maybeSingle();
+        const { data: suppressed, error: suppressedError } = await supabaseAdmin.from("suppressed_emails").select("email").eq("email", normalizedEmail).maybeSingle();
+        if (suppressedError) console.error("[test-proposal-flow] Suppression check failed:", suppressedError.message);
         if (suppressed) {
           emailResult = { skipped: "suppressed" };
         } else {
-          const { data: existing } = await supabaseAdmin.from("email_unsubscribe_tokens").select("token, used_at").eq("email", normalizedEmail).maybeSingle();
+          const { data: existing, error: existingError } = await supabaseAdmin.from("email_unsubscribe_tokens").select("token, used_at").eq("email", normalizedEmail).maybeSingle();
+          if (existingError) console.error("[test-proposal-flow] Unsubscribe token lookup failed:", existingError.message);
           let unsubToken: string;
           if (existing?.token && !existing.used_at) unsubToken = existing.token;
           else if (existing?.used_at) { emailResult = { skipped: "unsubscribed" }; }

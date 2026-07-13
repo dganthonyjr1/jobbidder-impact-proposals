@@ -34,24 +34,28 @@ import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
-import { Route as AuthenticatedContractorSearchRouteImport } from './routes/_authenticated.contractor-search'
 import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicTestSmsGhlRouteImport } from './routes/api/public/test-sms-ghl'
 import { Route as ApiPublicTestProposalFlowRouteImport } from './routes/api/public/test-proposal-flow'
 import { Route as ApiPublicTestEmailGhlRouteImport } from './routes/api/public/test-email-ghl'
+import { Route as ApiPublicSupportTicketRouteImport } from './routes/api/public/support-ticket'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
+import { Route as ApiPublicMediaUploadRouteImport } from './routes/api/public/media-upload'
+import { Route as ApiPublicMediaEnhanceRouteImport } from './routes/api/public/media-enhance'
+import { Route as ApiPublicLeadsRouteImport } from './routes/api/public/leads'
 import { Route as ApiPublicIntakeSubmitRouteImport } from './routes/api/public/intake-submit'
 import { Route as ApiPublicDefaultContractorRouteImport } from './routes/api/public/default-contractor'
 import { Route as ApiPublicDeclineProposalRouteImport } from './routes/api/public/decline-proposal'
+import { Route as ApiPublicCreateWebCallRouteImport } from './routes/api/public/create-web-call'
 import { Route as ApiPublicCreateDepositInvoiceRouteImport } from './routes/api/public/create-deposit-invoice'
-import { Route as ApiPublicContractorRecruitRouteImport } from './routes/api/public/contractor-recruit'
 import { Route as ApiPublicContractorPortalSessionRouteImport } from './routes/api/public/contractor-portal-session'
 import { Route as ApiPublicContractorPortalRequestRouteImport } from './routes/api/public/contractor-portal-request'
 import { Route as ApiPublicContractorApplyRouteImport } from './routes/api/public/contractor-apply'
+import { Route as ApiPublicChatRouteImport } from './routes/api/public/chat'
 import { Route as ApiPublicAcceptProposalRouteImport } from './routes/api/public/accept-proposal'
 import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authenticated.proposals.new'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -193,12 +197,6 @@ const AuthenticatedContractorVerificationRoute =
     path: '/contractor-verification',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedContractorSearchRoute =
-  AuthenticatedContractorSearchRouteImport.update({
-    id: '/contractor-search',
-    path: '/contractor-search',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
   id: '/affiliate',
   path: '/affiliate',
@@ -230,6 +228,11 @@ const ApiPublicTestEmailGhlRoute = ApiPublicTestEmailGhlRouteImport.update({
   path: '/api/public/test-email-ghl',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSupportTicketRoute = ApiPublicSupportTicketRouteImport.update({
+  id: '/api/public/support-ticket',
+  path: '/api/public/support-ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSendProposalEmailRoute =
   ApiPublicSendProposalEmailRouteImport.update({
     id: '/api/public/send-proposal-email',
@@ -244,6 +247,21 @@ const ApiPublicProposalViewRoute = ApiPublicProposalViewRouteImport.update({
 const ApiPublicProposalRoute = ApiPublicProposalRouteImport.update({
   id: '/api/public/proposal',
   path: '/api/public/proposal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMediaUploadRoute = ApiPublicMediaUploadRouteImport.update({
+  id: '/api/public/media-upload',
+  path: '/api/public/media-upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMediaEnhanceRoute = ApiPublicMediaEnhanceRouteImport.update({
+  id: '/api/public/media-enhance',
+  path: '/api/public/media-enhance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicLeadsRoute = ApiPublicLeadsRouteImport.update({
+  id: '/api/public/leads',
+  path: '/api/public/leads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicIntakeSubmitRoute = ApiPublicIntakeSubmitRouteImport.update({
@@ -263,16 +281,15 @@ const ApiPublicDeclineProposalRoute =
     path: '/api/public/decline-proposal',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCreateWebCallRoute = ApiPublicCreateWebCallRouteImport.update({
+  id: '/api/public/create-web-call',
+  path: '/api/public/create-web-call',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCreateDepositInvoiceRoute =
   ApiPublicCreateDepositInvoiceRouteImport.update({
     id: '/api/public/create-deposit-invoice',
     path: '/api/public/create-deposit-invoice',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicContractorRecruitRoute =
-  ApiPublicContractorRecruitRouteImport.update({
-    id: '/api/public/contractor-recruit',
-    path: '/api/public/contractor-recruit',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicContractorPortalSessionRoute =
@@ -293,6 +310,11 @@ const ApiPublicContractorApplyRoute =
     path: '/api/public/contractor-apply',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicChatRoute = ApiPublicChatRouteImport.update({
+  id: '/api/public/chat',
+  path: '/api/public/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAcceptProposalRoute = ApiPublicAcceptProposalRouteImport.update({
   id: '/api/public/accept-proposal',
   path: '/api/public/accept-proposal',
@@ -390,7 +412,6 @@ export interface FileRoutesByFullPath {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -406,17 +427,22 @@ export interface FileRoutesByFullPath {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
+  '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -448,7 +474,6 @@ export interface FileRoutesByTo {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
-  '/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
@@ -464,17 +489,22 @@ export interface FileRoutesByTo {
   '/proposal/$id': typeof ProposalIdRoute
   '/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
+  '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -508,7 +538,6 @@ export interface FileRoutesById {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
-  '/_authenticated/contractor-search': typeof AuthenticatedContractorSearchRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
@@ -524,17 +553,22 @@ export interface FileRoutesById {
   '/proposal/$id': typeof ProposalIdRoute
   '/_authenticated/proposals/new': typeof AuthenticatedProposalsNewRoute
   '/api/public/accept-proposal': typeof ApiPublicAcceptProposalRoute
+  '/api/public/chat': typeof ApiPublicChatRoute
   '/api/public/contractor-apply': typeof ApiPublicContractorApplyRoute
   '/api/public/contractor-portal-request': typeof ApiPublicContractorPortalRequestRoute
   '/api/public/contractor-portal-session': typeof ApiPublicContractorPortalSessionRoute
-  '/api/public/contractor-recruit': typeof ApiPublicContractorRecruitRoute
   '/api/public/create-deposit-invoice': typeof ApiPublicCreateDepositInvoiceRoute
+  '/api/public/create-web-call': typeof ApiPublicCreateWebCallRoute
   '/api/public/decline-proposal': typeof ApiPublicDeclineProposalRoute
   '/api/public/default-contractor': typeof ApiPublicDefaultContractorRoute
   '/api/public/intake-submit': typeof ApiPublicIntakeSubmitRoute
+  '/api/public/leads': typeof ApiPublicLeadsRoute
+  '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
+  '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
+  '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
   '/api/public/test-email-ghl': typeof ApiPublicTestEmailGhlRoute
   '/api/public/test-proposal-flow': typeof ApiPublicTestProposalFlowRoute
   '/api/public/test-sms-ghl': typeof ApiPublicTestSmsGhlRoute
@@ -568,7 +602,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
@@ -584,17 +617,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
+    | '/api/public/media-enhance'
+    | '/api/public/media-upload'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -626,7 +664,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
-    | '/contractor-search'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
@@ -642,17 +679,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
+    | '/api/public/media-enhance'
+    | '/api/public/media-upload'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -685,7 +727,6 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/_authenticated/account'
     | '/_authenticated/affiliate'
-    | '/_authenticated/contractor-search'
     | '/_authenticated/contractor-verification'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
@@ -701,17 +742,22 @@ export interface FileRouteTypes {
     | '/proposal/$id'
     | '/_authenticated/proposals/new'
     | '/api/public/accept-proposal'
+    | '/api/public/chat'
     | '/api/public/contractor-apply'
     | '/api/public/contractor-portal-request'
     | '/api/public/contractor-portal-session'
-    | '/api/public/contractor-recruit'
     | '/api/public/create-deposit-invoice'
+    | '/api/public/create-web-call'
     | '/api/public/decline-proposal'
     | '/api/public/default-contractor'
     | '/api/public/intake-submit'
+    | '/api/public/leads'
+    | '/api/public/media-enhance'
+    | '/api/public/media-upload'
     | '/api/public/proposal'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
+    | '/api/public/support-ticket'
     | '/api/public/test-email-ghl'
     | '/api/public/test-proposal-flow'
     | '/api/public/test-sms-ghl'
@@ -750,17 +796,22 @@ export interface RootRouteChildren {
   PIdRoute: typeof PIdRoute
   ProposalIdRoute: typeof ProposalIdRoute
   ApiPublicAcceptProposalRoute: typeof ApiPublicAcceptProposalRoute
+  ApiPublicChatRoute: typeof ApiPublicChatRoute
   ApiPublicContractorApplyRoute: typeof ApiPublicContractorApplyRoute
   ApiPublicContractorPortalRequestRoute: typeof ApiPublicContractorPortalRequestRoute
   ApiPublicContractorPortalSessionRoute: typeof ApiPublicContractorPortalSessionRoute
-  ApiPublicContractorRecruitRoute: typeof ApiPublicContractorRecruitRoute
   ApiPublicCreateDepositInvoiceRoute: typeof ApiPublicCreateDepositInvoiceRoute
+  ApiPublicCreateWebCallRoute: typeof ApiPublicCreateWebCallRoute
   ApiPublicDeclineProposalRoute: typeof ApiPublicDeclineProposalRoute
   ApiPublicDefaultContractorRoute: typeof ApiPublicDefaultContractorRoute
   ApiPublicIntakeSubmitRoute: typeof ApiPublicIntakeSubmitRoute
+  ApiPublicLeadsRoute: typeof ApiPublicLeadsRoute
+  ApiPublicMediaEnhanceRoute: typeof ApiPublicMediaEnhanceRoute
+  ApiPublicMediaUploadRoute: typeof ApiPublicMediaUploadRoute
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
+  ApiPublicSupportTicketRoute: typeof ApiPublicSupportTicketRoute
   ApiPublicTestEmailGhlRoute: typeof ApiPublicTestEmailGhlRoute
   ApiPublicTestProposalFlowRoute: typeof ApiPublicTestProposalFlowRoute
   ApiPublicTestSmsGhlRoute: typeof ApiPublicTestSmsGhlRoute
@@ -956,13 +1007,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContractorVerificationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/contractor-search': {
-      id: '/_authenticated/contractor-search'
-      path: '/contractor-search'
-      fullPath: '/contractor-search'
-      preLoaderRoute: typeof AuthenticatedContractorSearchRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/affiliate': {
       id: '/_authenticated/affiliate'
       path: '/affiliate'
@@ -1005,6 +1049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTestEmailGhlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/support-ticket': {
+      id: '/api/public/support-ticket'
+      path: '/api/public/support-ticket'
+      fullPath: '/api/public/support-ticket'
+      preLoaderRoute: typeof ApiPublicSupportTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/send-proposal-email': {
       id: '/api/public/send-proposal-email'
       path: '/api/public/send-proposal-email'
@@ -1024,6 +1075,27 @@ declare module '@tanstack/react-router' {
       path: '/api/public/proposal'
       fullPath: '/api/public/proposal'
       preLoaderRoute: typeof ApiPublicProposalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media-upload': {
+      id: '/api/public/media-upload'
+      path: '/api/public/media-upload'
+      fullPath: '/api/public/media-upload'
+      preLoaderRoute: typeof ApiPublicMediaUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/media-enhance': {
+      id: '/api/public/media-enhance'
+      path: '/api/public/media-enhance'
+      fullPath: '/api/public/media-enhance'
+      preLoaderRoute: typeof ApiPublicMediaEnhanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/leads': {
+      id: '/api/public/leads'
+      path: '/api/public/leads'
+      fullPath: '/api/public/leads'
+      preLoaderRoute: typeof ApiPublicLeadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/intake-submit': {
@@ -1047,18 +1119,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDeclineProposalRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/create-web-call': {
+      id: '/api/public/create-web-call'
+      path: '/api/public/create-web-call'
+      fullPath: '/api/public/create-web-call'
+      preLoaderRoute: typeof ApiPublicCreateWebCallRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/create-deposit-invoice': {
       id: '/api/public/create-deposit-invoice'
       path: '/api/public/create-deposit-invoice'
       fullPath: '/api/public/create-deposit-invoice'
       preLoaderRoute: typeof ApiPublicCreateDepositInvoiceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/contractor-recruit': {
-      id: '/api/public/contractor-recruit'
-      path: '/api/public/contractor-recruit'
-      fullPath: '/api/public/contractor-recruit'
-      preLoaderRoute: typeof ApiPublicContractorRecruitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/contractor-portal-session': {
@@ -1080,6 +1152,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/contractor-apply'
       fullPath: '/api/public/contractor-apply'
       preLoaderRoute: typeof ApiPublicContractorApplyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/chat': {
+      id: '/api/public/chat'
+      path: '/api/public/chat'
+      fullPath: '/api/public/chat'
+      preLoaderRoute: typeof ApiPublicChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/accept-proposal': {
@@ -1186,7 +1265,6 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
-  AuthenticatedContractorSearchRoute: typeof AuthenticatedContractorSearchRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
@@ -1200,7 +1278,6 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
-  AuthenticatedContractorSearchRoute: AuthenticatedContractorSearchRoute,
   AuthenticatedContractorVerificationRoute:
     AuthenticatedContractorVerificationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1236,17 +1313,22 @@ const rootRouteChildren: RootRouteChildren = {
   PIdRoute: PIdRoute,
   ProposalIdRoute: ProposalIdRoute,
   ApiPublicAcceptProposalRoute: ApiPublicAcceptProposalRoute,
+  ApiPublicChatRoute: ApiPublicChatRoute,
   ApiPublicContractorApplyRoute: ApiPublicContractorApplyRoute,
   ApiPublicContractorPortalRequestRoute: ApiPublicContractorPortalRequestRoute,
   ApiPublicContractorPortalSessionRoute: ApiPublicContractorPortalSessionRoute,
-  ApiPublicContractorRecruitRoute: ApiPublicContractorRecruitRoute,
   ApiPublicCreateDepositInvoiceRoute: ApiPublicCreateDepositInvoiceRoute,
+  ApiPublicCreateWebCallRoute: ApiPublicCreateWebCallRoute,
   ApiPublicDeclineProposalRoute: ApiPublicDeclineProposalRoute,
   ApiPublicDefaultContractorRoute: ApiPublicDefaultContractorRoute,
   ApiPublicIntakeSubmitRoute: ApiPublicIntakeSubmitRoute,
+  ApiPublicLeadsRoute: ApiPublicLeadsRoute,
+  ApiPublicMediaEnhanceRoute: ApiPublicMediaEnhanceRoute,
+  ApiPublicMediaUploadRoute: ApiPublicMediaUploadRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
+  ApiPublicSupportTicketRoute: ApiPublicSupportTicketRoute,
   ApiPublicTestEmailGhlRoute: ApiPublicTestEmailGhlRoute,
   ApiPublicTestProposalFlowRoute: ApiPublicTestProposalFlowRoute,
   ApiPublicTestSmsGhlRoute: ApiPublicTestSmsGhlRoute,

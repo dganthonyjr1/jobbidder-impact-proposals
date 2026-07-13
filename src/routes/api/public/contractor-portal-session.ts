@@ -39,21 +39,23 @@ export const Route = createFileRoute("/api/public/contractor-portal-session")({
           return Response.json({ ok: false, error: "This link is invalid or has expired. Request a new one." }, { status: 401, headers: cors() });
         }
 
-        const { data: app } = await supabaseAdmin
+        const { data: app, error: appError } = await supabaseAdmin
           .from("contractor_applications")
           .select("id, name, email, phone, trade_type, service_area, license_number, license_url, insurance_url, status, qualification_status, qualification_score, qualification_percentage, created_at")
           .eq("id", verified.applicationId)
           .maybeSingle();
+        if (appError) console.error("[contractor-portal-session] Application lookup failed:", appError.message);
 
         if (!app) {
           return Response.json({ ok: false, error: "Application not found." }, { status: 404, headers: cors() });
         }
 
-        const { data: docs } = await supabaseAdmin
+        const { data: docs, error: docsError } = await supabaseAdmin
           .from("contractor_documents")
           .select("id, document_type, status, expiration_date, file_name, created_at")
           .eq("contractor_id", app.id)
           .order("created_at", { ascending: false });
+        if (docsError) console.error("[contractor-portal-session] Documents lookup failed:", docsError.message);
 
         return Response.json({ ok: true, contractor: app, documents: docs ?? [] }, { headers: cors() });
       },

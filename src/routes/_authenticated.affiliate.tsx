@@ -86,11 +86,12 @@ const getAffiliateData = createServerFn({ method: "POST" })
       const shortId = userId.replace(/-/g, "").slice(0, 6).toUpperCase();
       const newCode = `JB-${shortId}`;
       const companyName = email.split("@")[1]?.split(".")[0] ?? "Partner";
-      const { data: created } = await supabaseAdmin
+      const { data: created, error: createdError } = await supabaseAdmin
         .from("referral_codes")
         .insert({ user_id: userId, company_name: companyName, code: newCode })
         .select()
         .single();
+      if (createdError) console.error("[affiliate] Referral code creation failed:", createdError.message);
       code = created;
     }
 

@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateProposalNumber } from "@/lib/pricing";
 import { sendEmailViaGHL, sendSmsViaGHL, type GhlCredentials } from "@/lib/ghl.server";
@@ -164,7 +165,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         // Load contractor for business name and tier
         const { data: contractor, error: contractorError } = await supabaseAdmin
           .from("contractors")
-          .select("id, business_name, subscription_tier")
+          .select("id, business_name, subscription_tier, sms_from_number, email_from")
           .eq("id", contractorId)
           .maybeSingle();
         if (contractorError) console.warn("[webhook.ghl] Contractor lookup failed:", contractorError.message);
@@ -177,7 +178,7 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         } else {
           const { data: ghlIntegration, error: ghlError } = await supabaseAdmin
             .from("contractor_integrations")
-            .select("ghl_api_token, ghl_location_id, sms_from_number, email_from")
+            .select("ghl_api_token, ghl_location_id, ghl_from_number, ghl_from_email")
             .eq("contractor_id", contractorId)
             .maybeSingle();
           if (ghlError) console.warn("[webhook.ghl] GHL integration lookup failed:", ghlError.message);
