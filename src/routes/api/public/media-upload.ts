@@ -50,7 +50,7 @@ export const Route = createFileRoute("/api/public/media-upload")({
 
           // Create signed upload URL
           const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
-            .from("media")
+            .from("job-photos")
             .createSignedUploadUrl(storagePath);
 
           if (signedUrlError) {
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/public/media-upload")({
               mime_type: data.mimeType,
               file_size: data.fileSize,
               storage_path: storagePath,
-              storage_url: `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${storagePath}`,
+              storage_url: `${process.env.SUPABASE_URL}/storage/v1/object/public/job-photos/${storagePath}`,
               proposal_id: data.proposalId || null,
               contractor_id: data.contractorId || null,
               title: data.title || null,

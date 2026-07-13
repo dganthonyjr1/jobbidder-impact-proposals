@@ -32,7 +32,7 @@ export const uploadMediaFile = createServerFn({ method: "POST" })
 
     // Create signed URL for client-side upload
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from("media")
+      .from("job-photos")
       .createSignedUploadUrl(storagePath);
 
     if (signedUrlError) throw new Error(signedUrlError.message);
@@ -47,7 +47,7 @@ export const uploadMediaFile = createServerFn({ method: "POST" })
         mime_type: data.mimeType,
         file_size: data.fileSize,
         storage_path: storagePath,
-        storage_url: `${process.env.SUPABASE_URL}/storage/v1/object/public/media/${storagePath}`,
+        storage_url: `${process.env.SUPABASE_URL}/storage/v1/object/public/job-photos/${storagePath}`,
         proposal_id: data.proposalId || null,
         contractor_id: data.contractorId || null,
         title: data.title || null,
@@ -195,7 +195,7 @@ export const deleteMedia = createServerFn({ method: "POST" })
 
     // Delete from storage
     const { error: storageError } = await supabase.storage
-      .from("media")
+      .from("job-photos")
       .remove([media.storage_path]);
 
     if (storageError) throw new Error(storageError.message);
