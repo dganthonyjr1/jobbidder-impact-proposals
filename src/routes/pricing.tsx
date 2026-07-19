@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Building2, Phone, ShieldCheck, Kanban, Zap, Users, PackagePlus } from "lucide-react";
+import { Check, Sparkles, Building2, Phone, ShieldCheck, Kanban, Zap, PackagePlus, ImagePlus } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/pricing")({
@@ -102,7 +102,7 @@ const tiers = [
 ];
 
 const enterpriseFeatures = [
-  { icon: Users, label: "AI contractor recruitment pipeline", detail: "Auto-recruit, track, and stage contractors from lead to active" },
+  { icon: ImagePlus, label: "AI-powered photo & video library", detail: "Auto-tag, enhance, and organize job site media by proposal or contractor" },
   { icon: Phone, label: "Automated voice pre-qualification", detail: "AI calls prospects up to 15 min, qualifies them, routes to pipeline" },
   { icon: ShieldCheck, label: "License & insurance verification", detail: "AI extracts and validates credentials from uploaded documents" },
   { icon: Kanban, label: "Kanban pipeline CRM", detail: "Replace HubSpot — full deal + contractor pipeline in one view" },

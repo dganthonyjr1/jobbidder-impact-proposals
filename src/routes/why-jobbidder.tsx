@@ -348,7 +348,7 @@ function WhyJobbidderPage() {
               Look at what they're <span className="text-destructive">charging you every 3 years</span>
             </h2>
             <p className="mt-4 text-muted-foreground font-medium leading-relaxed">
-              NetSuite alone costs nearly <strong>$90,000 over 3 years</strong> — and still can't recruit a single contractor or verify one license.
+              NetSuite alone costs nearly <strong>$90,000 over 3 years</strong> — and still can't verify a single license or run a voice prequal call.
               HubSpot adds another $29,000 for generic CRM that was never built for field operations.
               <br /><br />
               These tools were designed for Fortune 500 companies. You're paying enterprise prices for a fraction of the value.
@@ -445,7 +445,7 @@ function WhyJobbidderPage() {
             Cancel both. <span className="text-gradient-sia">Jobbidder does it all</span> — built for contractors.
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground font-medium">
-            NetSuite and HubSpot are generic enterprise tools that cost a fortune and require months to configure. Jobbidder was purpose-built for contractor recruitment, verification, and pipeline management — and it's live in 60 seconds.
+            NetSuite and HubSpot are generic enterprise tools that cost a fortune and require months to configure. Jobbidder was purpose-built for contractor verification, pipeline management, and AI-powered proposals — and it's live in 60 seconds.
           </p>
         </div>
 
@@ -506,7 +506,7 @@ function WhyJobbidderPage() {
         <div className="grid sm:grid-cols-3 gap-6">
           <div className="rounded-2xl border border-border bg-card p-6">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">NetSuite does</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">General ERP, accounting, inventory — none of it built for recruiting or managing field contractors. You need a consultant just to set it up.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">General ERP, accounting, inventory — none of it built for managing field contractors or their credentials. You need a consultant just to set it up.</p>
             <p className="mt-4 text-2xl font-bold text-destructive">$30,000+/yr</p>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
@@ -516,7 +516,7 @@ function WhyJobbidderPage() {
           </div>
           <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6">
             <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Jobbidder Enterprise does</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">Recruits, prequals, verifies, pipelines, and closes contractors — all automated. Plus AI proposals, wholesale pricing, SMS outreach, and a full Kanban CRM. Purpose-built for your business.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Prequals, verifies, pipelines, and manages contractors — all automated. Plus AI proposals, wholesale pricing, SMS outreach, and a full Kanban CRM. Purpose-built for your business.</p>
             <p className="mt-4 text-2xl font-bold text-primary">$3,500/mo — replaces both</p>
           </div>
         </div>
