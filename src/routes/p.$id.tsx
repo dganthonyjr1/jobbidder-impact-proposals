@@ -9,6 +9,7 @@ import { Check, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, Ch
 import { SignatureModal } from "@/components/SignatureModal";
 import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
+import { normalizeTradeKey } from "@/lib/trade-playbooks";
 import { getT, fmtMoney } from "@/lib/proposal-i18n";
 import { toast } from "sonner";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
@@ -69,7 +70,7 @@ function PublicProposal() {
           // Compute the accepted total from stored materials/labor
           const mats = (json.proposal.materials || []) as MaterialLine[];
           const labs = (json.proposal.labor || []) as LaborLine[];
-          const t = computeTotals(mats, labs, loadedTier, Number(json.proposal.tax_rate) || 0.07);
+          const t = computeTotals(mats, labs, loadedTier, Number(json.proposal.tax_rate) || 0.07, Number(json.proposal.overhead_percentage) || 0);
           setAcceptedTotal(t.grandTotal);
           setDepositAmount(Math.round(t.grandTotal * 0.5 * 100) / 100);
         }
@@ -140,7 +141,7 @@ function PublicProposal() {
 
   const materials = (proposal.materials || []) as MaterialLine[];
   const labor = (proposal.labor || []) as LaborLine[];
-  const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07);
+  const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07, Number(proposal.overhead_percentage) || 0);
   const brand = contractor?.primary_color || "#EC4899";
   const t = getT(proposal.language);
   const fmt = (n: number) => fmtMoney(n, proposal.language);
@@ -258,7 +259,7 @@ function PublicProposal() {
         {!isNarrative && (
           <div className="grid md:grid-cols-3 gap-4 mb-10">
             {(["good", "better", "best"] as const).map((t) => {
-              const tt = computeTotals(materials, labor, t, Number(proposal.tax_rate) || 0.07);
+              const tt = computeTotals(materials, labor, t, Number(proposal.tax_rate) || 0.07, Number(proposal.overhead_percentage) || 0);
               const active = tier === t;
               return (
                 <button
@@ -437,6 +438,21 @@ function PublicProposal() {
             <div className="space-y-2 text-sm">
               <Row label={t.materials} v={fmt(totals.materialsSia)} />
               <Row label={t.labor} v={fmt(totals.laborTotal)} />
+              {isOwner ? (
+                <OverheadRow
+                  proposalId={id}
+                  label={proposal.overhead_label || "General Conditions / Non-Measured Costs"}
+                  percentage={Number(proposal.overhead_percentage) || 0}
+                  amount={totals.overheadAmount}
+                  tradeType={proposal.trade_type}
+                  fmt={fmt}
+                  onSaved={(pct) => setProposal((p: any) => ({ ...p, overhead_percentage: pct, overhead_source: "manual_override" }))}
+                />
+              ) : (
+                totals.overheadAmount > 0 && (
+                  <Row label={proposal.overhead_label || "General Conditions / Non-Measured Costs"} v={fmt(totals.overheadAmount)} />
+                )
+              )}
               <Row label={t.tax(taxPct)} v={fmt(totals.tax)} />
               <div className="border-t border-border pt-3 mt-3 flex justify-between items-center">
                 <span className="font-display text-lg">{t.total}</span>
@@ -619,4 +635,92 @@ function PublicProposal() {
 
 function Row({ label, v }: { label: string; v: string }) {
   return <div className="flex justify-between"><span className="text-muted-foreground">{label}</span><span className="font-mono">{v}</span></div>;
+}
+
+function OverheadRow({
+  proposalId,
+  label,
+  percentage,
+  amount,
+  tradeType,
+  fmt,
+  onSaved,
+}: {
+  proposalId: string;
+  label: string;
+  percentage: number;
+  amount: number;
+  tradeType: string | null;
+  fmt: (n: number) => string;
+  onSaved: (pct: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(percentage));
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const pct = Math.max(0, Number(value) || 0);
+    setSaving(true);
+    try {
+      const source = pct === 0 ? "none" : "manual_override";
+      const { error } = await supabase
+        .from("proposals")
+        .update({ overhead_percentage: pct, overhead_source: source })
+        .eq("id", proposalId);
+      if (error) { toast.error(error.message); return; }
+
+      // Persist as the new default for this trade so future proposals start here.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: contractorRow } = await supabase
+          .from("contractors")
+          .select("id, pricing_settings")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (contractorRow) {
+          const tradeKey = normalizeTradeKey(tradeType);
+          const settings = { ...(contractorRow.pricing_settings as any || {}) };
+          settings.trades = { ...(settings.trades || {}) };
+          settings.trades[tradeKey] = { ...(settings.trades[tradeKey] || {}), overhead: pct };
+          await supabase.from("contractors").update({ pricing_settings: settings }).eq("id", contractorRow.id);
+        }
+      }
+
+      onSaved(pct);
+      setEditing(false);
+      toast.success("Overhead updated");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex justify-between items-center">
+        <button type="button" onClick={() => { setValue(String(percentage)); setEditing(true); }} className="text-muted-foreground hover:text-foreground underline decoration-dotted underline-offset-2">
+          {label} ({percentage}%)
+        </button>
+        <span className="font-mono">{fmt(amount)}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex justify-between items-center gap-2">
+      <span className="text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          min={0}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="h-7 w-20 text-right font-mono text-sm"
+          disabled={saving}
+        />
+        <span className="text-muted-foreground text-xs">%</span>
+        <Button size="sm" className="h-7 px-2 text-xs" onClick={save} disabled={saving}>{saving ? "…" : "Save"}</Button>
+        <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setEditing(false)} disabled={saving}>Cancel</Button>
+      </div>
+    </div>
+  );
 }

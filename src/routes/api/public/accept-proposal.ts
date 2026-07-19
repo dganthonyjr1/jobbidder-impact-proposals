@@ -46,7 +46,7 @@ export const Route = createFileRoute("/api/public/accept-proposal")({
 
         const { data: proposal, error: proposalError } = await supabaseAdmin
           .from("proposals")
-          .select("id, status, materials, labor, tax_rate")
+          .select("id, status, materials, labor, tax_rate, overhead_percentage")
           .eq("id", input.proposalId)
           .maybeSingle();
 
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/public/accept-proposal")({
 
         const materials = (proposal.materials || []) as MaterialLine[];
         const labor = (proposal.labor || []) as LaborLine[];
-        const totals = computeTotals(materials, labor, input.acceptedTier, Number(proposal.tax_rate) || 0.07);
+        const totals = computeTotals(materials, labor, input.acceptedTier, Number(proposal.tax_rate) || 0.07, Number(proposal.overhead_percentage) || 0);
 
         const { error: acceptanceError } = await supabaseAdmin.from("proposal_acceptances").insert({
           proposal_id: input.proposalId,

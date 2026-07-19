@@ -170,7 +170,7 @@ function Dashboard() {
     const labor = p.labor || [];
     const tier = p.selected_tier || "better";
     const taxRate = Number(p.tax_rate) || 0.07;
-    const totals = computeTotals(materials, labor, tier, taxRate);
+    const totals = computeTotals(materials, labor, tier, taxRate, Number(p.overhead_percentage) || 0);
     return { ...p, _grandTotal: totals.grandTotal };
   });
 

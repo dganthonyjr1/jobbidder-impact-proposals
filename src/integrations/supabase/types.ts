@@ -1732,6 +1732,10 @@ export type Database = {
           labor: Json | null
           language: string
           materials: Json | null
+          overhead_amount: number | null
+          overhead_label: string | null
+          overhead_percentage: number | null
+          overhead_source: string | null
           payment_terms: string | null
           photos: Json
           prevailing_wage_flag: boolean
@@ -1769,6 +1773,10 @@ export type Database = {
           labor?: Json | null
           language?: string
           materials?: Json | null
+          overhead_amount?: number | null
+          overhead_label?: string | null
+          overhead_percentage?: number | null
+          overhead_source?: string | null
           payment_terms?: string | null
           photos?: Json
           prevailing_wage_flag?: boolean
@@ -1806,6 +1814,10 @@ export type Database = {
           labor?: Json | null
           language?: string
           materials?: Json | null
+          overhead_amount?: number | null
+          overhead_label?: string | null
+          overhead_percentage?: number | null
+          overhead_source?: string | null
           payment_terms?: string | null
           photos?: Json
           prevailing_wage_flag?: boolean

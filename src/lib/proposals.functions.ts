@@ -19,9 +19,9 @@ import { checkAndDeductCredit } from "@/lib/credits.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
-import { generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
+import { computeTotals, generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
-import { tradePlaybook } from "@/lib/trade-playbooks";
+import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import Groq from "groq-sdk";
 
@@ -81,7 +81,7 @@ export const generateProposal = createServerFn({ method: "POST" })
     const { userId } = context;
     const { data: contractor, error: contractorError } = await supabaseAdmin
       .from("contractors")
-      .select("id, business_name, license_number, business_address, service_states, subscription_tier")
+      .select("id, business_name, license_number, business_address, service_states, subscription_tier, pricing_settings")
       .eq("user_id", userId).single();
     if (contractorError || !contractor) {
       console.error("[generateProposal] contractor lookup failed:", contractorError);
@@ -171,6 +171,14 @@ export const generateProposal = createServerFn({ method: "POST" })
 
     // ── Itemized (Good/Better/Best) path ──────────────────────────────────────
     const ai = await callAI(data);
+
+    // P3: pull the contractor's per-trade overhead default (fallback to trades.default),
+    // then compute a snapshot dollar amount off the base (unmultiplied) materials + labor totals.
+    const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
+    const tradeKey = normalizeTradeKey(data.trade_type);
+    const overheadPercentage = Number(tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? 12);
+    const baseTotals = computeTotals((ai.materials || []) as any, ai.labor || [], "better", 0.07, overheadPercentage);
+
     const { data: created, error } = await supabaseAdmin
       .from("proposals")
       .insert({
@@ -193,6 +201,9 @@ export const generateProposal = createServerFn({ method: "POST" })
         tiers: ai.tiers || {},
         valid_through: validThrough.toISOString().slice(0, 10),
         source: "manual",
+        overhead_percentage: overheadPercentage,
+        overhead_amount: baseTotals.overheadAmount,
+        overhead_source: "contractor_default",
         raw_input: { source: "manual", prevailing_wage: prevailingWage as any },
       })
       .select()
@@ -217,7 +228,7 @@ export const listProposals = createServerFn({ method: "GET" })
     
     const { data, error } = await supabase
       .from("proposals")
-      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, selected_tier, language, job_address, raw_input")
+      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, overhead_percentage, selected_tier, language, job_address, raw_input")
       .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

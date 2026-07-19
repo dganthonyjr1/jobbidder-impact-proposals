@@ -94,7 +94,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         const materials = (proposal.materials || []) as MaterialLine[]
         const labor = (proposal.labor || []) as LaborLine[]
         const tier = (proposal.selected_tier as any) || 'better'
-        const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07)
+        const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07, Number(proposal.overhead_percentage) || 0)
 
         const origin = new URL(request.url).origin
         const proposalUrl = `${origin}/p/${proposal.id}`

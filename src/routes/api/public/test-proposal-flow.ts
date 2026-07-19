@@ -193,7 +193,7 @@ export const Route = createFileRoute("/api/public/test-proposal-flow")({
           if (!emailResult.skipped) {
             const materials = (created.materials || []) as MaterialLine[];
             const labor = (created.labor || []) as LaborLine[];
-            const totals = computeTotals(materials, labor, "better", Number(created.tax_rate) || 0.07);
+            const totals = computeTotals(materials, labor, "better", Number(created.tax_rate) || 0.07, Number(created.overhead_percentage) || 0);
             const templateData = {
               clientName: created.client_name,
               businessName: contractor.business_name,

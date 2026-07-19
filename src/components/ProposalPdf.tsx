@@ -54,7 +54,7 @@ type Props = {
 export function ProposalPdf({ proposal, contractor, tier }: Props) {
   const materials = (proposal.materials || []) as MaterialLine[];
   const labor = (proposal.labor || []) as LaborLine[];
-  const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07);
+  const totals = computeTotals(materials, labor, tier, Number(proposal.tax_rate) || 0.07, Number(proposal.overhead_percentage) || 0);
   const isNarrative = proposal?.raw_input?.proposal_format === "narrative";
   const created = proposal.created_at ? new Date(proposal.created_at) : new Date();
   const expires = proposal.expires_at
@@ -193,6 +193,9 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
           <View style={styles.totalsBox} wrap={false}>
             <View style={styles.totalRow}><Text style={styles.totalLabel}>Materials</Text><Text>{fmt(totals.materialsSia)}</Text></View>
             <View style={styles.totalRow}><Text style={styles.totalLabel}>Labor</Text><Text>{fmt(totals.laborTotal)}</Text></View>
+            {totals.overheadAmount > 0 ? (
+              <View style={styles.totalRow}><Text style={styles.totalLabel}>{proposal.overhead_label || "General Conditions / Non-Measured Costs"}</Text><Text>{fmt(totals.overheadAmount)}</Text></View>
+            ) : null}
             <View style={styles.totalRow}><Text style={styles.totalLabel}>Tax</Text><Text>{fmt(totals.tax)}</Text></View>
             <View style={styles.grandRow}>
               <Text style={styles.grandLabel}>Total</Text>

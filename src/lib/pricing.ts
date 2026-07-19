@@ -42,7 +42,7 @@ export function fmt(n: number): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n || 0);
 }
 
-export function computeTotals(materials: MaterialLine[], labor: LaborLine[], tier: string, taxRate = 0.07) {
+export function computeTotals(materials: MaterialLine[], labor: LaborLine[], tier: string, taxRate = 0.07, overheadPercentage = 0) {
   const mult = TIER_MULTIPLIERS[tier] ?? 1;
   const materialsRetail = materials.reduce((s, m) => s + (m.retail_price || 0) * m.qty, 0) * mult;
   const materialsSia = materials.reduce((s, m) => s + ((m.sia_price ?? m.retail_price) || 0) * m.qty, 0) * mult;
@@ -50,8 +50,9 @@ export function computeTotals(materials: MaterialLine[], labor: LaborLine[], tie
   const savings = materialsRetail - materialsSia;
   const subtotal = materialsSia + laborTotal;
   const tax = materialsSia * taxRate;
-  const grandTotal = subtotal + tax;
-  return { materialsRetail, materialsSia, laborTotal, savings, subtotal, tax, grandTotal };
+  const overheadAmount = (materialsSia + laborTotal) * (overheadPercentage || 0) / 100;
+  const grandTotal = subtotal + tax + overheadAmount;
+  return { materialsRetail, materialsSia, laborTotal, savings, subtotal, tax, overheadAmount, grandTotal };
 }
 
 export function generateProposalNumber(): string {
