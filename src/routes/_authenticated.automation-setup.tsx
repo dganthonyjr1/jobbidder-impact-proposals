@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/ghl-setup")({
-  head: () => ({ meta: [{ title: "GoHighLevel setup — Jobbidder" }] }),
-  component: GhlSetup,
+export const Route = createFileRoute("/_authenticated/automation-setup")({
+  head: () => ({ meta: [{ title: "Automation setup — Jobbidder" }] }),
+  component: AutomationSetup,
 });
 
-function GhlSetup() {
+function AutomationSetup() {
   const [contractorId, setContractorId] = useState<string | null>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [testing, setTesting] = useState(false);
@@ -24,10 +24,10 @@ function GhlSetup() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const { data, error } = await supabase.from("contractors").select("id").eq("user_id", user.id).single();
-      if (error) console.error("[ghl-setup] Contractor lookup failed:", error.message);
+      if (error) console.error("[automation-setup] Contractor lookup failed:", error.message);
       if (data?.id) {
         setContractorId(data.id);
-        setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data.id}`);
+        setWebhookUrl(`${window.location.origin}/api/public/webhook/jobbidder-intake?contractor=${data.id}`);
       }
     })();
   }, []);
@@ -60,7 +60,7 @@ function GhlSetup() {
       });
       const json = await res.json();
       setTestResult({ ok: res.ok, body: json });
-      if (res.ok) toast.success("GHL webhook test processed — check your dashboard");
+      if (res.ok) toast.success("Automation webhook test processed — check your dashboard");
       else toast.error(`Test failed (${res.status})`);
     } catch (e: any) {
       toast.error(e?.message || "Test failed");
@@ -73,21 +73,21 @@ function GhlSetup() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
       <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">GoHighLevel setup</h1>
-        <p className="text-muted-foreground mt-1">Connect your GHL voice agent, SMS, and email workflow to Jobbidder so captured leads can become proposal records automatically.</p>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Automation setup</h1>
+        <p className="text-muted-foreground mt-1">Connect your voice agent, SMS, and email automation to Jobbidder so captured leads can become proposal records automatically.</p>
       </div>
 
       <Card className="p-6 space-y-3">
-        <Label>Jobbidder GHL webhook URL</Label>
+        <Label>Jobbidder automation webhook URL</Label>
         <div className="flex gap-2">
           <Input readOnly value={webhookUrl} className="font-mono text-xs" />
           <Button variant="outline" onClick={() => copy(webhookUrl, "webhook URL")}><Copy className="h-4 w-4" /></Button>
         </div>
-        <p className="text-sm text-muted-foreground">In GoHighLevel, add a workflow webhook action after your voice agent captures the caller's project details. Send standard fields such as name, email, phone, address, state, plus custom fields for trade_type and job_description.</p>
+        <p className="text-sm text-muted-foreground">In your automation platform, add a workflow webhook action after your voice agent captures the caller's project details. Send standard fields such as name, email, phone, address, state, plus custom fields for trade_type and job_description.</p>
       </Card>
 
       <Card className="p-6 space-y-3">
-        <h2 className="font-display text-xl font-semibold">Recommended GHL payload fields</h2>
+        <h2 className="font-display text-xl font-semibold">Recommended payload fields</h2>
         <pre className="text-xs bg-muted p-4 rounded-lg overflow-auto">{`{
   "full_name": "Lead Name",
   "email": "lead@example.com",

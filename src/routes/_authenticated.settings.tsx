@@ -80,7 +80,7 @@ function SettingsPage() {
       if (error) console.error("[settings] Contractor lookup failed:", error.message);
       setContractor(data);
       setLoading(false);
-      setWebhookUrl(`${window.location.origin}/api/public/webhook/ghl?contractor=${data?.id}`);
+      setWebhookUrl(`${window.location.origin}/api/public/webhook/jobbidder-intake?contractor=${data?.id}`);
 
       // Load pricing settings if they exist
       if (data?.pricing_settings) {
@@ -296,8 +296,8 @@ function SettingsPage() {
             <div>
               <h2 className="font-display font-semibold text-lg">Per-Trade Labor & Markup</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                These rates are injected directly into the Claude AI prompt. Every proposal generated for your account will use these exact numbers instead of Claude's estimates.
-                Set the <strong>Default</strong> row as your baseline — Claude uses it for any trade not listed below.
+                These rates are injected directly into the Jobbidder AI prompt. Every proposal generated for your account will use these exact numbers instead of Jobbidder AI's estimates.
+                Set the <strong>Default</strong> row as your baseline — Jobbidder AI uses it for any trade not listed below.
               </p>
             </div>
 
@@ -494,23 +494,23 @@ function SettingsPage() {
           <h2 className="font-display font-semibold text-lg">Integrations</h2>
 
           <div>
-            <Label>GoHighLevel workflow webhook URL</Label>
+            <Label>Jobbidder automation webhook URL</Label>
             <Input readOnly value={webhookUrl} className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground mt-1">
-              Use this URL in your GoHighLevel workflow webhook action after the voice agent captures a lead.{" "}
-              <a href="/ghl-setup" className="underline text-foreground">Full GoHighLevel setup guide →</a>
+              Use this URL in your automation platform's workflow webhook action after the voice agent captures a lead.{" "}
+              <a href="/automation-setup" className="underline text-foreground">Full automation setup guide →</a>
             </p>
           </div>
           <div className="border-t pt-4 space-y-3">
             <div>
-              <h3 className="font-display font-semibold">Contractor-owned GoHighLevel</h3>
+              <h3 className="font-display font-semibold">Contractor-owned automation account</h3>
               <p className="text-sm text-muted-foreground">
-                Optional. Add the contractor's own GHL Private Integration Token and location details so proposal contacts, emails, and SMS are created in that contractor's sub-account.
+                Optional. Add the contractor's own automation integration token and location details so proposal contacts, emails, and SMS are created in that contractor's sub-account.
               </p>
             </div>
-            <div><Label>GHL Private Integration Token</Label><Input type="password" value={integration.ghl_api_token || ""} onChange={(e) => setInt("ghl_api_token", e.target.value)} placeholder="pit-…" /></div>
+            <div><Label>Automation Integration Token</Label><Input type="password" value={integration.ghl_api_token || ""} onChange={(e) => setInt("ghl_api_token", e.target.value)} placeholder="pit-…" /></div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>GHL Location ID</Label><Input value={integration.ghl_location_id || ""} onChange={(e) => setInt("ghl_location_id", e.target.value)} placeholder="Location/sub-account ID" /></div>
+              <div><Label>Automation Location ID</Label><Input value={integration.ghl_location_id || ""} onChange={(e) => setInt("ghl_location_id", e.target.value)} placeholder="Location/sub-account ID" /></div>
               <div><Label>SMS From Number</Label><Input value={integration.ghl_from_number || ""} onChange={(e) => setInt("ghl_from_number", e.target.value)} placeholder="+15551234567" /></div>
             </div>
             <div><Label>Email From Address</Label><Input value={integration.ghl_from_email || ""} onChange={(e) => setInt("ghl_from_email", e.target.value)} placeholder="proposals@contractor.com" /></div>

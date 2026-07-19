@@ -82,7 +82,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
  *  - /intake/*  — standalone intake form (has its own phone field)
  *  - /p/*       — proposal view page
  *  - /e/*       — proposal acceptance/e-sign page
- *  - /dashboard, /proposals, /settings, /ghl-setup — authenticated contractor portal
+ *  - /dashboard, /proposals, /settings, /automation-setup — authenticated contractor portal
  *  - /sign-in, /sign-up — auth pages
  *
  * This satisfies the GHL A2P carrier requirement:
@@ -98,7 +98,7 @@ function WidgetGate() {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/proposals') ||
     pathname.startsWith('/settings') ||
-    pathname.startsWith('/ghl-setup') ||
+    pathname.startsWith('/automation-setup') ||
     pathname.startsWith('/sign-in') ||
     pathname.startsWith('/sign-up');
   if (suppress) return null;

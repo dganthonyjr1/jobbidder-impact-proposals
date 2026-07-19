@@ -30,10 +30,10 @@ import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
-import { Route as AuthenticatedGhlSetupRouteImport } from './routes/_authenticated.ghl-setup'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedContractorVerificationRouteImport } from './routes/_authenticated.contractor-verification'
+import { Route as AuthenticatedAutomationSetupRouteImport } from './routes/_authenticated.automation-setup'
 import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
@@ -61,6 +61,7 @@ import { Route as AuthenticatedProposalsNewRouteImport } from './routes/_authent
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicWebhookJobbidderIntakeRouteImport } from './routes/api/public/webhook.jobbidder-intake'
 import { Route as ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-update-estimate'
 import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/api/public/webhook.ghl-voice-prequal'
 import { Route as ApiPublicWebhookGhlVoiceEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-estimate'
@@ -176,11 +177,6 @@ const AuthenticatedMediaUploadRoute =
     path: '/media-upload',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedGhlSetupRoute = AuthenticatedGhlSetupRouteImport.update({
-  id: '/ghl-setup',
-  path: '/ghl-setup',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
@@ -195,6 +191,12 @@ const AuthenticatedContractorVerificationRoute =
   AuthenticatedContractorVerificationRouteImport.update({
     id: '/contractor-verification',
     path: '/contractor-verification',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedAutomationSetupRoute =
+  AuthenticatedAutomationSetupRouteImport.update({
+    id: '/automation-setup',
+    path: '/automation-setup',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
@@ -344,6 +346,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookJobbidderIntakeRoute =
+  ApiPublicWebhookJobbidderIntakeRouteImport.update({
+    id: '/api/public/webhook/jobbidder-intake',
+    path: '/api/public/webhook/jobbidder-intake',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookGhlVoiceUpdateEstimateRoute =
   ApiPublicWebhookGhlVoiceUpdateEstimateRouteImport.update({
     id: '/api/public/webhook/ghl-voice-update-estimate',
@@ -412,10 +420,10 @@ export interface FileRoutesByFullPath {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
+  '/automation-setup': typeof AuthenticatedAutomationSetupRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -456,6 +464,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
+  '/api/public/webhook/jobbidder-intake': typeof ApiPublicWebhookJobbidderIntakeRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -474,10 +483,10 @@ export interface FileRoutesByTo {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/account': typeof AuthenticatedAccountRoute
   '/affiliate': typeof AuthenticatedAffiliateRoute
+  '/automation-setup': typeof AuthenticatedAutomationSetupRoute
   '/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
-  '/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -518,6 +527,7 @@ export interface FileRoutesByTo {
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
+  '/api/public/webhook/jobbidder-intake': typeof ApiPublicWebhookJobbidderIntakeRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -538,10 +548,10 @@ export interface FileRoutesById {
   '/why-jobbidder': typeof WhyJobbidderRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
+  '/_authenticated/automation-setup': typeof AuthenticatedAutomationSetupRoute
   '/_authenticated/contractor-verification': typeof AuthenticatedContractorVerificationRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
-  '/_authenticated/ghl-setup': typeof AuthenticatedGhlSetupRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -582,6 +592,7 @@ export interface FileRoutesById {
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
   '/api/public/webhook/ghl-voice-prequal': typeof ApiPublicWebhookGhlVoicePrequalRoute
   '/api/public/webhook/ghl-voice-update-estimate': typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
+  '/api/public/webhook/jobbidder-intake': typeof ApiPublicWebhookJobbidderIntakeRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
@@ -602,10 +613,10 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
+    | '/automation-setup'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
-    | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
     | '/settings'
@@ -646,6 +657,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/api/public/webhook/ghl-voice-update-estimate'
+    | '/api/public/webhook/jobbidder-intake'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -664,10 +676,10 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/account'
     | '/affiliate'
+    | '/automation-setup'
     | '/contractor-verification'
     | '/dashboard'
     | '/documents'
-    | '/ghl-setup'
     | '/media-upload'
     | '/pipeline'
     | '/settings'
@@ -708,6 +720,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/api/public/webhook/ghl-voice-update-estimate'
+    | '/api/public/webhook/jobbidder-intake'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -727,10 +740,10 @@ export interface FileRouteTypes {
     | '/why-jobbidder'
     | '/_authenticated/account'
     | '/_authenticated/affiliate'
+    | '/_authenticated/automation-setup'
     | '/_authenticated/contractor-verification'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
-    | '/_authenticated/ghl-setup'
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
     | '/_authenticated/settings'
@@ -771,6 +784,7 @@ export interface FileRouteTypes {
     | '/api/public/webhook/ghl-voice-estimate'
     | '/api/public/webhook/ghl-voice-prequal'
     | '/api/public/webhook/ghl-voice-update-estimate'
+    | '/api/public/webhook/jobbidder-intake'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
@@ -825,6 +839,7 @@ export interface RootRouteChildren {
   ApiPublicWebhookGhlVoiceEstimateRoute: typeof ApiPublicWebhookGhlVoiceEstimateRoute
   ApiPublicWebhookGhlVoicePrequalRoute: typeof ApiPublicWebhookGhlVoicePrequalRoute
   ApiPublicWebhookGhlVoiceUpdateEstimateRoute: typeof ApiPublicWebhookGhlVoiceUpdateEstimateRoute
+  ApiPublicWebhookJobbidderIntakeRoute: typeof ApiPublicWebhookJobbidderIntakeRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
@@ -979,13 +994,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMediaUploadRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/ghl-setup': {
-      id: '/_authenticated/ghl-setup'
-      path: '/ghl-setup'
-      fullPath: '/ghl-setup'
-      preLoaderRoute: typeof AuthenticatedGhlSetupRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -1005,6 +1013,13 @@ declare module '@tanstack/react-router' {
       path: '/contractor-verification'
       fullPath: '/contractor-verification'
       preLoaderRoute: typeof AuthenticatedContractorVerificationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/automation-setup': {
+      id: '/_authenticated/automation-setup'
+      path: '/automation-setup'
+      fullPath: '/automation-setup'
+      preLoaderRoute: typeof AuthenticatedAutomationSetupRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/affiliate': {
@@ -1196,6 +1211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/jobbidder-intake': {
+      id: '/api/public/webhook/jobbidder-intake'
+      path: '/api/public/webhook/jobbidder-intake'
+      fullPath: '/api/public/webhook/jobbidder-intake'
+      preLoaderRoute: typeof ApiPublicWebhookJobbidderIntakeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhook/ghl-voice-update-estimate': {
       id: '/api/public/webhook/ghl-voice-update-estimate'
       path: '/api/public/webhook/ghl-voice-update-estimate'
@@ -1265,10 +1287,10 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
+  AuthenticatedAutomationSetupRoute: typeof AuthenticatedAutomationSetupRoute
   AuthenticatedContractorVerificationRoute: typeof AuthenticatedContractorVerificationRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
-  AuthenticatedGhlSetupRoute: typeof AuthenticatedGhlSetupRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -1278,11 +1300,11 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
+  AuthenticatedAutomationSetupRoute: AuthenticatedAutomationSetupRoute,
   AuthenticatedContractorVerificationRoute:
     AuthenticatedContractorVerificationRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
-  AuthenticatedGhlSetupRoute: AuthenticatedGhlSetupRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
@@ -1346,6 +1368,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookGhlVoicePrequalRoute: ApiPublicWebhookGhlVoicePrequalRoute,
   ApiPublicWebhookGhlVoiceUpdateEstimateRoute:
     ApiPublicWebhookGhlVoiceUpdateEstimateRoute,
+  ApiPublicWebhookJobbidderIntakeRoute: ApiPublicWebhookJobbidderIntakeRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,

@@ -64,7 +64,7 @@ function Index() {
         <div className="mt-16 sm:mt-24 grid sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {[
             { icon: Languages, title: "Speaks your customer's language", body: "Intake calls and proposals auto localize to 5 languages. Win bids competitors can't even quote." },
-            { icon: FileText, title: "AI generated proposals", body: "Claude grade copy, scope, materials and labor estimated automatically." },
+            { icon: FileText, title: "AI generated proposals", body: "Jobbidder AI-grade copy, scope, materials and labor estimated automatically." },
             { icon: DollarSign, title: "Good, Better, Best", body: "Three tiers, one click for clients. Built in Sudden Impact Agency wholesale pricing." },
             { icon: ShieldCheck, title: "Sign and send", body: "Public link, e signature, materials order, all wired in." },
           ].map((f) => (

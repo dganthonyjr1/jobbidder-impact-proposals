@@ -56,7 +56,7 @@ function leadName(body: JsonRecord) {
   ) || "Unknown Lead";
 }
 
-function cors(headers: Record<string, string> = {}) {
+export function cors(headers: Record<string, string> = {}) {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST,OPTIONS",
@@ -132,10 +132,12 @@ async function callGroqAI(opts: {
   }
 }
 
-export const Route = createFileRoute("/api/public/webhook/ghl")({
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
+/**
+ * Shared lead-intake handler. Reused by both the legacy /api/public/webhook/ghl
+ * path (kept working for automations already configured against it) and the
+ * branded /api/public/webhook/jobbidder-intake path shown in the app going forward.
+ */
+export async function handleLeadIntake(request: Request): Promise<Response> {
         const url = new URL(request.url);
         const contractorId = url.searchParams.get("contractor");
         const ghlToken = url.searchParams.get("ghl_token") || url.searchParams.get("token");
@@ -290,7 +292,14 @@ export const Route = createFileRoute("/api/public/webhook/ghl")({
         }
 
         return Response.json({ ok: true, proposal_id: created.id, proposal_number: created.proposal_number, proposal_url: proposalUrl, ai_generated: !!ai, email, sms }, { headers: cors() });
-      },
+}
+
+// Legacy path — kept working for automations already configured against it.
+// New setups should use /api/public/webhook/jobbidder-intake instead.
+export const Route = createFileRoute("/api/public/webhook/ghl")({
+  server: {
+    handlers: {
+      POST: async ({ request }) => handleLeadIntake(request),
       OPTIONS: async () => new Response(null, { status: 204, headers: cors() }),
     },
   },

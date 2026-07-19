@@ -107,7 +107,7 @@ const enterpriseFeatures = [
   { icon: ShieldCheck, label: "License & insurance verification", detail: "AI extracts and validates credentials from uploaded documents" },
   { icon: Kanban, label: "Kanban pipeline CRM", detail: "Replace HubSpot — full deal + contractor pipeline in one view" },
   { icon: Zap, label: "Document renewal alerts", detail: "Auto-notify contractors before licenses or insurance expires" },
-  { icon: Building2, label: "GoHighLevel integration", detail: "Two-way sync with your GHL CRM, workflows, and SMS sequences" },
+  { icon: Building2, label: "CRM & automation integration", detail: "Two-way sync with your CRM, workflows, and SMS sequences" },
 ];
 
 function PricingPage() {
