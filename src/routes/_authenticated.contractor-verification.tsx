@@ -320,17 +320,17 @@ function VerificationPage() {
 
   const { data: contractors = [], isLoading } = useQuery({
     queryKey: ["contractor-verification"],
-    queryFn: () => fetchAll({}),
+    queryFn: () => fetchAll(),
   });
 
   const { data: expiringData } = useQuery({
     queryKey: ["expiring-documents"],
-    queryFn: () => fetchExpiring({ days_until_expiration: 60 }),
+    queryFn: () => fetchExpiring({ data: { days_until_expiration: 60 } }),
   });
 
   const verifyMut = useMutation({
     mutationFn: ({ docId, verdict }: { docId: string; verdict: "verified" | "invalid" }) =>
-      doVerify({ document_id: docId, verdict }),
+      doVerify({ data: { document_id: docId, verdict } }),
     onSuccess: () => {
       toast.success("Document updated");
       qc.invalidateQueries({ queryKey: ["contractor-verification"] });
@@ -340,7 +340,7 @@ function VerificationPage() {
 
   const renewMut = useMutation({
     mutationFn: ({ docId, contractorId }: { docId: string; contractorId: string }) =>
-      doRenew({ document_id: docId, contractor_id: contractorId }),
+      doRenew({ data: { document_id: docId, contractor_id: contractorId } }),
     onSuccess: (data) => {
       toast.success(data.sms_sent ? "Renewal SMS sent" : "Renewal request logged");
     },
