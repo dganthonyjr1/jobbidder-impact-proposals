@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { generateProposalNumber } from "@/lib/pricing";
+import { generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { checkAndDeductCredit } from "@/lib/credits.server";
 import { mergePricing, resolveTradeRate, callGroqAI, type PricingSettings } from "@/lib/proposal-ai.server";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
@@ -14,7 +14,7 @@ const Body = z.object({
   client_phone: z.string().trim().max(30).optional().default(''),
   job_address: z.string().trim().max(500).optional().nullable(),
   trade_type: z.string().trim().max(100).optional().nullable(),
-  job_description: z.string().trim().min(10).max(5000),
+  job_description: z.string().trim().min(10).max(JOB_DESCRIPTION_MAX_LENGTH),
   photos: z.array(z.string().url()).max(8).optional().default([]),
   language: z.enum(['en', 'es', 'fr', 'pt', 'ht']).optional().default('en'),
   prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),

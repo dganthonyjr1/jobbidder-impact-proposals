@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { STATE_LIST } from "@/lib/pricing";
+import { STATE_LIST, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { UpgradeModal } from "@/components/UpgradeModal";
 
 const UPGRADE_URLS: Record<string, string> = {
@@ -40,6 +40,7 @@ function NewProposalPage() {
   const navigate = useNavigate();
   const gen = useServerFn(generateProposal);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [upgradeInfo, setUpgradeInfo] = useState<{ plan: string; url: string; feature: string } | null>(null);
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
@@ -58,6 +59,15 @@ function NewProposalPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(null);
+
+    if (form.job_description.length > JOB_DESCRIPTION_MAX_LENGTH) {
+      setFormError(
+        `Job description is ${form.job_description.length.toLocaleString()} characters — over the ${JOB_DESCRIPTION_MAX_LENGTH.toLocaleString()} limit. Shorten it and try again; nothing was submitted.`
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await gen({ data: {
@@ -80,6 +90,7 @@ function NewProposalPage() {
         setUpgradeInfo({ plan: plan.plan, url: plan.url, feature: "AI Proposals" });
       } else {
         toast.error(msg);
+        setFormError(msg);
       }
     } finally { setLoading(false); }
   }
@@ -98,6 +109,11 @@ function NewProposalPage() {
       </Link>
       <h1 className="font-display text-3xl font-bold tracking-tight mb-2">New AI Proposal</h1>
       <p className="text-muted-foreground mb-8">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
+      {formError && (
+        <div role="alert" className="mb-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {formError}
+        </div>
+      )}
       <Card className="p-6 bg-card border-border">
         <form onSubmit={submit} className="space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -126,7 +142,17 @@ function NewProposalPage() {
           </div>
           <div>
             <Label>Job description *</Label>
-            <Textarea required rows={6} value={form.job_description} onChange={(e) => set("job_description", e.target.value)} placeholder="e.g. Install 850 sqft luxury vinyl plank in living room and 2 bedrooms. Remove existing carpet. Standard prep." />
+            <Textarea
+              required
+              rows={6}
+              value={form.job_description}
+              onChange={(e) => { set("job_description", e.target.value); setFormError(null); }}
+              placeholder="e.g. Install 850 sqft luxury vinyl plank in living room and 2 bedrooms. Remove existing carpet. Standard prep. Paste the full spec — up to 20,000 characters."
+            />
+            <p className={`text-xs mt-1 ${form.job_description.length > JOB_DESCRIPTION_MAX_LENGTH ? "text-destructive font-medium" : "text-muted-foreground"}`}>
+              {form.job_description.length.toLocaleString()} / {JOB_DESCRIPTION_MAX_LENGTH.toLocaleString()} characters
+              {form.job_description.length > JOB_DESCRIPTION_MAX_LENGTH ? " — over the limit, shorten before submitting" : ""}
+            </p>
           </div>
           <Button type="submit" size="lg" disabled={loading} className="shadow-glow">
             <Sparkles className="h-4 w-4 mr-2" />

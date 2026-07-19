@@ -19,7 +19,7 @@ import { checkAndDeductCredit } from "@/lib/credits.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
-import { generateProposalNumber } from "@/lib/pricing";
+import { generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
@@ -32,7 +32,7 @@ const aiInput = z.object({
   job_address: z.string().max(500).optional().nullable(),
   job_state: z.string().length(2).optional().nullable(),
   trade_type: z.string().max(100).optional().nullable(),
-  job_description: z.string().min(1).max(5000),
+  job_description: z.string().min(1).max(JOB_DESCRIPTION_MAX_LENGTH),
   prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),
   prevailing_wage_source: z.string().max(50).optional().nullable(),
 });

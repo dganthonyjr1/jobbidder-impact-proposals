@@ -2,6 +2,10 @@ export const STATE_LIST = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
 ];
 
+/** Max length for the job description / spec field on proposal intake. Kept generous
+ * so a full architect's spec can be pasted in whole — never silently truncate. */
+export const JOB_DESCRIPTION_MAX_LENGTH = 20000;
+
 export const TIER_MULTIPLIERS: Record<string, number> = {
   good: 0.85,
   better: 1.0,
