@@ -276,7 +276,7 @@ function SettingsPage() {
             </div>
           )}
           {isWhiteLabel && !contractor.slug && (
-            <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-600">
+            <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/5 p-4 text-sm text-yellow-400">
               Set your intake page slug above to activate your white-label client intake link.
             </div>
           )}

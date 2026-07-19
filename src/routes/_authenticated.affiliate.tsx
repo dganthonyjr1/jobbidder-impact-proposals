@@ -184,11 +184,11 @@ function currentPeriod() {
 
 const TX_LABELS: Record<string, { label: string; color: string }> = {
   commission_earned:  { label: "Commission Earned",  color: "text-success bg-success/10" },
-  credit_applied:     { label: "Credit Applied",     color: "text-blue-600 bg-blue-50" },
-  payout_issued:      { label: "Payout Issued",      color: "text-purple-600 bg-purple-50" },
-  adjustment:         { label: "Adjustment",         color: "text-orange-600 bg-orange-50" },
-  pack_purchase:      { label: "Pack Purchase",      color: "text-slate-600 bg-slate-100" },
-  overage_charge:     { label: "Overage Charge",     color: "text-red-600 bg-red-50" },
+  credit_applied:     { label: "Credit Applied",     color: "text-blue-400 bg-blue-500/10" },
+  payout_issued:      { label: "Payout Issued",      color: "text-purple-400 bg-purple-500/10" },
+  adjustment:         { label: "Adjustment",         color: "text-orange-400 bg-orange-500/10" },
+  pack_purchase:      { label: "Pack Purchase",      color: "text-slate-300 bg-slate-400/10" },
+  overage_charge:     { label: "Overage Charge",     color: "text-red-400 bg-red-500/10" },
 };
 
 function StatCard({ label, value, sub, icon: Icon }: { label: string; value: string; sub?: string; icon: React.ElementType }) {
@@ -426,7 +426,7 @@ function AffiliatePage() {
               placeholder="Payout email (e.g. accounting@yourcompany.com)"
               value={payoutEmail}
               onChange={e => setPayoutEmail(e.target.value)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-input bg-input/10 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             />
           )}
           <Button
@@ -472,7 +472,7 @@ function AffiliatePage() {
                   placeholder="e.g. CPA Jane Smith"
                   value={newLinkLabel}
                   onChange={e => setNewLinkLabel(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-input bg-input/10 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
               <div>
@@ -481,7 +481,7 @@ function AffiliatePage() {
                   type="date"
                   value={newLinkExpiry}
                   onChange={e => setNewLinkExpiry(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-input bg-input/10 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
               </div>
             </div>
@@ -509,10 +509,10 @@ function AffiliatePage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold truncate">{link.label ?? "Unnamed link"}</p>
                       {!link.is_active && (
-                        <span className="text-xs font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">Revoked</span>
+                        <span className="text-xs font-semibold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">Revoked</span>
                       )}
                       {link.is_active && isExpired && (
-                        <span className="text-xs font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">Expired</span>
+                        <span className="text-xs font-semibold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full">Expired</span>
                       )}
                       {link.is_active && !isExpired && (
                         <span className="text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded-full">Active</span>
@@ -598,8 +598,8 @@ function AffiliatePage() {
                       <span className={
                         "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold " +
                         (r.status === "active"  ? "bg-success/10 text-success" :
-                         r.status === "pending" ? "bg-yellow-50 text-yellow-600" :
-                         "bg-red-50 text-red-600")
+                         r.status === "pending" ? "bg-yellow-500/10 text-yellow-400" :
+                         "bg-red-500/10 text-red-400")
                       }>
                         {r.status === "active"  && <BadgeCheck className="h-3 w-3" />}
                         {r.status === "pending" && <Clock className="h-3 w-3" />}
@@ -663,8 +663,8 @@ function AffiliatePage() {
                         <span className={
                           "inline-block rounded-full px-2 py-0.5 text-xs font-semibold " +
                           (t.status === "processed" ? "bg-success/10 text-success" :
-                           t.status === "pending"   ? "bg-yellow-50 text-yellow-600" :
-                           "bg-red-50 text-red-600")
+                           t.status === "pending"   ? "bg-yellow-500/10 text-yellow-400" :
+                           "bg-red-500/10 text-red-400")
                         }>{t.status}</span>
                       </td>
                     </tr>

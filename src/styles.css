@@ -84,7 +84,7 @@
   --success-foreground: oklch(0.05 0 0);
   --warning: oklch(0.80 0.18 85);
   --border: oklch(0.18 0 0);
-  --input: oklch(0.14 0 0);
+  --input: oklch(0.28 0 0);
   --ring: oklch(0.55 0.24 285);
   --chart-1: oklch(0.55 0.24 285);                /* violet */
   --chart-2: oklch(0.70 0.18 145);

@@ -87,18 +87,18 @@ const moveDeal = createServerFn({ method: "POST" })
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
 const CONTRACTOR_STAGES = [
-  { key: "applied", label: "Applied", color: "bg-yellow-50 border-yellow-300", dot: "bg-yellow-400" },
-  { key: "docs_review", label: "Docs Review", color: "bg-orange-50 border-orange-300", dot: "bg-orange-400" },
-  { key: "active", label: "Active ✓", color: "bg-green-50 border-green-300", dot: "bg-green-500" },
+  { key: "applied", label: "Applied", color: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400" },
+  { key: "docs_review", label: "Docs Review", color: "bg-orange-500/10 border-orange-500/30", dot: "bg-orange-400" },
+  { key: "active", label: "Active ✓", color: "bg-emerald-500/10 border-emerald-500/30", dot: "bg-emerald-400" },
 ];
 
 const DEAL_STAGES = [
-  { key: "lead", label: "New Lead", color: "bg-slate-100 border-slate-300", dot: "bg-slate-400" },
-  { key: "meeting", label: "Meeting Set", color: "bg-blue-50 border-blue-300", dot: "bg-blue-400" },
-  { key: "proposal", label: "Proposal Sent", color: "bg-purple-50 border-purple-300", dot: "bg-purple-400" },
-  { key: "negotiating", label: "Negotiating", color: "bg-yellow-50 border-yellow-300", dot: "bg-yellow-400" },
-  { key: "won", label: "Won 🎉", color: "bg-green-50 border-green-300", dot: "bg-green-500" },
-  { key: "lost", label: "Lost", color: "bg-red-50 border-red-300", dot: "bg-red-400" },
+  { key: "lead", label: "New Lead", color: "bg-slate-400/10 border-slate-400/30", dot: "bg-slate-400" },
+  { key: "meeting", label: "Meeting Set", color: "bg-blue-500/10 border-blue-500/30", dot: "bg-blue-400" },
+  { key: "proposal", label: "Proposal Sent", color: "bg-purple-500/10 border-purple-500/30", dot: "bg-purple-400" },
+  { key: "negotiating", label: "Negotiating", color: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400" },
+  { key: "won", label: "Won 🎉", color: "bg-emerald-500/10 border-emerald-500/30", dot: "bg-emerald-400" },
+  { key: "lost", label: "Lost", color: "bg-red-500/10 border-red-500/30", dot: "bg-red-400" },
 ];
 
 function daysSince(dateStr: string) {
@@ -114,10 +114,10 @@ function fmt(n?: number) {
 
 function ContractorCard({ item }: { item: any }) {
   return (
-    <div className="bg-white rounded-lg border border-border p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+    <div className="bg-card rounded-lg border border-border p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{item.name || "Unknown"}</p>
+          <p className="font-medium text-sm truncate text-foreground">{item.name || "Unknown"}</p>
           <p className="text-xs text-muted-foreground truncate">{item.trade_type || item.service_niche || "—"}</p>
         </div>
         <span className="text-xs text-muted-foreground shrink-0">{daysSince(item.created_at)}d</span>
@@ -129,7 +129,7 @@ function ContractorCard({ item }: { item: any }) {
         </div>
       )}
       {item.doc_count > 0 && (
-        <div className="mt-1.5 text-xs text-orange-600 font-medium">{item.doc_count} doc{item.doc_count !== 1 ? "s" : ""} uploaded</div>
+        <div className="mt-1.5 text-xs text-orange-400 font-medium">{item.doc_count} doc{item.doc_count !== 1 ? "s" : ""} uploaded</div>
       )}
       {(item.service_area || item.service_state) && (
         <div className="text-xs text-muted-foreground mt-1">{item.service_area || item.service_state}</div>
@@ -141,10 +141,10 @@ function ContractorCard({ item }: { item: any }) {
 function DealCard({ deal, stages, onMove }: { deal: any; stages: typeof DEAL_STAGES; onMove: (id: string, stage: string) => void }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-white rounded-lg border border-border p-3 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-lg border border-border p-3 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{deal.company_name}</p>
+          <p className="font-medium text-sm truncate text-foreground">{deal.company_name}</p>
           {deal.contact_name && <p className="text-xs text-muted-foreground truncate">{deal.contact_name}</p>}
         </div>
         <button onClick={() => setOpen(!open)} className="text-muted-foreground hover:text-foreground">
@@ -153,8 +153,8 @@ function DealCard({ deal, stages, onMove }: { deal: any; stages: typeof DEAL_STA
       </div>
       {deal.deal_value && (
         <div className="flex items-center gap-1 mt-1.5">
-          <DollarSign className="h-3 w-3 text-green-600" />
-          <span className="text-sm font-semibold text-green-600">{fmt(deal.deal_value)}</span>
+          <DollarSign className="h-3 w-3 text-green-400" />
+          <span className="text-sm font-semibold text-green-400">{fmt(deal.deal_value)}</span>
         </div>
       )}
       {deal.contact_phone && (
@@ -301,7 +301,7 @@ function PipelinePage() {
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-xs text-muted-foreground">Active & Verified</p>
-          <p className="text-2xl font-bold mt-1 text-green-600">{activeContractors}</p>
+          <p className="text-2xl font-bold mt-1 text-green-400">{activeContractors}</p>
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-xs text-muted-foreground">Pipeline Value</p>
@@ -309,7 +309,7 @@ function PipelinePage() {
         </div>
         <div className="bg-card border border-border rounded-lg p-4">
           <p className="text-xs text-muted-foreground">Won Revenue</p>
-          <p className="text-2xl font-bold mt-1 text-green-600">{wonValue > 0 ? fmt(wonValue) : "—"}</p>
+          <p className="text-2xl font-bold mt-1 text-green-400">{wonValue > 0 ? fmt(wonValue) : "—"}</p>
         </div>
       </div>
 
@@ -335,7 +335,7 @@ function PipelinePage() {
                     <span className={`h-2.5 w-2.5 rounded-full ${stage.dot}`} />
                     <span className="font-semibold text-sm">{stage.label}</span>
                   </div>
-                  <span className="text-xs font-medium bg-white/70 rounded-full px-2 py-0.5">{items.length}</span>
+                  <span className="text-xs font-medium bg-muted text-foreground rounded-full px-2 py-0.5">{items.length}</span>
                 </div>
                 <div className="space-y-2 min-h-[100px]">
                   {items.length === 0 && (
@@ -363,10 +363,10 @@ function PipelinePage() {
                     <span className={`h-2.5 w-2.5 rounded-full ${stage.dot}`} />
                     <span className="font-semibold text-sm">{stage.label}</span>
                   </div>
-                  <span className="text-xs font-medium bg-white/70 rounded-full px-2 py-0.5">{items.length}</span>
+                  <span className="text-xs font-medium bg-muted text-foreground rounded-full px-2 py-0.5">{items.length}</span>
                 </div>
                 {stageValue > 0 && (
-                  <p className="text-xs text-green-600 font-medium mb-2 pl-4">{fmt(stageValue)}</p>
+                  <p className="text-xs text-green-400 font-medium mb-2 pl-4">{fmt(stageValue)}</p>
                 )}
                 <div className="space-y-2 min-h-[100px]">
                   {items.length === 0 && (
