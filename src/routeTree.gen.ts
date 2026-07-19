@@ -67,6 +67,7 @@ import { Route as ApiPublicWebhookGhlVoicePrequalRouteImport } from './routes/ap
 import { Route as ApiPublicWebhookGhlVoiceEstimateRouteImport } from './routes/api/public/webhook.ghl-voice-estimate'
 import { Route as ApiPublicWebhookGhlPaymentRouteImport } from './routes/api/public/webhook.ghl-payment'
 import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes/api/public/webhook.ghl-jessica-followup'
+import { Route as ApiPublicWebhookGhlInvoicePaidRouteImport } from './routes/api/public/webhook.ghl-invoice-paid'
 import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './routes/api/public/webhook.ghl-contractor-survey'
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
 import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
@@ -382,6 +383,12 @@ const ApiPublicWebhookGhlJessicaFollowupRoute =
     path: '/api/public/webhook/ghl-jessica-followup',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhookGhlInvoicePaidRoute =
+  ApiPublicWebhookGhlInvoicePaidRouteImport.update({
+    id: '/api/public/webhook/ghl-invoice-paid',
+    path: '/api/public/webhook/ghl-invoice-paid',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookGhlContractorSurveyRoute =
   ApiPublicWebhookGhlContractorSurveyRouteImport.update({
     id: '/api/public/webhook/ghl-contractor-survey',
@@ -459,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
+  '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
@@ -522,6 +530,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
+  '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
@@ -587,6 +596,7 @@ export interface FileRoutesById {
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
+  '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
   '/api/public/webhook/ghl-jessica-followup': typeof ApiPublicWebhookGhlJessicaFollowupRoute
   '/api/public/webhook/ghl-payment': typeof ApiPublicWebhookGhlPaymentRoute
   '/api/public/webhook/ghl-voice-estimate': typeof ApiPublicWebhookGhlVoiceEstimateRoute
@@ -652,6 +662,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
+    | '/api/public/webhook/ghl-invoice-paid'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
@@ -715,6 +726,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
+    | '/api/public/webhook/ghl-invoice-paid'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
@@ -779,6 +791,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-jessica-followups'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
+    | '/api/public/webhook/ghl-invoice-paid'
     | '/api/public/webhook/ghl-jessica-followup'
     | '/api/public/webhook/ghl-payment'
     | '/api/public/webhook/ghl-voice-estimate'
@@ -834,6 +847,7 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessJessicaFollowupsRoute: typeof ApiPublicHooksProcessJessicaFollowupsRoute
   ApiPublicWebhookGhlRoute: typeof ApiPublicWebhookGhlRoute
   ApiPublicWebhookGhlContractorSurveyRoute: typeof ApiPublicWebhookGhlContractorSurveyRoute
+  ApiPublicWebhookGhlInvoicePaidRoute: typeof ApiPublicWebhookGhlInvoicePaidRoute
   ApiPublicWebhookGhlJessicaFollowupRoute: typeof ApiPublicWebhookGhlJessicaFollowupRoute
   ApiPublicWebhookGhlPaymentRoute: typeof ApiPublicWebhookGhlPaymentRoute
   ApiPublicWebhookGhlVoiceEstimateRoute: typeof ApiPublicWebhookGhlVoiceEstimateRoute
@@ -1253,6 +1267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookGhlJessicaFollowupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhook/ghl-invoice-paid': {
+      id: '/api/public/webhook/ghl-invoice-paid'
+      path: '/api/public/webhook/ghl-invoice-paid'
+      fullPath: '/api/public/webhook/ghl-invoice-paid'
+      preLoaderRoute: typeof ApiPublicWebhookGhlInvoicePaidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhook/ghl-contractor-survey': {
       id: '/api/public/webhook/ghl-contractor-survey'
       path: '/api/public/webhook/ghl-contractor-survey'
@@ -1361,6 +1382,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookGhlRoute: ApiPublicWebhookGhlRoute,
   ApiPublicWebhookGhlContractorSurveyRoute:
     ApiPublicWebhookGhlContractorSurveyRoute,
+  ApiPublicWebhookGhlInvoicePaidRoute: ApiPublicWebhookGhlInvoicePaidRoute,
   ApiPublicWebhookGhlJessicaFollowupRoute:
     ApiPublicWebhookGhlJessicaFollowupRoute,
   ApiPublicWebhookGhlPaymentRoute: ApiPublicWebhookGhlPaymentRoute,
