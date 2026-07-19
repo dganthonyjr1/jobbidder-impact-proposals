@@ -25,6 +25,12 @@ import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import Groq from "groq-sdk";
 
+const extractedSystemSchema = z.object({
+  name: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().default(""),
+  unit_hint: z.string().max(50).optional().default(""),
+});
+
 const aiInput = z.object({
   client_name: z.string().min(1).max(200),
   client_email: z.string().email().optional().nullable(),
@@ -35,6 +41,7 @@ const aiInput = z.object({
   job_description: z.string().min(1).max(JOB_DESCRIPTION_MAX_LENGTH),
   prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),
   prevailing_wage_source: z.string().max(50).optional().nullable(),
+  extracted_systems: z.array(extractedSystemSchema).max(50).optional(),
 });
 
 type AIProposalShape = {
@@ -53,8 +60,11 @@ async function callAI(payload: z.infer<typeof aiInput>): Promise<AIProposalShape
 
   const sys = `You are an expert contractor estimator for ${payload.trade_type || "general contracting"}. Build the estimate the way a real ${payload.trade_type || "contractor"} would — using the right materials, labor phases, units, and considerations for this trade:
 ${tradePlaybook(payload.trade_type)}
-Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities. Return ONLY valid JSON matching the schema.`;
-  const user = `Job for ${payload.client_name} at ${payload.job_address || "TBD"} (state: ${payload.job_state || "n/a"}).\nDescription: ${payload.job_description}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
+Produce a realistic, professional proposal with itemized materials and labor in USD. Always include a 10% waste factor on flooring and tile quantities.${payload.extracted_systems?.length ? " The scope below was extracted from an uploaded spec document and lists every distinct system that must be priced — price EVERY system listed, each with its own materials and labor line items. Do not drop, skip, or merge any of them into a single catch-all line." : ""} Return ONLY valid JSON matching the schema.`;
+  const systemsBlock = payload.extracted_systems?.length
+    ? `\n\nSystems to price (from the uploaded spec — include every one):\n${payload.extracted_systems.map((s, i) => `${i + 1}. ${s.name}${s.unit_hint ? ` (unit: ${s.unit_hint})` : ""} — ${s.description || "see job description for scope"}`).join("\n")}`
+    : "";
+  const user = `Job for ${payload.client_name} at ${payload.job_address || "TBD"} (state: ${payload.job_state || "n/a"}).\nDescription: ${payload.job_description}${systemsBlock}\n\nReturn JSON: { "scope_of_work": string, "timeline": string, "warranty": string, "exclusions": string[], "materials": [{"item":string,"description":string,"qty":number,"unit":string,"retail_price":number,"sia_price":number}], "labor": [{"task":string,"description":string,"hours":number,"rate":number}], "tiers": {"good":{"label":string,"description":string},"better":{"label":string,"description":string},"best":{"label":string,"description":string}} }`;
 
   const groq = new Groq({ apiKey });
   const completion = await groq.chat.completions.create({
@@ -204,7 +214,11 @@ export const generateProposal = createServerFn({ method: "POST" })
         overhead_percentage: overheadPercentage,
         overhead_amount: baseTotals.overheadAmount,
         overhead_source: "contractor_default",
-        raw_input: { source: "manual", prevailing_wage: prevailingWage as any },
+        raw_input: {
+          source: "manual",
+          prevailing_wage: prevailingWage as any,
+          ...(data.extracted_systems?.length ? { extracted_systems: data.extracted_systems } : {}),
+        },
       })
       .select()
       .single();

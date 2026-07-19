@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateProposal } from "@/lib/proposals.functions";
+import { extractSpecSystems, type ExtractedSystem } from "@/lib/spec-extraction.server";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, UploadCloud, Loader2, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { STATE_LIST, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { UpgradeModal } from "@/components/UpgradeModal";
@@ -39,7 +41,12 @@ export const Route = createFileRoute("/_authenticated/proposals/new")({
 function NewProposalPage() {
   const navigate = useNavigate();
   const gen = useServerFn(generateProposal);
+  const extractSpec = useServerFn(extractSpecSystems);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [systems, setSystems] = useState<ExtractedSystem[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
   const [upgradeInfo, setUpgradeInfo] = useState<{ plan: string; url: string; feature: string } | null>(null);
   const [form, setForm] = useState({
@@ -47,6 +54,48 @@ function NewProposalPage() {
     job_address: "", job_state: "", trade_type: "",
     job_description: "", prevailing_wage: "",
   });
+
+  async function handleSpecUpload(file: File) {
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a PDF spec document.");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Spec PDF exceeds 20 MB.");
+      return;
+    }
+    setExtracting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error("Please sign in again."); return; }
+      const path = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error: uploadError } = await supabase.storage.from("proposal-specs").upload(path, file, { contentType: "application/pdf", upsert: false });
+      if (uploadError) { toast.error(uploadError.message); return; }
+
+      const result = await extractSpec({ data: { path, fileName: file.name } });
+      if (!result.systems.length) {
+        toast.error("Couldn't find any distinct systems in that document. Try pasting the scope into the job description instead.");
+        return;
+      }
+      setSystems(result.systems);
+      setUploadedFileName(file.name);
+      toast.success(`Found ${result.systems.length} system${result.systems.length === 1 ? "" : "s"} — review below before generating.`);
+    } catch (err: any) {
+      toast.error(err?.message || "Extraction failed. Try again or paste the scope manually.");
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  function updateSystem(i: number, patch: Partial<ExtractedSystem>) {
+    setSystems((prev) => prev.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  }
+  function removeSystem(i: number) {
+    setSystems((prev) => prev.filter((_, idx) => idx !== i));
+  }
+  function addSystem() {
+    setSystems((prev) => [...prev, { name: "", description: "", unit_hint: "" }]);
+  }
 
   // Map the Yes/No/Not Sure answer to the flag + source the engine expects.
   const PW_MAP: Record<string, { flag: string; source: string }> = {
@@ -80,6 +129,7 @@ function NewProposalPage() {
         job_description: form.job_description,
         prevailing_wage_flag: PW_MAP[form.prevailing_wage]?.flag ?? null,
         prevailing_wage_source: PW_MAP[form.prevailing_wage]?.source ?? null,
+        extracted_systems: systems.filter((s) => s.name.trim()).length ? systems.filter((s) => s.name.trim()) : undefined,
       } });
       toast.success(`Generated ${res.proposal_number}`);
       navigate({ to: "/p/$id", params: { id: res.id } });
@@ -147,13 +197,77 @@ function NewProposalPage() {
               rows={6}
               value={form.job_description}
               onChange={(e) => { set("job_description", e.target.value); setFormError(null); }}
-              placeholder="e.g. Install 850 sqft luxury vinyl plank in living room and 2 bedrooms. Remove existing carpet. Standard prep. Paste the full spec — up to 20,000 characters."
+              placeholder="e.g. Install 850 sqft luxury vinyl plank in living room and 2 bedrooms. Remove existing carpet. Standard prep. Paste the full spec — up to 50,000 characters."
             />
             <p className={`text-xs mt-1 ${form.job_description.length > JOB_DESCRIPTION_MAX_LENGTH ? "text-destructive font-medium" : "text-muted-foreground"}`}>
               {form.job_description.length.toLocaleString()} / {JOB_DESCRIPTION_MAX_LENGTH.toLocaleString()} characters
               {form.job_description.length > JOB_DESCRIPTION_MAX_LENGTH ? " — over the limit, shorten before submitting" : ""}
             </p>
           </div>
+
+          <div>
+            <Label>Or upload the architect's spec (PDF)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              We'll read the full document and pull out every distinct system to price — no character limit, nothing gets dropped.
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              disabled={extracting}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleSpecUpload(f); e.target.value = ""; }}
+            />
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+              {extracting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Reading spec…</> : <><UploadCloud className="h-4 w-4 mr-2" /> Upload spec PDF</>}
+            </Button>
+            {uploadedFileName && !extracting && (
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> {uploadedFileName}</p>
+            )}
+          </div>
+
+          {systems.length > 0 && (
+            <div className="rounded-lg border border-border p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>Systems found in the spec — review before generating</Label>
+                <Button type="button" variant="ghost" size="sm" onClick={addSystem}>+ Add system</Button>
+              </div>
+              <div className="space-y-3">
+                {systems.map((s, i) => (
+                  <div key={i} className="flex gap-2 items-start rounded-md bg-muted/40 p-3">
+                    <div className="flex-1 space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          value={s.name}
+                          onChange={(e) => updateSystem(i, { name: e.target.value })}
+                          placeholder="System name"
+                          className="flex-1"
+                        />
+                        <Input
+                          value={s.unit_hint}
+                          onChange={(e) => updateSystem(i, { unit_hint: e.target.value })}
+                          placeholder="Unit (sq ft…)"
+                          className="w-32"
+                        />
+                      </div>
+                      <Textarea
+                        value={s.description}
+                        onChange={(e) => updateSystem(i, { description: e.target.value })}
+                        rows={2}
+                        placeholder="Scope for this system"
+                        className="text-sm"
+                      />
+                    </div>
+                    <button type="button" onClick={() => removeSystem(i)} className="text-muted-foreground hover:text-destructive mt-2" aria-label="Remove system">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Every system listed here will be priced individually — edit or remove any that don't apply.</p>
+            </div>
+          )}
+
           <Button type="submit" size="lg" disabled={loading} className="shadow-glow">
             <Sparkles className="h-4 w-4 mr-2" />
             {loading ? "Generating…" : "Generate proposal with AI"}
