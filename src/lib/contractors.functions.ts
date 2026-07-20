@@ -87,9 +87,9 @@ export const updateContractorStatus = createServerFn({ method: "POST" })
     status: z.enum(["submitted", "approved", "rejected", "pending_docs"]),
     notes: z.string().optional(),
   }).parse(input))
-  .handler(async ({ context, data }) => {
-    const { supabase } = context;
-    const { error } = await supabase
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("contractor_applications")
       .update({ status: data.status, notes: data.notes ?? null, updated_at: new Date().toISOString() })
       .eq("id", data.id);
