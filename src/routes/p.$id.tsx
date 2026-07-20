@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { supabase } from "@/integrations/supabase/client";
+import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 
 export const Route = createFileRoute("/p/$id")({
   component: PublicProposal,
@@ -251,6 +252,7 @@ function PublicProposal() {
 
   return (
     <div className="min-h-screen bg-background print:bg-white">
+      <JessicaWebCallWidget floating />
       {prevailingWage?.notice && (
         <div className="bg-amber-100 border-b-2 border-amber-400 text-amber-900 px-4 sm:px-6 py-3 print:bg-amber-100">
           <div className="max-w-5xl mx-auto flex items-start gap-2 sm:gap-3">

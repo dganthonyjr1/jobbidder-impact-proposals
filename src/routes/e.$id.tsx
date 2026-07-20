@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Sparkles, ArrowRight } from "lucide-react";
 import { fmt } from "@/lib/pricing";
 import { toast } from "sonner";
+import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 
 export const Route = createFileRoute("/e/$id")({
   component: PublicEstimate,
@@ -67,6 +68,7 @@ function PublicEstimate() {
 
   return (
     <div className="min-h-screen bg-background print:bg-white">
+      <JessicaWebCallWidget floating />
       <header className="border-b border-border bg-card">
         <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">

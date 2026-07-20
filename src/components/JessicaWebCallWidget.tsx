@@ -14,7 +14,7 @@ const CONFIG = {
 // Prevent multiple initializations
 let isJessicaInitialized = false;
 
-export function JessicaWebCallWidget() {
+export function JessicaWebCallWidget({ floating = false }: { floating?: boolean }) {
   useEffect(() => {
     // Only initialize once
     if (isJessicaInitialized) return;
@@ -40,7 +40,7 @@ export function JessicaWebCallWidget() {
   return (
     <>
       {/* ── Desktop: floating orb (hidden on mobile) ── */}
-      <div id="jessica-orb-desktop">
+      <div id="jessica-orb-desktop" className={floating ? "jessica-orb-fixed" : undefined}>
         <button id="jessica-orb-btn" aria-label="Talk to AI Proposal Agent">
           <div id="jessica-orb-spinner"></div>
           <svg id="jessica-orb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -284,6 +284,14 @@ export function JessicaWebCallWidget() {
           pointer-events: none;
         }
 
+        /* ── Fixed positioning for non-homepage pages ── */
+        .jessica-orb-fixed {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 9998;
+        }
+
         /* ── Responsive: show orb on desktop, sticky bar on mobile ── */
         @media (max-width: 767px) {
           #jessica-orb-desktop {
@@ -296,6 +304,12 @@ export function JessicaWebCallWidget() {
 
         @media (min-width: 768px) {
           #jessica-mobile-bar {
+            display: none !important;
+          }
+        }
+
+        @media print {
+          #jessica-orb-desktop, #jessica-mobile-bar {
             display: none !important;
           }
         }

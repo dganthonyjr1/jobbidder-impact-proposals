@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Check, Sparkles, Building2, Phone, ShieldCheck, Kanban, Zap, PackagePlus, ImagePlus } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
+import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -113,6 +114,7 @@ const enterpriseFeatures = [
 function PricingPage() {
   return (
     <div className="min-h-screen bg-background bg-hero">
+      <JessicaWebCallWidget floating />
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/">
