@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2, Zap, PackagePlus, AlertTriangle } from "lucide-react";
+import { FileText, Plus, Search, Send, ExternalLink, Phone, Mail, HardHat, CheckCircle, XCircle, Clock, Image as ImageIcon, Trash2, Zap, PackagePlus, AlertTriangle, Sparkles, Circle } from "lucide-react";
 import { fmt, computeTotals } from "@/lib/pricing";
 import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { useState } from "react";
@@ -130,6 +130,55 @@ function CreditWidget({ credits }: { credits: NonNullable<Awaited<ReturnType<typ
         {isOver && packCreditsRemaining === 0 && (
           <Link to="/pricing" className="text-xs text-primary hover:underline shrink-0">Buy credit pack →</Link>
         )}
+      </div>
+    </div>
+  );
+}
+
+const ONBOARDING_DISMISSED_KEY = "jobbidder-onboarding-dismissed";
+
+function OnboardingChecklist({ total, sentCount, accepted }: { total: number; sentCount: number; accepted: number }) {
+  const [dismissed, setDismissed] = useState(
+    () => typeof window !== "undefined" && localStorage.getItem(ONBOARDING_DISMISSED_KEY) === "true"
+  );
+
+  const steps = [
+    { label: "Create your first AI proposal", done: total > 0, to: "/proposals/new" as const },
+    { label: "Send a proposal to a client", done: sentCount > 0 || accepted > 0, to: "/proposals/new" as const },
+    { label: "Get your first proposal accepted", done: accepted > 0, to: "/dashboard" as const },
+  ];
+  const allDone = steps.every((s) => s.done);
+
+  if (dismissed || allDone) return null;
+
+  function dismiss() {
+    try { localStorage.setItem(ONBOARDING_DISMISSED_KEY, "true"); } catch {}
+    setDismissed(true);
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 mb-6">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Getting started
+        </div>
+        <button onClick={dismiss} className="text-xs text-muted-foreground hover:text-foreground transition">Dismiss</button>
+      </div>
+      <p className="text-xs text-muted-foreground mb-3">
+        New here? Start in <Link to="/settings" className="text-primary hover:underline">Settings</Link> to add your license #, trade type, and branding — then work through the steps below.
+      </p>
+      <div className="space-y-1.5">
+        {steps.map((s) => (
+          <Link
+            key={s.label}
+            to={s.to}
+            className="flex items-center gap-2 text-sm hover:text-foreground transition"
+          >
+            {s.done ? <CheckCircle className="h-4 w-4 text-green-400 shrink-0" /> : <Circle className="h-4 w-4 text-muted-foreground shrink-0" />}
+            <span className={s.done ? "line-through text-muted-foreground" : "text-foreground"}>{s.label}</span>
+          </Link>
+        ))}
       </div>
     </div>
   );
@@ -372,6 +421,8 @@ function Dashboard() {
           <Link to="/proposals/new"><Plus className="h-4 w-4 mr-2" /> New proposal</Link>
         </Button>
       </div>
+
+      <OnboardingChecklist total={total} sentCount={pending} accepted={accepted} />
 
       {/* Credit usage widget */}
       {credits && <CreditWidget credits={credits} />}

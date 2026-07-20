@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Copy, Check, ExternalLink } from "lucide-react";
+import { Copy, Check, ExternalLink, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Jobbidder" }] }),
@@ -323,6 +323,17 @@ function SettingsPage() {
               <a href="/pricing" className="text-primary underline">Upgrade your plan →</a>
             </div>
           )}
+        </Card>
+      )}
+
+      {activeTab === "business" && (
+        <Card className="p-5 mt-6 flex items-center gap-3">
+          <Wallet className="h-5 w-5 text-primary shrink-0" />
+          <div className="flex-1 text-sm">
+            <span className="font-medium">Looking for referral payout settings?</span>{" "}
+            <span className="text-muted-foreground">Commission payout method (credit vs. cash) lives on the Affiliate page, next to your referral program.</span>
+          </div>
+          <Link to="/affiliate" className="text-sm text-primary hover:underline shrink-0">Go to Affiliate →</Link>
         </Card>
       )}
 

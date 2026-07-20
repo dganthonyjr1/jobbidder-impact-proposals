@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { listMediaByProposal, deleteMedia } from "@/lib/media.functions";
+import { MediaUpload } from "@/components/media-upload";
+import { MediaGallery } from "@/components/media-gallery";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,6 +57,32 @@ function PublicProposal() {
   const [acceptedTierForDeposit, setAcceptedTierForDeposit] = useState<"good" | "better" | "best">("better");
   const [acceptedTotal, setAcceptedTotal] = useState<number>(0);
   const [winProbability, setWinProbability] = useState<{ probability: number; sampleSize: number } | null>(null);
+  const [projectMedia, setProjectMedia] = useState<any[]>([]);
+  const [projectMediaLoading, setProjectMediaLoading] = useState(false);
+  const fetchProjectMedia = useServerFn(listMediaByProposal);
+  const doDeleteMedia = useServerFn(deleteMedia);
+
+  async function loadProjectMedia() {
+    setProjectMediaLoading(true);
+    try {
+      const media = await fetchProjectMedia({ data: { proposalId: id } });
+      setProjectMedia(media);
+    } catch {
+      // Non-fatal — media library is a supplementary feature.
+    } finally {
+      setProjectMediaLoading(false);
+    }
+  }
+
+  async function removeProjectMedia(mediaId: string) {
+    try {
+      await doDeleteMedia({ data: { mediaId } });
+      setProjectMedia((prev) => prev.filter((m) => m.id !== mediaId));
+      toast.success("Removed");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to remove");
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -85,7 +115,7 @@ function PublicProposal() {
         }
         const { data: { user } } = await supabase.auth.getUser();
         const owner = !!user && json.contractor?.user_id === user.id;
-        if (owner) setIsOwner(true);
+        if (owner) { setIsOwner(true); loadProjectMedia(); }
         if (user && !owner) setClientSession(user);
         // Track view only for non-owner visitors
         if (!owner) {
@@ -354,6 +384,26 @@ function PublicProposal() {
               prefix="proposal"
               max={8}
             />
+          </Card>
+        )}
+
+        {isOwner && (
+          <Card className="p-6 mb-6 print:hidden">
+            <div className="mb-4">
+              <h2 className="font-display font-semibold text-xl">Project Media Library</h2>
+              <p className="text-xs text-muted-foreground">
+                Photos and videos for this job — tag, organize, and mark damage assessments here. Shared with your full Media Library on the dashboard.
+              </p>
+            </div>
+            <MediaUpload proposalId={id} onUploadComplete={loadProjectMedia} />
+            <div className="mt-4">
+              <MediaGallery
+                media={projectMedia}
+                isLoading={projectMediaLoading}
+                editable
+                onDelete={removeProjectMedia}
+              />
+            </div>
           </Card>
         )}
 
