@@ -44,6 +44,8 @@ function PublicProposal() {
   const [clientSession, setClientSession] = useState<any>(null);
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositPaid, setDepositPaid] = useState(false);
+  const [depositInitiated, setDepositInitiated] = useState(false);
+  const [depositPaymentUrl, setDepositPaymentUrl] = useState<string | null>(null);
   const [depositAmount, setDepositAmount] = useState<number | null>(null);
   const [signedName, setSignedName] = useState<string>("");
   const [signedEmail, setSignedEmail] = useState<string>("");
@@ -72,7 +74,11 @@ function PublicProposal() {
           const labs = (json.proposal.labor || []) as LaborLine[];
           const t = computeTotals(mats, labs, loadedTier, Number(json.proposal.tax_rate) || 0.07, Number(json.proposal.overhead_percentage) || 0);
           setAcceptedTotal(t.grandTotal);
-          setDepositAmount(Math.round(t.grandTotal * 0.5 * 100) / 100);
+          setDepositAmount(json.proposal.deposit_amount ?? Math.round(t.grandTotal * 0.5 * 100) / 100);
+          // Deposit status is only ever real once the ghl-invoice-paid webhook confirms it —
+          // never assume "paid" just because an invoice exists.
+          setDepositPaid(json.proposal.deposit_status === "paid");
+          setDepositInitiated(json.proposal.deposit_status === "pending");
         }
         const { data: { user } } = await supabase.auth.getUser();
         const owner = !!user && json.contractor?.user_id === user.id;
@@ -93,6 +99,32 @@ function PublicProposal() {
       }
     })();
   }, [id]);
+
+  // While a deposit invoice is out but not yet confirmed paid, poll for the
+  // webhook-driven confirmation instead of trusting that opening the payment
+  // tab means the client actually paid. Stops once confirmed or after ~10 min.
+  useEffect(() => {
+    if (!depositInitiated || depositPaid) return;
+    let cancelled = false;
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts += 1;
+      if (attempts > 75) { clearInterval(interval); return; }
+      try {
+        const res = await fetch(`/api/public/proposal?id=${encodeURIComponent(id)}`);
+        const json = await res.json();
+        if (cancelled || !res.ok || !json.success) return;
+        if (json.proposal.deposit_status === "paid") {
+          setDepositPaid(true);
+          setDepositInitiated(false);
+          clearInterval(interval);
+        }
+      } catch {
+        // transient — try again next tick
+      }
+    }, 8000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [depositInitiated, depositPaid, id]);
 
   async function savePhotos(next: string[]) {
     setProposal((p: any) => ({ ...p, photos: next }));
@@ -491,6 +523,18 @@ function PublicProposal() {
                   <p className="text-green-400 font-semibold text-lg">✅ Deposit paid — you're all set!</p>
                   <p className="text-muted-foreground text-sm mt-1">Your contractor will be in touch shortly to confirm your start date.</p>
                 </div>
+              ) : depositInitiated ? (
+                <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <p className="text-amber-400 font-semibold text-lg">Payment initiated — waiting for confirmation</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    This updates automatically once your payment clears. If you closed the payment tab before finishing,{" "}
+                    {depositPaymentUrl ? (
+                      <a href={depositPaymentUrl} target="_blank" rel="noreferrer" className="underline hover:text-foreground">
+                        reopen the payment page
+                      </a>
+                    ) : "contact your contractor for a new payment link"}.
+                  </p>
+                </div>
               ) : (
                 <div className="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
                   <p className="font-semibold text-base mb-1">Secure your project start date</p>
@@ -523,9 +567,13 @@ function PublicProposal() {
                         const json = await res.json();
                         if (!res.ok || !json.success) throw new Error(json.error || "Could not create deposit invoice");
                         setDepositAmount(json.depositAmount);
-                        // Redirect to GHL hosted payment page
+                        setDepositPaymentUrl(json.paymentUrl);
+                        // Redirect to GHL hosted payment page — this only means the
+                        // invoice was created and opened, not that payment succeeded.
+                        // depositPaid stays false until the ghl-invoice-paid webhook
+                        // confirms it; the polling effect above picks that up.
                         window.open(json.paymentUrl, "_blank");
-                        setDepositPaid(true);
+                        setDepositInitiated(true);
                       } catch (e: any) {
                         toast.error(e.message || "Could not create deposit invoice. Please contact your contractor.");
                       } finally {
