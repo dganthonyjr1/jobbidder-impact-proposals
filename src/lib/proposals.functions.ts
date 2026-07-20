@@ -37,6 +37,7 @@ const aiInput = z.object({
   client_phone: z.string().max(50).optional().nullable(),
   job_address: z.string().max(500).optional().nullable(),
   job_state: z.string().length(2).optional().nullable(),
+  job_zip: z.union([z.literal(""), z.string().trim().regex(/^\d{5}(-\d{4})?$/, "Enter a valid zip code")]).optional().nullable(),
   trade_type: z.string().max(100).optional().nullable(),
   job_description: z.string().min(1).max(JOB_DESCRIPTION_MAX_LENGTH),
   prevailing_wage_flag: z.union([z.boolean(), z.string()]).optional().nullable(),
@@ -154,6 +155,7 @@ export const generateProposal = createServerFn({ method: "POST" })
             client_phone: data.client_phone,
             job_address: data.job_address,
             job_state: data.job_state,
+            job_zip: data.job_zip || null,
             job_description: data.job_description,
             trade_type: data.trade_type,
             scope_of_work: narrative.scope_of_work,
@@ -200,6 +202,7 @@ export const generateProposal = createServerFn({ method: "POST" })
         client_phone: data.client_phone,
         job_address: data.job_address,
         job_state: data.job_state,
+        job_zip: data.job_zip || null,
         job_description: data.job_description,
         trade_type: data.trade_type,
         scope_of_work: ai.scope_of_work,
@@ -242,7 +245,7 @@ export const listProposals = createServerFn({ method: "GET" })
     
     const { data, error } = await supabase
       .from("proposals")
-      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, trade_type, materials, labor, tax_rate, overhead_percentage, selected_tier, language, job_address, raw_input")
+      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, job_zip, trade_type, materials, labor, tax_rate, overhead_percentage, selected_tier, language, job_address, raw_input")
       .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

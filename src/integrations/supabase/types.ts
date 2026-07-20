@@ -1729,6 +1729,7 @@ export type Database = {
           job_address: string | null
           job_description: string | null
           job_state: string | null
+          job_zip: string | null
           labor: Json | null
           language: string
           materials: Json | null
@@ -1770,6 +1771,7 @@ export type Database = {
           job_address?: string | null
           job_description?: string | null
           job_state?: string | null
+          job_zip?: string | null
           labor?: Json | null
           language?: string
           materials?: Json | null
@@ -1811,6 +1813,7 @@ export type Database = {
           job_address?: string | null
           job_description?: string | null
           job_state?: string | null
+          job_zip?: string | null
           labor?: Json | null
           language?: string
           materials?: Json | null

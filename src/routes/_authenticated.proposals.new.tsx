@@ -51,7 +51,7 @@ function NewProposalPage() {
   const [upgradeInfo, setUpgradeInfo] = useState<{ plan: string; url: string; feature: string } | null>(null);
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
-    job_address: "", job_state: "", trade_type: "",
+    job_address: "", job_state: "", job_zip: "", trade_type: "",
     job_description: "", prevailing_wage: "",
   });
 
@@ -125,6 +125,7 @@ function NewProposalPage() {
         client_phone: form.client_phone || null,
         job_address: form.job_address || null,
         job_state: form.job_state || null,
+        job_zip: form.job_zip || null,
         trade_type: form.trade_type || null,
         job_description: form.job_description,
         prevailing_wage_flag: PW_MAP[form.prevailing_wage]?.flag ?? null,
@@ -178,6 +179,16 @@ function NewProposalPage() {
                 <option value="">—</option>
                 {STATE_LIST.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
+            </div>
+            <div>
+              <Label>Zip code</Label>
+              <Input
+                value={form.job_zip}
+                onChange={(e) => set("job_zip", e.target.value)}
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="90210"
+              />
             </div>
           </div>
           <div>
