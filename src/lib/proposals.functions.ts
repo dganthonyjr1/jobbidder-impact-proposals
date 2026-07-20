@@ -24,6 +24,7 @@ import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
+import { syncNewProposalToNetsuite, type NetsuiteCredentials } from "@/lib/netsuite.server";
 import Groq from "groq-sdk";
 
 async function getHubspotCredentials(contractorId: string): Promise<HubspotCredentials | null> {
@@ -34,6 +35,26 @@ async function getHubspotCredentials(contractorId: string): Promise<HubspotCrede
     .maybeSingle();
   if (!data) return null;
   return { privateAppToken: data.hubspot_private_app_token, syncEnabled: data.hubspot_sync_enabled };
+}
+
+// Dark/untested — see src/lib/netsuite.server.ts. netsuite_sync_enabled is not
+// exposed in Settings yet, so this stays inert until it's set directly in the
+// database after a live test against a real NetSuite account.
+async function getNetsuiteCredentials(contractorId: string): Promise<NetsuiteCredentials | null> {
+  const { data } = await supabaseAdmin
+    .from("contractor_integrations")
+    .select("netsuite_account_id, netsuite_consumer_key, netsuite_consumer_secret, netsuite_token_id, netsuite_token_secret, netsuite_sync_enabled")
+    .eq("contractor_id", contractorId)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    accountId: data.netsuite_account_id,
+    consumerKey: data.netsuite_consumer_key,
+    consumerSecret: data.netsuite_consumer_secret,
+    tokenId: data.netsuite_token_id,
+    tokenSecret: data.netsuite_token_secret,
+    syncEnabled: data.netsuite_sync_enabled,
+  };
 }
 
 const extractedSystemSchema = z.object({
@@ -208,6 +229,21 @@ export const generateProposal = createServerFn({ method: "POST" })
           console.error("[generateProposal] HubSpot sync failed:", (e as Error).message);
         }
 
+        try {
+          const netsuiteCreds = await getNetsuiteCredentials(contractor.id);
+          const opportunityId = await syncNewProposalToNetsuite({
+            clientName: data.client_name,
+            clientEmail: data.client_email,
+            clientPhone: data.client_phone,
+            dealTitle: `Proposal ${created.proposal_number} — ${data.client_name}`,
+            memo: narrative.estimated_total > 0 ? `Estimated total: $${narrative.estimated_total}` : null,
+            credentials: netsuiteCreds,
+          });
+          if (opportunityId) await supabaseAdmin.from("proposals").update({ netsuite_deal_id: opportunityId }).eq("id", created.id);
+        } catch (e) {
+          console.error("[generateProposal] NetSuite sync failed:", (e as Error).message);
+        }
+
         return { id: created.id, proposal_number: created.proposal_number };
       }
       // Narrative generation failed — fall through to the itemized path below.
@@ -274,6 +310,21 @@ export const generateProposal = createServerFn({ method: "POST" })
       if (dealId) await supabaseAdmin.from("proposals").update({ hubspot_deal_id: dealId }).eq("id", created.id);
     } catch (e) {
       console.error("[generateProposal] HubSpot sync failed:", (e as Error).message);
+    }
+
+    try {
+      const netsuiteCreds = await getNetsuiteCredentials(contractor.id);
+      const opportunityId = await syncNewProposalToNetsuite({
+        clientName: data.client_name,
+        clientEmail: data.client_email,
+        clientPhone: data.client_phone,
+        dealTitle: `Proposal ${created.proposal_number} — ${data.client_name}`,
+        memo: baseTotals.grandTotal > 0 ? `Estimated total: $${baseTotals.grandTotal.toFixed(2)}` : null,
+        credentials: netsuiteCreds,
+      });
+      if (opportunityId) await supabaseAdmin.from("proposals").update({ netsuite_deal_id: opportunityId }).eq("id", created.id);
+    } catch (e) {
+      console.error("[generateProposal] NetSuite sync failed:", (e as Error).message);
     }
 
     return { id: created.id, proposal_number: created.proposal_number };

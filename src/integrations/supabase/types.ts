@@ -557,6 +557,12 @@ export type Database = {
           ghl_location_id: string | null
           hubspot_private_app_token: string | null
           hubspot_sync_enabled: boolean
+          netsuite_account_id: string | null
+          netsuite_consumer_key: string | null
+          netsuite_consumer_secret: string | null
+          netsuite_sync_enabled: boolean
+          netsuite_token_id: string | null
+          netsuite_token_secret: string | null
           updated_at: string
         }
         Insert: {
@@ -569,6 +575,12 @@ export type Database = {
           ghl_location_id?: string | null
           hubspot_private_app_token?: string | null
           hubspot_sync_enabled?: boolean
+          netsuite_account_id?: string | null
+          netsuite_consumer_key?: string | null
+          netsuite_consumer_secret?: string | null
+          netsuite_sync_enabled?: boolean
+          netsuite_token_id?: string | null
+          netsuite_token_secret?: string | null
           updated_at?: string
         }
         Update: {
@@ -581,6 +593,12 @@ export type Database = {
           ghl_location_id?: string | null
           hubspot_private_app_token?: string | null
           hubspot_sync_enabled?: boolean
+          netsuite_account_id?: string | null
+          netsuite_consumer_key?: string | null
+          netsuite_consumer_secret?: string | null
+          netsuite_sync_enabled?: boolean
+          netsuite_token_id?: string | null
+          netsuite_token_secret?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1781,6 +1799,7 @@ export type Database = {
           labor: Json | null
           language: string
           materials: Json | null
+          netsuite_deal_id: string | null
           overhead_amount: number | null
           overhead_label: string | null
           overhead_percentage: number | null
@@ -1826,6 +1845,7 @@ export type Database = {
           labor?: Json | null
           language?: string
           materials?: Json | null
+          netsuite_deal_id?: string | null
           overhead_amount?: number | null
           overhead_label?: string | null
           overhead_percentage?: number | null
@@ -1871,6 +1891,7 @@ export type Database = {
           labor?: Json | null
           language?: string
           materials?: Json | null
+          netsuite_deal_id?: string | null
           overhead_amount?: number | null
           overhead_label?: string | null
           overhead_percentage?: number | null
