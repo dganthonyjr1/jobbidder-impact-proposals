@@ -89,6 +89,7 @@ export const generateProposal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => aiInput.parse(input))
   .handler(async ({ data, context }) => {
+    console.log(`[generateProposal] extracted_systems received: ${data.extracted_systems?.length ?? 0}${data.extracted_systems?.length ? ` (${data.extracted_systems.map((s) => s.name).join(", ")})` : ""}`);
     const { userId } = context;
     const { data: contractor, error: contractorError } = await supabaseAdmin
       .from("contractors")

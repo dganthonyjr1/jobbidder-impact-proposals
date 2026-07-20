@@ -64,8 +64,11 @@ export const extractSpecSystems = createServerFn({ method: "POST" })
       const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
       if (Array.isArray(parsed.systems)) systems = parsed.systems;
     } catch {
+      console.error(`[extractSpecSystems] Failed to parse Claude response for ${data.fileName}. Raw text: ${raw.slice(0, 1000)}`);
       throw new Error("Could not parse the extracted systems — try again or edit the job description manually.");
     }
+
+    console.log(`[extractSpecSystems] Extracted ${systems.length} system(s) from ${data.fileName}: ${systems.map((s) => s.name).join(", ")}`);
 
     // Best-effort cleanup — the uploaded spec file only exists to drive this
     // one extraction; nothing downstream reads it back from storage.
