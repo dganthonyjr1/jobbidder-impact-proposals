@@ -70,21 +70,21 @@ function PublicEstimate() {
     <div className="min-h-screen bg-background print:bg-white">
       <JessicaWebCallWidget floating />
       <header className="border-b border-border bg-card">
-        <div className="max-w-3xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             {contractor?.logo_url ? (
-              <img src={contractor.logo_url} alt="" className="h-10 w-auto" />
+              <img src={contractor.logo_url} alt="" className="h-10 w-auto shrink-0" />
             ) : (
-              <div className="h-10 w-10 rounded-md flex items-center justify-center" style={{ background: brand }}>
+              <div className="h-10 w-10 shrink-0 rounded-md flex items-center justify-center" style={{ background: brand }}>
                 <Sparkles className="h-5 w-5 text-white" />
               </div>
             )}
-            <div>
-              <div className="font-display font-bold">{contractor?.business_name || "Jobbidder"}</div>
-              <div className="text-xs text-muted-foreground">{contractor?.phone} {contractor?.email && `· ${contractor.email}`}</div>
+            <div className="min-w-0">
+              <div className="font-display font-bold truncate">{contractor?.business_name || "Jobbidder"}</div>
+              <div className="text-xs text-muted-foreground truncate">{contractor?.phone} {contractor?.email && `· ${contractor.email}`}</div>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <div className="text-xs text-muted-foreground">Estimate</div>
             <div className="font-mono text-sm">{estimate.estimate_number}</div>
           </div>

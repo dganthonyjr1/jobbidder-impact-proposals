@@ -21,13 +21,13 @@ function Index() {
   return (
     <div className="min-h-screen bg-background bg-hero">
       <header className="border-b border-border/40 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-16 py-2 sm:py-0 flex flex-wrap items-center justify-between gap-y-2">
           <Link to="/"><JobbidderLogo size="sm" className="!h-[29px] sm:!h-[38px]" /></Link>
           <nav className="flex items-center gap-2 sm:gap-3">
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
             <Link to="/contractor-apply" search={{ phone: "", email: "", name: "", ghl_id: "" }} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">For Contractors</Link>
-            <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Sign in</Link>
+            <Link to="/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">Sign in</Link>
             <Button asChild size="sm"><Link to="/login">Get started</Link></Button>
           </nav>
         </div>
