@@ -138,9 +138,20 @@ function PublicProposal() {
   async function saveClientPhotos(next: string[]) {
     setProposal((p: any) => ({ ...p, client_photos: next }));
     setSavingClientPhotos(true);
-    const { error } = await supabase.from("proposals").update({ photos: next }).eq("id", id);
+    let error: string | null = null;
+    try {
+      const res = await fetch("/api/public/proposal-client-photos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proposalId: id, photos: next }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) error = json.error || "Failed to save photos";
+    } catch (e: any) {
+      error = e?.message || "Failed to save photos";
+    }
     setSavingClientPhotos(false);
-    if (error) toast.error(error.message);
+    if (error) toast.error(error);
     else toast.success("Photos uploaded — your contractor has been notified.");
   }
 

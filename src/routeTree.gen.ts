@@ -43,6 +43,7 @@ import { Route as ApiPublicTestEmailGhlRouteImport } from './routes/api/public/t
 import { Route as ApiPublicSupportTicketRouteImport } from './routes/api/public/support-ticket'
 import { Route as ApiPublicSendProposalEmailRouteImport } from './routes/api/public/send-proposal-email'
 import { Route as ApiPublicProposalViewRouteImport } from './routes/api/public/proposal-view'
+import { Route as ApiPublicProposalClientPhotosRouteImport } from './routes/api/public/proposal-client-photos'
 import { Route as ApiPublicProposalRouteImport } from './routes/api/public/proposal'
 import { Route as ApiPublicMediaUploadRouteImport } from './routes/api/public/media-upload'
 import { Route as ApiPublicMediaEnhanceRouteImport } from './routes/api/public/media-enhance'
@@ -247,6 +248,12 @@ const ApiPublicProposalViewRoute = ApiPublicProposalViewRouteImport.update({
   path: '/api/public/proposal-view',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicProposalClientPhotosRoute =
+  ApiPublicProposalClientPhotosRouteImport.update({
+    id: '/api/public/proposal-client-photos',
+    path: '/api/public/proposal-client-photos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicProposalRoute = ApiPublicProposalRouteImport.update({
   id: '/api/public/proposal',
   path: '/api/public/proposal',
@@ -455,6 +462,7 @@ export interface FileRoutesByFullPath {
   '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
   '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
+  '/api/public/proposal-client-photos': typeof ApiPublicProposalClientPhotosRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
@@ -519,6 +527,7 @@ export interface FileRoutesByTo {
   '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
   '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
+  '/api/public/proposal-client-photos': typeof ApiPublicProposalClientPhotosRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
@@ -585,6 +594,7 @@ export interface FileRoutesById {
   '/api/public/media-enhance': typeof ApiPublicMediaEnhanceRoute
   '/api/public/media-upload': typeof ApiPublicMediaUploadRoute
   '/api/public/proposal': typeof ApiPublicProposalRoute
+  '/api/public/proposal-client-photos': typeof ApiPublicProposalClientPhotosRoute
   '/api/public/proposal-view': typeof ApiPublicProposalViewRoute
   '/api/public/send-proposal-email': typeof ApiPublicSendProposalEmailRoute
   '/api/public/support-ticket': typeof ApiPublicSupportTicketRoute
@@ -651,6 +661,7 @@ export interface FileRouteTypes {
     | '/api/public/media-enhance'
     | '/api/public/media-upload'
     | '/api/public/proposal'
+    | '/api/public/proposal-client-photos'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/support-ticket'
@@ -715,6 +726,7 @@ export interface FileRouteTypes {
     | '/api/public/media-enhance'
     | '/api/public/media-upload'
     | '/api/public/proposal'
+    | '/api/public/proposal-client-photos'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/support-ticket'
@@ -780,6 +792,7 @@ export interface FileRouteTypes {
     | '/api/public/media-enhance'
     | '/api/public/media-upload'
     | '/api/public/proposal'
+    | '/api/public/proposal-client-photos'
     | '/api/public/proposal-view'
     | '/api/public/send-proposal-email'
     | '/api/public/support-ticket'
@@ -836,6 +849,7 @@ export interface RootRouteChildren {
   ApiPublicMediaEnhanceRoute: typeof ApiPublicMediaEnhanceRoute
   ApiPublicMediaUploadRoute: typeof ApiPublicMediaUploadRoute
   ApiPublicProposalRoute: typeof ApiPublicProposalRoute
+  ApiPublicProposalClientPhotosRoute: typeof ApiPublicProposalClientPhotosRoute
   ApiPublicProposalViewRoute: typeof ApiPublicProposalViewRoute
   ApiPublicSendProposalEmailRoute: typeof ApiPublicSendProposalEmailRoute
   ApiPublicSupportTicketRoute: typeof ApiPublicSupportTicketRoute
@@ -1097,6 +1111,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/proposal-view'
       fullPath: '/api/public/proposal-view'
       preLoaderRoute: typeof ApiPublicProposalViewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/proposal-client-photos': {
+      id: '/api/public/proposal-client-photos'
+      path: '/api/public/proposal-client-photos'
+      fullPath: '/api/public/proposal-client-photos'
+      preLoaderRoute: typeof ApiPublicProposalClientPhotosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/proposal': {
@@ -1369,6 +1390,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicMediaEnhanceRoute: ApiPublicMediaEnhanceRoute,
   ApiPublicMediaUploadRoute: ApiPublicMediaUploadRoute,
   ApiPublicProposalRoute: ApiPublicProposalRoute,
+  ApiPublicProposalClientPhotosRoute: ApiPublicProposalClientPhotosRoute,
   ApiPublicProposalViewRoute: ApiPublicProposalViewRoute,
   ApiPublicSendProposalEmailRoute: ApiPublicSendProposalEmailRoute,
   ApiPublicSupportTicketRoute: ApiPublicSupportTicketRoute,
