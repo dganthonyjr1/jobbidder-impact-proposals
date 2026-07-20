@@ -198,7 +198,7 @@ function PublicProposal() {
   // Good/Better/Best tiers and line-item tables and render the written document.
   const isNarrative = proposal.raw_input?.proposal_format === "narrative";
 
-  async function sign({ signatureName, signatureEmail }: { signatureName: string; signatureEmail: string; signatureDataUrl: string | null }) {
+  async function sign({ signatureName, signatureEmail, signatureDataUrl }: { signatureName: string; signatureEmail: string; signatureDataUrl: string | null }) {
     setSigning(true);
     try {
       const res = await fetch("/api/public/accept-proposal", {
@@ -209,6 +209,7 @@ function PublicProposal() {
           signatureName,
           signatureEmail: signatureEmail || null,
           acceptedTier: tier,
+          signatureDataUrl,
         }),
       });
       const json = await res.json();

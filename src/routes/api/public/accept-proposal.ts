@@ -10,6 +10,7 @@ const BodySchema = z.object({
   signatureName: z.string().trim().min(1).max(200),
   signatureEmail: z.string().trim().email().max(254).optional().nullable(),
   acceptedTier: z.enum(["good", "better", "best"]),
+  signatureDataUrl: z.string().trim().startsWith("data:image/").max(2_000_000).optional().nullable(),
 });
 
 function getClientIp(request: Request) {
@@ -62,6 +63,7 @@ export const Route = createFileRoute("/api/public/accept-proposal")({
           proposal_id: input.proposalId,
           signature_name: input.signatureName,
           signature_email: input.signatureEmail || null,
+          signature_image: input.signatureDataUrl || null,
           accepted_tier: input.acceptedTier,
           total_amount: totals.grandTotal,
           ip_address: getClientIp(request),

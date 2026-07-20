@@ -1603,6 +1603,7 @@ export type Database = {
           ip_address: string | null
           proposal_id: string
           signature_email: string | null
+          signature_image: string | null
           signature_name: string
           total_amount: number | null
         }
@@ -1613,6 +1614,7 @@ export type Database = {
           ip_address?: string | null
           proposal_id: string
           signature_email?: string | null
+          signature_image?: string | null
           signature_name: string
           total_amount?: number | null
         }
@@ -1623,6 +1625,7 @@ export type Database = {
           ip_address?: string | null
           proposal_id?: string
           signature_email?: string | null
+          signature_image?: string | null
           signature_name?: string
           total_amount?: number | null
         }
