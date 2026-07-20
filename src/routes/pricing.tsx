@@ -108,7 +108,7 @@ const enterpriseFeatures = [
   { icon: ShieldCheck, label: "License & insurance verification", detail: "AI extracts and validates credentials from uploaded documents" },
   { icon: Kanban, label: "Kanban pipeline CRM", detail: "Replace HubSpot — full deal + contractor pipeline in one view" },
   { icon: Zap, label: "Document renewal alerts", detail: "Auto-notify contractors before licenses or insurance expires" },
-  { icon: Building2, label: "CRM & automation integration", detail: "Two-way sync with your CRM, workflows, and SMS sequences" },
+  { icon: Building2, label: "Already on HubSpot or NetSuite?", detail: "You don't need them — Jobbidder's CRM is built in. But if you're already running HubSpot, every proposal syncs over automatically. On NetSuite? Ask us about a custom sync." },
 ];
 
 function PricingPage() {

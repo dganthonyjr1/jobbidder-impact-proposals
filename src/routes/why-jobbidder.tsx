@@ -522,6 +522,16 @@ function WhyJobbidderPage() {
             <p className="mt-4 text-2xl font-bold text-primary">$3,500/mo — replaces both</p>
           </div>
         </div>
+
+        <div className="mt-6 rounded-2xl border border-border bg-card/60 p-6 text-center">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Already locked into a HubSpot contract? You don&apos;t have to rip it out — Jobbidder can automatically push
+            every proposal into your existing HubSpot account as a contact and deal, so nothing gets entered twice.
+            Running NetSuite for company-wide accounting? A custom NetSuite sync is available on request for
+            Enterprise accounts. Either way, you won&apos;t <em>need</em> them to run your contractor business —
+            Jobbidder&apos;s built-in pipeline already does that.
+          </p>
+        </div>
       </section>
 
       {/* ── CTA ── */}
