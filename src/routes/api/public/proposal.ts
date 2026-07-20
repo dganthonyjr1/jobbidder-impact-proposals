@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { extractFeatures, predictWinProbability, type TrainedModel } from "@/lib/pricing-model.server";
 
 const QuerySchema = z.object({ id: z.string().uuid() });
 
@@ -36,7 +37,37 @@ export const Route = createFileRoute("/api/public/proposal")({
               .maybeSingle()
           : { data: null };
 
-        return Response.json({ success: true, proposal, contractor });
+        let winProbability: { probability: number; sampleSize: number } | null = null;
+        try {
+          const { data: snapshot } = await supabaseAdmin
+            .from("pricing_model_snapshots")
+            .select("feature_names, feature_means, feature_stds, weights, intercept, sample_size")
+            .order("trained_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (snapshot) {
+            const model: TrainedModel = {
+              featureNames: snapshot.feature_names,
+              featureMeans: snapshot.feature_means as unknown as number[],
+              featureStds: snapshot.feature_stds as unknown as number[],
+              weights: snapshot.weights as unknown as number[],
+              intercept: snapshot.intercept,
+              sampleSize: snapshot.sample_size,
+            };
+            const features = extractFeatures({
+              trade_type: proposal.trade_type,
+              overhead_percentage: proposal.overhead_percentage,
+              materials: proposal.materials as any,
+              labor: proposal.labor as any,
+              tax_rate: proposal.tax_rate,
+            });
+            winProbability = { probability: predictWinProbability(features, model), sampleSize: model.sampleSize };
+          }
+        } catch (e) {
+          console.warn("[proposal] win-probability lookup failed:", (e as Error).message);
+        }
+
+        return Response.json({ success: true, proposal, contractor, winProbability });
       },
     },
   },

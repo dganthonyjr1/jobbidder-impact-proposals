@@ -71,6 +71,7 @@ import { Route as ApiPublicWebhookGhlJessicaFollowupRouteImport } from './routes
 import { Route as ApiPublicWebhookGhlInvoicePaidRouteImport } from './routes/api/public/webhook.ghl-invoice-paid'
 import { Route as ApiPublicWebhookGhlContractorSurveyRouteImport } from './routes/api/public/webhook.ghl-contractor-survey'
 import { Route as ApiPublicWebhookGhlRouteImport } from './routes/api/public/webhook.ghl'
+import { Route as ApiPublicHooksTrainPricingModelRouteImport } from './routes/api/public/hooks/train-pricing-model'
 import { Route as ApiPublicHooksProcessJessicaFollowupsRouteImport } from './routes/api/public/hooks/process-jessica-followups'
 import { Route as ApiPublicHooksProcessFollowupsRouteImport } from './routes/api/public/hooks/process-followups'
 
@@ -407,6 +408,12 @@ const ApiPublicWebhookGhlRoute = ApiPublicWebhookGhlRouteImport.update({
   path: '/api/public/webhook/ghl',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksTrainPricingModelRoute =
+  ApiPublicHooksTrainPricingModelRouteImport.update({
+    id: '/api/public/hooks/train-pricing-model',
+    path: '/api/public/hooks/train-pricing-model',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessJessicaFollowupsRoute =
   ApiPublicHooksProcessJessicaFollowupsRouteImport.update({
     id: '/api/public/hooks/process-jessica-followups',
@@ -472,6 +479,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
+  '/api/public/hooks/train-pricing-model': typeof ApiPublicHooksTrainPricingModelRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
@@ -537,6 +545,7 @@ export interface FileRoutesByTo {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
+  '/api/public/hooks/train-pricing-model': typeof ApiPublicHooksTrainPricingModelRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
@@ -604,6 +613,7 @@ export interface FileRoutesById {
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/api/public/hooks/process-followups': typeof ApiPublicHooksProcessFollowupsRoute
   '/api/public/hooks/process-jessica-followups': typeof ApiPublicHooksProcessJessicaFollowupsRoute
+  '/api/public/hooks/train-pricing-model': typeof ApiPublicHooksTrainPricingModelRoute
   '/api/public/webhook/ghl': typeof ApiPublicWebhookGhlRoute
   '/api/public/webhook/ghl-contractor-survey': typeof ApiPublicWebhookGhlContractorSurveyRoute
   '/api/public/webhook/ghl-invoice-paid': typeof ApiPublicWebhookGhlInvoicePaidRoute
@@ -671,6 +681,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/hooks/process-jessica-followups'
+    | '/api/public/hooks/train-pricing-model'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-invoice-paid'
@@ -736,6 +747,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/hooks/process-jessica-followups'
+    | '/api/public/hooks/train-pricing-model'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-invoice-paid'
@@ -802,6 +814,7 @@ export interface FileRouteTypes {
     | '/lovable/email/suppression'
     | '/api/public/hooks/process-followups'
     | '/api/public/hooks/process-jessica-followups'
+    | '/api/public/hooks/train-pricing-model'
     | '/api/public/webhook/ghl'
     | '/api/public/webhook/ghl-contractor-survey'
     | '/api/public/webhook/ghl-invoice-paid'
@@ -859,6 +872,7 @@ export interface RootRouteChildren {
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicHooksProcessFollowupsRoute: typeof ApiPublicHooksProcessFollowupsRoute
   ApiPublicHooksProcessJessicaFollowupsRoute: typeof ApiPublicHooksProcessJessicaFollowupsRoute
+  ApiPublicHooksTrainPricingModelRoute: typeof ApiPublicHooksTrainPricingModelRoute
   ApiPublicWebhookGhlRoute: typeof ApiPublicWebhookGhlRoute
   ApiPublicWebhookGhlContractorSurveyRoute: typeof ApiPublicWebhookGhlContractorSurveyRoute
   ApiPublicWebhookGhlInvoicePaidRoute: typeof ApiPublicWebhookGhlInvoicePaidRoute
@@ -1309,6 +1323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookGhlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/train-pricing-model': {
+      id: '/api/public/hooks/train-pricing-model'
+      path: '/api/public/hooks/train-pricing-model'
+      fullPath: '/api/public/hooks/train-pricing-model'
+      preLoaderRoute: typeof ApiPublicHooksTrainPricingModelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-jessica-followups': {
       id: '/api/public/hooks/process-jessica-followups'
       path: '/api/public/hooks/process-jessica-followups'
@@ -1401,6 +1422,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksProcessFollowupsRoute: ApiPublicHooksProcessFollowupsRoute,
   ApiPublicHooksProcessJessicaFollowupsRoute:
     ApiPublicHooksProcessJessicaFollowupsRoute,
+  ApiPublicHooksTrainPricingModelRoute: ApiPublicHooksTrainPricingModelRoute,
   ApiPublicWebhookGhlRoute: ApiPublicWebhookGhlRoute,
   ApiPublicWebhookGhlContractorSurveyRoute:
     ApiPublicWebhookGhlContractorSurveyRoute,

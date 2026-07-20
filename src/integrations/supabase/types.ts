@@ -1639,6 +1639,42 @@ export type Database = {
           },
         ]
       }
+      pricing_model_snapshots: {
+        Row: {
+          created_at: string
+          feature_means: Json
+          feature_names: string[]
+          feature_stds: Json
+          id: string
+          intercept: number
+          sample_size: number
+          trained_at: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          feature_means: Json
+          feature_names: string[]
+          feature_stds: Json
+          id?: string
+          intercept: number
+          sample_size: number
+          trained_at?: string
+          weights: Json
+        }
+        Update: {
+          created_at?: string
+          feature_means?: Json
+          feature_names?: string[]
+          feature_stds?: Json
+          id?: string
+          intercept?: number
+          sample_size?: number
+          trained_at?: string
+          weights?: Json
+        }
+        Relationships: []
+      }
       proposal_followups: {
         Row: {
           channels: string

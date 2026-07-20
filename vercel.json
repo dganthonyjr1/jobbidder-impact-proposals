@@ -12,6 +12,10 @@
     {
       "path": "/api/public/hooks/process-jessica-followups",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/public/hooks/train-pricing-model",
+      "schedule": "0 6 * * *"
     }
   ]
 }

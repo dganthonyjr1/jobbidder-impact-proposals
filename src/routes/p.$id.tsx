@@ -52,6 +52,7 @@ function PublicProposal() {
   const [signedEmail, setSignedEmail] = useState<string>("");
   const [acceptedTierForDeposit, setAcceptedTierForDeposit] = useState<"good" | "better" | "best">("better");
   const [acceptedTotal, setAcceptedTotal] = useState<number>(0);
+  const [winProbability, setWinProbability] = useState<{ probability: number; sampleSize: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -60,6 +61,7 @@ function PublicProposal() {
         const json = await res.json();
         if (!res.ok || !json.success) throw new Error(json.error || "Proposal not found");
         setProposal(json.proposal);
+        if (json.winProbability) setWinProbability(json.winProbability);
         const loadedTier = (json.proposal.selected_tier as "good" | "better" | "best") || "better";
         setTier(loadedTier);
         if (json.proposal.client_email) setSendEmail(json.proposal.client_email);
@@ -505,6 +507,12 @@ function PublicProposal() {
                 <span className="font-display text-3xl font-bold" style={{ color: brand }}>{fmt(totals.grandTotal)}</span>
               </div>
             </div>
+            {isOwner && winProbability && (
+              <div className="mt-3 rounded-md bg-muted/40 border border-border px-3 py-2 text-xs text-muted-foreground">
+                Estimated win probability: <span className="font-semibold text-foreground">{Math.round(winProbability.probability * 100)}%</span>
+                {" "}— based on {winProbability.sampleSize} decided proposals across the platform. Gets more accurate as more proposals are decided.
+              </div>
+            )}
           </Card>
         )}
 
