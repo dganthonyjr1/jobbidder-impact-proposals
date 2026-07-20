@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat, Phone } from "lucide-react";
+import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat } from "lucide-react";
 import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
@@ -80,10 +80,14 @@ function Index() {
       <section className="border-t border-border/40 bg-card/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
           <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-6">
+            <Link
+              to="/contractor-apply"
+              search={{ phone: "", email: "", name: "", ghl_id: "" }}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary mb-6 hover:bg-primary/20 transition"
+            >
               <HardHat className="h-3 w-3" />
               Now accepting licensed contractors
-            </div>
+            </Link>
             <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter">
               Are you a <span className="text-gradient-sia">licensed contractor</span>?
             </h2>
@@ -102,14 +106,8 @@ function Index() {
                 </div>
               ))}
             </div>
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Button size="lg" asChild className="shadow-glow w-full sm:w-auto">
-                <a href="tel:+13109874997">
-                  <Phone className="mr-2 h-4 w-4" />
-                  Call to apply: (310) 987-4997
-                </a>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+            <div className="mt-8 flex justify-center">
+              <Button asChild size="lg" className="shadow-glow w-full sm:w-auto">
                 <Link to="/contractor-apply" search={{ phone: "", email: "", name: "", ghl_id: "" }}>Apply online <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
