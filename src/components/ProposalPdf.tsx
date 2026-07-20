@@ -95,7 +95,7 @@ export function ProposalPdf({ proposal, contractor, tier }: Props) {
         <View>
           <Text style={styles.preparedFor}>Prepared for</Text>
           <Text style={styles.clientName}>{proposal.client_name}</Text>
-          {proposal.job_address ? <Text style={styles.address}>{proposal.job_address}{proposal.job_zip ? ` ${proposal.job_zip}` : ""}</Text> : null}
+          {proposal.job_address ? <Text style={styles.address}>{proposal.job_address}{proposal.job_city ? `, ${proposal.job_city}` : ""}{proposal.job_state ? ` ${proposal.job_state}` : ""}{proposal.job_zip ? ` ${proposal.job_zip}` : ""}</Text> : null}
           <Text style={[styles.h1, { marginTop: 14 }]}>
             {(proposal.trade_type || "Project")} Proposal{isNarrative ? "" : ` — ${TIER_LABELS[tier]?.name || "Better"}`}
           </Text>

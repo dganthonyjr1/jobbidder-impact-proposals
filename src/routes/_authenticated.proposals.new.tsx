@@ -51,7 +51,7 @@ function NewProposalPage() {
   const [upgradeInfo, setUpgradeInfo] = useState<{ plan: string; url: string; feature: string } | null>(null);
   const [form, setForm] = useState({
     client_name: "", client_email: "", client_phone: "",
-    job_address: "", job_state: "", job_zip: "", trade_type: "",
+    job_address: "", job_city: "", job_state: "", job_zip: "", trade_type: "",
     job_description: "", prevailing_wage: "",
   });
 
@@ -124,6 +124,7 @@ function NewProposalPage() {
         client_email: form.client_email || null,
         client_phone: form.client_phone || null,
         job_address: form.job_address || null,
+        job_city: form.job_city || null,
         job_state: form.job_state || null,
         job_zip: form.job_zip || null,
         trade_type: form.trade_type || null,
@@ -173,6 +174,7 @@ function NewProposalPage() {
             <div><Label>Email</Label><Input type="email" value={form.client_email} onChange={(e) => set("client_email", e.target.value)} /></div>
             <div><Label>Phone</Label><Input value={form.client_phone} onChange={(e) => set("client_phone", e.target.value)} /></div>
             <div className="sm:col-span-2"><Label>Job address</Label><Input value={form.job_address} onChange={(e) => set("job_address", e.target.value)} /></div>
+            <div><Label>City</Label><Input value={form.job_city} onChange={(e) => set("job_city", e.target.value)} /></div>
             <div>
               <Label>State</Label>
               <select value={form.job_state} onChange={(e) => set("job_state", e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground">

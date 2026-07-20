@@ -163,6 +163,7 @@ export async function handleLeadIntake(request: Request): Promise<Response> {
         const jobAddress = firstString(custom(body, "job_address", "jobAddress"), body.address1, body.address, body.contact?.address1);
         const jobState = normalizeState(firstString(custom(body, "state", "job_state", "jobState"), body.state, body.contact?.state));
         const jobZip = firstString(custom(body, "zip", "job_zip", "jobZip", "postal_code", "postalCode"), body.postal_code, body.postalCode, body.contact?.postalCode);
+        const jobCity = firstString(custom(body, "city", "job_city", "jobCity"), body.city, body.contact?.city);
         const tradeType = firstString(custom(body, "trade_type", "tradeType", "service", "project_type"), body.trade_type);
 
         // Load contractor for business name and tier
@@ -235,6 +236,7 @@ export async function handleLeadIntake(request: Request): Promise<Response> {
           client_email: clientEmail,
           client_phone: clientPhone,
           job_address: jobAddress,
+          job_city: jobCity,
           job_state: jobState,
           job_zip: jobZip,
           trade_type: tradeType,

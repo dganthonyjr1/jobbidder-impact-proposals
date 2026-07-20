@@ -105,7 +105,7 @@ function AccountPage() {
                   style={{ width: `${Math.min(100, ((lifetimeCount ?? 0) / 2) * 100)}%` }}
                 />
               </div>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-base text-muted-foreground mt-2">
                 Upgrade to Journeyman or higher to unlock unlimited proposals.
               </p>
             </div>

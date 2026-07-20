@@ -299,7 +299,7 @@ function PublicProposal() {
         <div className="mb-10">
           <Badge variant="secondary" className="mb-3">{t.preparedFor} {proposal.client_name}</Badge>
           <h1 className="font-display text-4xl font-bold tracking-tight capitalize">{t.tradeProposal(proposal.trade_type || t.projectFallback)}</h1>
-          {proposal.job_address && <p className="text-muted-foreground mt-2">{proposal.job_address}{proposal.job_zip ? ` ${proposal.job_zip}` : ""}</p>}
+          {proposal.job_address && <p className="text-muted-foreground mt-2">{proposal.job_address}{proposal.job_city ? `, ${proposal.job_city}` : ""}{proposal.job_state ? ` ${proposal.job_state}` : ""}{proposal.job_zip ? ` ${proposal.job_zip}` : ""}</p>}
         </div>
 
         {!isNarrative && (

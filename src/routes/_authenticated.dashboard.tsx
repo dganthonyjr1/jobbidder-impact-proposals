@@ -183,6 +183,7 @@ function Dashboard() {
       p.proposal_number?.toLowerCase().includes(search.toLowerCase()) ||
       p.trade_type?.toLowerCase().includes(search.toLowerCase()) ||
       p.job_address?.toLowerCase().includes(search.toLowerCase()) ||
+      p.job_city?.toLowerCase().includes(search.toLowerCase()) ||
       p.job_zip?.includes(search);
     const matchStatus = statusFilter === "all" || p.status === statusFilter;
     return matchSearch && matchStatus;
@@ -348,7 +349,7 @@ function Dashboard() {
                       </div>
                       <div className="font-mono text-xs text-muted-foreground mt-0.5">{p.proposal_number}</div>
                       <div className="text-sm text-muted-foreground mt-1">
-                        {p.trade_type || "—"}{p.job_address ? ` · ${p.job_address}${p.job_zip ? ` ${p.job_zip}` : ""}` : ""}
+                        {p.trade_type || "—"}{p.job_address ? ` · ${p.job_address}${p.job_city ? `, ${p.job_city}` : ""}${p.job_zip ? ` ${p.job_zip}` : ""}` : ""}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                         {p.client_email && (

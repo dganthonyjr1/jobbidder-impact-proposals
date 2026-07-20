@@ -36,6 +36,7 @@ const aiInput = z.object({
   client_email: z.string().email().optional().nullable(),
   client_phone: z.string().max(50).optional().nullable(),
   job_address: z.string().max(500).optional().nullable(),
+  job_city: z.string().trim().max(100).optional().nullable(),
   job_state: z.string().length(2).optional().nullable(),
   job_zip: z.union([z.literal(""), z.string().trim().regex(/^\d{5}(-\d{4})?$/, "Enter a valid zip code")]).optional().nullable(),
   trade_type: z.string().max(100).optional().nullable(),
@@ -155,6 +156,7 @@ export const generateProposal = createServerFn({ method: "POST" })
             client_email: data.client_email,
             client_phone: data.client_phone,
             job_address: data.job_address,
+            job_city: data.job_city || null,
             job_state: data.job_state,
             job_zip: data.job_zip || null,
             job_description: data.job_description,
@@ -202,6 +204,7 @@ export const generateProposal = createServerFn({ method: "POST" })
         client_email: data.client_email,
         client_phone: data.client_phone,
         job_address: data.job_address,
+        job_city: data.job_city || null,
         job_state: data.job_state,
         job_zip: data.job_zip || null,
         job_description: data.job_description,
@@ -246,7 +249,7 @@ export const listProposals = createServerFn({ method: "GET" })
     
     const { data, error } = await supabase
       .from("proposals")
-      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, job_zip, trade_type, materials, labor, tax_rate, overhead_percentage, selected_tier, language, job_address, raw_input")
+      .select("id, proposal_number, client_name, client_email, client_phone, status, created_at, job_state, job_city, job_zip, trade_type, materials, labor, tax_rate, overhead_percentage, selected_tier, language, job_address, raw_input")
       .eq("contractor_id", contractor.id)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

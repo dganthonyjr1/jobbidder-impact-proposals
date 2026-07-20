@@ -14,6 +14,22 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
+const TRADE_OPTIONS = [
+  "General Contracting / Multi-Trade",
+  "Roofing",
+  "Plumbing",
+  "HVAC",
+  "Electrical",
+  "Flooring",
+  "Painting",
+  "Glazing",
+  "Landscaping",
+  "Remodeling",
+  "Solar",
+  "Moving",
+  "Other",
+];
+
 // Default pricing settings for a new contractor
 const DEFAULT_PRICING: PricingSettings = {
   trades: {
@@ -100,6 +116,10 @@ function SettingsPage() {
   }, []);
 
   async function save() {
+    if (!contractor.license_number?.trim()) {
+      toast.error("License # is required — Jobbidder is for licensed and insured contractors only.");
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from("contractors").update({
       business_name: contractor.business_name,
@@ -197,10 +217,27 @@ function SettingsPage() {
           <h2 className="font-display font-semibold text-lg">Business Info</h2>
           <div className="grid grid-cols-2 gap-4">
             <div><Label>Business name</Label><Input value={contractor.business_name || ""} onChange={(e) => set("business_name", e.target.value)} /></div>
-            <div><Label>Trade type</Label><Input value={contractor.trade_type || ""} onChange={(e) => set("trade_type", e.target.value)} /></div>
+            <div>
+              <Label>Trade type</Label>
+              <select
+                value={TRADE_OPTIONS.includes(contractor.trade_type || "") ? contractor.trade_type : "Other"}
+                onChange={(e) => set("trade_type", e.target.value === "Other" ? "" : e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-input/10 px-3 text-sm text-foreground"
+              >
+                {TRADE_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+              {(!TRADE_OPTIONS.includes(contractor.trade_type || "")) && (
+                <Input
+                  className="mt-2"
+                  placeholder="Describe your trade"
+                  value={contractor.trade_type || ""}
+                  onChange={(e) => set("trade_type", e.target.value)}
+                />
+              )}
+            </div>
             <div><Label>Phone</Label><Input value={contractor.phone || ""} onChange={(e) => set("phone", e.target.value)} /></div>
             <div><Label>Email</Label><Input value={contractor.email || ""} onChange={(e) => set("email", e.target.value)} /></div>
-            <div><Label>License #</Label><Input value={contractor.license_number || ""} onChange={(e) => set("license_number", e.target.value)} /></div>
+            <div><Label>License # <span className="text-destructive">*</span></Label><Input required value={contractor.license_number || ""} onChange={(e) => set("license_number", e.target.value)} /></div>
             <div><Label>Brand color</Label><Input type="color" value={contractor.primary_color || "#EC4899"} onChange={(e) => set("primary_color", e.target.value)} /></div>
             <div className="col-span-2">
               <Label>Business Logo</Label>
