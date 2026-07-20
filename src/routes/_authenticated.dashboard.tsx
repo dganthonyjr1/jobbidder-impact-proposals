@@ -135,6 +135,99 @@ function CreditWidget({ credits }: { credits: NonNullable<Awaited<ReturnType<typ
   );
 }
 
+const TIER_DISPLAY: Record<string, string> = { good: "Good", better: "Better", best: "Best" };
+
+function WinRateInsights({
+  decidedCount,
+  winRate,
+  tierCounts,
+  avgWonOverhead,
+  avgLostOverhead,
+  tradeBreakdown,
+}: {
+  decidedCount: number;
+  winRate: number | null;
+  tierCounts: Record<string, number>;
+  avgWonOverhead: number | null;
+  avgLostOverhead: number | null;
+  tradeBreakdown: { trade: string; won: number; lost: number; total: number; rate: number }[];
+}) {
+  if (decidedCount < 5) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 mb-6">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Zap className="h-4 w-4 text-primary" />
+          Win-Rate Insights <Badge variant="secondary" className="text-[10px]">Beta</Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1.5">
+          Insights show up once you have at least 5 accepted or declined proposals ({decidedCount}/5 so far).
+        </p>
+      </div>
+    );
+  }
+
+  const wonTierTotal = tierCounts.good + tierCounts.better + tierCounts.best;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 mb-6">
+      <div className="flex items-center gap-2 text-sm font-medium mb-3">
+        <Zap className="h-4 w-4 text-primary" />
+        Win-Rate Insights <Badge variant="secondary" className="text-[10px]">Beta</Badge>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <div className="text-xs text-muted-foreground uppercase tracking-wider">Overall win rate</div>
+          <div className="text-2xl font-bold mt-1">{winRate !== null ? `${Math.round(winRate * 100)}%` : "—"}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">{decidedCount} decided proposals</div>
+        </div>
+        {wonTierTotal > 0 && (
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Tier chosen when won</div>
+            <div className="space-y-1">
+              {(["good", "better", "best"] as const).map((t) => (
+                tierCounts[t] > 0 && (
+                  <div key={t} className="flex items-center gap-2 text-xs">
+                    <span className="w-12 text-muted-foreground">{TIER_DISPLAY[t]}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${(tierCounts[t] / wonTierTotal) * 100}%` }} />
+                    </div>
+                    <span className="w-8 text-right font-medium">{Math.round((tierCounts[t] / wonTierTotal) * 100)}%</span>
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+        {avgWonOverhead !== null && avgLostOverhead !== null && (
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">Overhead: won vs. lost</div>
+            <p className="text-xs mt-1.5 leading-relaxed">
+              Won proposals average <span className="font-semibold text-foreground">{avgWonOverhead.toFixed(1)}%</span> overhead vs.{" "}
+              <span className="font-semibold text-foreground">{avgLostOverhead.toFixed(1)}%</span> on declined ones.
+              {avgLostOverhead > avgWonOverhead
+                ? " Pricing below your lost-proposal average may improve close rate."
+                : " Your losses aren't clearly tied to overhead — likely scope, timing, or fit."}
+            </p>
+          </div>
+        )}
+      </div>
+      {tradeBreakdown.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Win rate by trade</div>
+          <div className="flex flex-wrap gap-3">
+            {tradeBreakdown.map((t) => (
+              <div key={t.trade} className="text-xs rounded-lg border border-border px-3 py-1.5">
+                <span className="font-medium">{t.trade}</span>
+                <span className="text-muted-foreground"> — {Math.round(t.rate * 100)}% ({t.won}/{t.total})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const CONTRACTOR_STATUS_COLORS: Record<string, string> = {
   submitted: "bg-yellow-500/20 text-yellow-300",
   approved: "bg-green-500/20 text-green-300",
@@ -196,6 +289,39 @@ function Dashboard() {
   const totalRevenue = withTotals
     .filter((p: any) => p.status === "accepted")
     .reduce((sum: number, p: any) => sum + (p._grandTotal || 0), 0);
+
+  // Win-rate pricing insights — derived from real accept/decline outcomes,
+  // not a static formula. Every threshold below exists to avoid asserting
+  // a pattern off a handful of data points.
+  const decided = withTotals.filter((p: any) => p.status === "accepted" || p.status === "declined");
+  const wonCount = decided.filter((p: any) => p.status === "accepted").length;
+  const winRate = decided.length ? wonCount / decided.length : null;
+
+  const tierCounts: Record<string, number> = { good: 0, better: 0, best: 0 };
+  withTotals
+    .filter((p: any) => p.status === "accepted")
+    .forEach((p: any) => {
+      const t = p.selected_tier || "better";
+      if (tierCounts[t] !== undefined) tierCounts[t]++;
+    });
+
+  const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+  const wonOverheads = withTotals.filter((p: any) => p.status === "accepted" && p.overhead_percentage != null).map((p: any) => Number(p.overhead_percentage));
+  const lostOverheads = withTotals.filter((p: any) => p.status === "declined" && p.overhead_percentage != null).map((p: any) => Number(p.overhead_percentage));
+  const avgWonOverhead = wonOverheads.length >= 3 ? avg(wonOverheads) : null;
+  const avgLostOverhead = lostOverheads.length >= 3 ? avg(lostOverheads) : null;
+
+  const tradeStats: Record<string, { won: number; lost: number }> = {};
+  decided.forEach((p: any) => {
+    const trade = p.trade_type || "Other";
+    if (!tradeStats[trade]) tradeStats[trade] = { won: 0, lost: 0 };
+    if (p.status === "accepted") tradeStats[trade].won++;
+    else tradeStats[trade].lost++;
+  });
+  const tradeBreakdown = Object.entries(tradeStats)
+    .map(([trade, s]) => ({ trade, ...s, total: s.won + s.lost, rate: s.won / (s.won + s.lost) }))
+    .filter((t) => t.total >= 3)
+    .sort((a, b) => b.total - a.total);
 
   async function resend(proposalId: string, clientEmail: string) {
     setResending(proposalId);
@@ -264,6 +390,15 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      <WinRateInsights
+        decidedCount={decided.length}
+        winRate={winRate}
+        tierCounts={tierCounts}
+        avgWonOverhead={avgWonOverhead}
+        avgLostOverhead={avgLostOverhead}
+        tradeBreakdown={tradeBreakdown}
+      />
 
       <Tabs defaultValue="proposals" className="w-full">
         <TabsList className="mb-4">
