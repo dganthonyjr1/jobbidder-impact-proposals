@@ -31,6 +31,9 @@ function extractInvoiceId(body: JsonRecord): string | null {
     body.invoice_id ||
     body.invoice?.id ||
     body.invoice?._id ||
+    body.data?.id ||
+    body.data?._id ||
+    body.data?.invoiceId ||
     body._id ||
     body.id ||
     null
@@ -39,7 +42,13 @@ function extractInvoiceId(body: JsonRecord): string | null {
 
 function extractStatus(body: JsonRecord): string {
   return String(
-    body.status || body.paymentStatus || body.payment_status || body.invoice?.status || ""
+    body.status ||
+      body.paymentStatus ||
+      body.payment_status ||
+      body.invoiceStatus ||
+      body.invoice?.status ||
+      body.data?.status ||
+      ""
   ).toLowerCase();
 }
 
@@ -61,8 +70,14 @@ export const Route = createFileRoute("/api/public/webhook/ghl-invoice-paid")({
         const invoiceId = extractInvoiceId(body);
         const status = extractStatus(body);
 
+        // Log every hit while we're still confirming GHL's real invoice-paid
+        // payload shape (their workflow "Test" button sends generic sample
+        // contact data, not the real trigger payload, so this is the only
+        // reliable way to see what an actual payment event looks like).
+        console.log("[webhook.ghl-invoice-paid] received:", { keys: Object.keys(body), invoiceId, status, body: JSON.stringify(body).slice(0, 3000) });
+
         if (!invoiceId) {
-          console.warn("[webhook.ghl-invoice-paid] No invoice id in payload:", JSON.stringify(body).slice(0, 500));
+          console.warn("[webhook.ghl-invoice-paid] No invoice id in payload");
           return Response.json({ ok: true, skipped: "no invoice id" }, { headers: cors() });
         }
 
