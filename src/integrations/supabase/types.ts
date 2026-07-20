@@ -1766,6 +1766,7 @@ export type Database = {
           expires_at: string | null
           id: string
           job_address: string | null
+          job_address2: string | null
           job_city: string | null
           job_description: string | null
           job_state: string | null
@@ -1809,6 +1810,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           job_address?: string | null
+          job_address2?: string | null
           job_city?: string | null
           job_description?: string | null
           job_state?: string | null
@@ -1852,6 +1854,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           job_address?: string | null
+          job_address2?: string | null
           job_city?: string | null
           job_description?: string | null
           job_state?: string | null
