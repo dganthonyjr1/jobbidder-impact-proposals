@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { cancelProposalFollowups } from "@/lib/followups.server";
 import { notifyContractorOfDecision } from "@/lib/notify-contractor.server";
+import { updateHubspotDealStage, HUBSPOT_STAGE } from "@/lib/hubspot.server";
 
 const BodySchema = z.object({
   proposalId: z.string().uuid(),
@@ -32,15 +33,36 @@ export const Route = createFileRoute("/api/public/decline-proposal")({
           );
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: proposal, error: updateError } = await supabaseAdmin
           .from("proposals")
           .update({ status: "declined" })
-          .eq("id", input.proposalId);
+          .eq("id", input.proposalId)
+          .select("id, contractor_id, hubspot_deal_id")
+          .maybeSingle();
         if (updateError) {
           return Response.json({ success: false, error: updateError.message }, { status: 500 });
         }
 
         try { await cancelProposalFollowups(input.proposalId); } catch {}
+
+        if (proposal?.hubspot_deal_id && proposal.contractor_id) {
+          try {
+            const { data: integration } = await supabaseAdmin
+              .from("contractor_integrations")
+              .select("hubspot_private_app_token, hubspot_sync_enabled")
+              .eq("contractor_id", proposal.contractor_id)
+              .maybeSingle();
+            await updateHubspotDealStage({
+              dealId: proposal.hubspot_deal_id,
+              stage: HUBSPOT_STAGE.declined,
+              credentials: integration
+                ? { privateAppToken: integration.hubspot_private_app_token, syncEnabled: integration.hubspot_sync_enabled }
+                : null,
+            });
+          } catch (e) {
+            console.warn("hubspot deal update (decline) failed:", (e as Error).message);
+          }
+        }
 
         try {
           await notifyContractorOfDecision({

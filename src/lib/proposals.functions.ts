@@ -23,7 +23,18 @@ import { computeTotals, generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } fro
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
 import Groq from "groq-sdk";
+
+async function getHubspotCredentials(contractorId: string): Promise<HubspotCredentials | null> {
+  const { data } = await supabaseAdmin
+    .from("contractor_integrations")
+    .select("hubspot_private_app_token, hubspot_sync_enabled")
+    .eq("contractor_id", contractorId)
+    .maybeSingle();
+  if (!data) return null;
+  return { privateAppToken: data.hubspot_private_app_token, syncEnabled: data.hubspot_sync_enabled };
+}
 
 const extractedSystemSchema = z.object({
   name: z.string().min(1).max(200),
@@ -181,6 +192,22 @@ export const generateProposal = createServerFn({ method: "POST" })
           .select()
           .single();
         if (error) throw new Error(error.message);
+
+        try {
+          const hubspotCreds = await getHubspotCredentials(contractor.id);
+          const dealId = await syncNewProposalToHubspot({
+            clientName: data.client_name,
+            clientEmail: data.client_email,
+            clientPhone: data.client_phone,
+            dealName: `Proposal ${created.proposal_number} — ${data.client_name}`,
+            amount: narrative.estimated_total || null,
+            credentials: hubspotCreds,
+          });
+          if (dealId) await supabaseAdmin.from("proposals").update({ hubspot_deal_id: dealId }).eq("id", created.id);
+        } catch (e) {
+          console.error("[generateProposal] HubSpot sync failed:", (e as Error).message);
+        }
+
         return { id: created.id, proposal_number: created.proposal_number };
       }
       // Narrative generation failed — fall through to the itemized path below.
@@ -233,6 +260,22 @@ export const generateProposal = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw new Error(error.message);
+
+    try {
+      const hubspotCreds = await getHubspotCredentials(contractor.id);
+      const dealId = await syncNewProposalToHubspot({
+        clientName: data.client_name,
+        clientEmail: data.client_email,
+        clientPhone: data.client_phone,
+        dealName: `Proposal ${created.proposal_number} — ${data.client_name}`,
+        amount: baseTotals.grandTotal || null,
+        credentials: hubspotCreds,
+      });
+      if (dealId) await supabaseAdmin.from("proposals").update({ hubspot_deal_id: dealId }).eq("id", created.id);
+    } catch (e) {
+      console.error("[generateProposal] HubSpot sync failed:", (e as Error).message);
+    }
+
     return { id: created.id, proposal_number: created.proposal_number };
   });
 

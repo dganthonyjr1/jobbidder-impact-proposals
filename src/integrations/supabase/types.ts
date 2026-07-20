@@ -555,6 +555,8 @@ export type Database = {
           ghl_from_email: string | null
           ghl_from_number: string | null
           ghl_location_id: string | null
+          hubspot_private_app_token: string | null
+          hubspot_sync_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -565,6 +567,8 @@ export type Database = {
           ghl_from_email?: string | null
           ghl_from_number?: string | null
           ghl_location_id?: string | null
+          hubspot_private_app_token?: string | null
+          hubspot_sync_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -575,6 +579,8 @@ export type Database = {
           ghl_from_email?: string | null
           ghl_from_number?: string | null
           ghl_location_id?: string | null
+          hubspot_private_app_token?: string | null
+          hubspot_sync_enabled?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -1764,6 +1770,7 @@ export type Database = {
           deposit_status: string | null
           exclusions: Json | null
           expires_at: string | null
+          hubspot_deal_id: string | null
           id: string
           job_address: string | null
           job_address2: string | null
@@ -1808,6 +1815,7 @@ export type Database = {
           deposit_status?: string | null
           exclusions?: Json | null
           expires_at?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           job_address?: string | null
           job_address2?: string | null
@@ -1852,6 +1860,7 @@ export type Database = {
           deposit_status?: string | null
           exclusions?: Json | null
           expires_at?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           job_address?: string | null
           job_address2?: string | null

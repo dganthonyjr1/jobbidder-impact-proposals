@@ -144,6 +144,8 @@ function SettingsPage() {
         ghl_from_number: integration.ghl_from_number?.trim() || null,
         ghl_from_email: integration.ghl_from_email?.trim() || null,
         contractor_sms_notifications_enabled: integration.contractor_sms_notifications_enabled === true,
+        hubspot_private_app_token: integration.hubspot_private_app_token?.trim() || null,
+        hubspot_sync_enabled: integration.hubspot_sync_enabled === true,
       }, { onConflict: "contractor_id" });
       integrationError = upsertError;
     }
@@ -572,6 +574,45 @@ function SettingsPage() {
               <span>
                 Send contractor status notifications by SMS. Leave off for email-only notifications.
               </span>
+            </label>
+          </div>
+
+          <div className="border-t pt-4 space-y-3">
+            <div>
+              <h3 className="font-display font-semibold">HubSpot CRM sync</h3>
+              <p className="text-sm text-muted-foreground">
+                Optional. Every proposal Jobbidder creates will push a contact and deal into your own HubSpot account,
+                and update that deal automatically when the client accepts or declines.{" "}
+                <a
+                  href="https://developers.hubspot.com/docs/guides/apps/private-apps/overview"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline text-foreground"
+                >
+                  How to create a Private App token →
+                </a>
+              </p>
+            </div>
+            <div>
+              <Label>HubSpot Private App Token</Label>
+              <Input
+                type="password"
+                value={integration.hubspot_private_app_token || ""}
+                onChange={(e) => setInt("hubspot_private_app_token", e.target.value)}
+                placeholder="pat-na1-…"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Requires the crm.objects.contacts.write and crm.objects.deals.write scopes.
+              </p>
+            </div>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={integration.hubspot_sync_enabled === true}
+                onChange={(e) => setInt("hubspot_sync_enabled", e.target.checked)}
+              />
+              <span>Push new proposals to HubSpot as contacts and deals.</span>
             </label>
           </div>
         </Card>

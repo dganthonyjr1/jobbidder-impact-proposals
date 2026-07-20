@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { computeTotals, type LaborLine, type MaterialLine } from "@/lib/pricing";
 import { cancelProposalFollowups } from "@/lib/followups.server";
 import { notifyContractorOfDecision } from "@/lib/notify-contractor.server";
+import { updateHubspotDealStage, HUBSPOT_STAGE } from "@/lib/hubspot.server";
 
 const BodySchema = z.object({
   proposalId: z.string().uuid(),
@@ -47,7 +48,7 @@ export const Route = createFileRoute("/api/public/accept-proposal")({
 
         const { data: proposal, error: proposalError } = await supabaseAdmin
           .from("proposals")
-          .select("id, status, materials, labor, tax_rate, overhead_percentage")
+          .select("id, status, materials, labor, tax_rate, overhead_percentage, contractor_id, hubspot_deal_id")
           .eq("id", input.proposalId)
           .maybeSingle();
 
@@ -95,6 +96,26 @@ export const Route = createFileRoute("/api/public/accept-proposal")({
           });
         } catch (e) {
           console.warn("notify accept failed:", (e as Error).message);
+        }
+
+        if (proposal.hubspot_deal_id && proposal.contractor_id) {
+          try {
+            const { data: integration } = await supabaseAdmin
+              .from("contractor_integrations")
+              .select("hubspot_private_app_token, hubspot_sync_enabled")
+              .eq("contractor_id", proposal.contractor_id)
+              .maybeSingle();
+            await updateHubspotDealStage({
+              dealId: proposal.hubspot_deal_id,
+              stage: HUBSPOT_STAGE.accepted,
+              amount: totals.grandTotal,
+              credentials: integration
+                ? { privateAppToken: integration.hubspot_private_app_token, syncEnabled: integration.hubspot_sync_enabled }
+                : null,
+            });
+          } catch (e) {
+            console.warn("hubspot deal update (accept) failed:", (e as Error).message);
+          }
         }
 
         return Response.json({ success: true, status: "accepted", totalAmount: totals.grandTotal });
