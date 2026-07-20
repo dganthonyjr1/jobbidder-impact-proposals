@@ -279,7 +279,7 @@ function PipelinePage() {
   const wonValue = wonDeals.reduce((sum: number, d: any) => sum + (d.deal_value || 0), 0);
 
   return (
-    <div className="p-6 min-h-screen bg-background">
+    <div className="p-4 sm:p-6 min-h-screen bg-background">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

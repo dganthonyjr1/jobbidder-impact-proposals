@@ -410,7 +410,7 @@ function Dashboard() {
   const statuses = ["all", "draft", "sent", "viewed", "accepted", "declined"];
 
   return (
-    <div className="p-6 max-w-7xl">
+    <div className="p-4 sm:p-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

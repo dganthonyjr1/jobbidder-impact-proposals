@@ -190,7 +190,7 @@ function SettingsPage() {
   ] as const;
 
   return (
-    <div className="p-8 max-w-4xl space-y-6">
+    <div className="p-4 sm:p-8 max-w-4xl space-y-6">
       <div>
         <h1 className="font-display text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground mt-1">Branding, pricing parameters, and integrations.</p>

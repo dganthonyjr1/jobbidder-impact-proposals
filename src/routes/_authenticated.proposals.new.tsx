@@ -149,7 +149,7 @@ function NewProposalPage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 sm:p-8 max-w-3xl">
       <UpgradeModal
         open={!!upgradeInfo}
         onClose={() => setUpgradeInfo(null)}
