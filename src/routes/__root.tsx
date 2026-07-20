@@ -11,6 +11,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { LeadChatWidget } from "@/components/LeadChatWidget";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTheme } from "@/lib/theme-store";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -138,6 +140,12 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {/* Apply saved theme before paint to avoid a flash of the wrong theme. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem('jobbidder-theme')==='light'){document.documentElement.classList.add('light');}}catch(e){}})();`,
+          }}
+        />
         {/* GHL Lead Connector widget — required for A2P SMS compliance verification. Hidden via CSS — do NOT remove. */}
         <script
           src="https://widgets.leadconnectorhq.com/loader.js"
@@ -172,6 +180,7 @@ function RootShell({ children }: { children: ReactNode }) {
         {children}
         <Scripts />
         <ClientOnly fallback={null}>
+          <ThemeToggle />
           <WidgetGate />
         </ClientOnly>
       </body>
@@ -181,6 +190,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { theme } = useTheme();
 
   // Capture affiliate referral code from any landing URL (e.g. /?ref=JB-XXXXX)
   useEffect(() => {
@@ -196,7 +206,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <ClientOnly fallback={null}>
-        <Toaster theme="dark" position="top-center" richColors />
+        <Toaster theme={theme} position="top-center" richColors />
       </ClientOnly>
     </QueryClientProvider>
   );

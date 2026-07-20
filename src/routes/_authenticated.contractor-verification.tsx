@@ -64,7 +64,7 @@ function statusBadge(status: string) {
     expired:       { color: "bg-red-500/20 text-red-400 border-red-500/30",         icon: <XCircle className="w-3 h-3" />,     label: "Expired" },
     invalid:       { color: "bg-red-600/20 text-red-300 border-red-600/30",         icon: <ShieldX className="w-3 h-3" />,     label: "Invalid" },
   };
-  const { color, icon, label } = map[status] ?? { color: "bg-slate-500/20 text-slate-400 border-slate-500/30", icon: null, label: status };
+  const { color, icon, label } = map[status] ?? { color: "bg-muted-foreground/20 text-muted-foreground border-muted-foreground/30", icon: null, label: status };
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border ${color}`}>
       {icon}{label}
@@ -73,7 +73,7 @@ function statusBadge(status: string) {
 }
 
 function complianceColor(docs: DocRow[]): string {
-  if (docs.length === 0) return "text-slate-500";
+  if (docs.length === 0) return "text-muted-foreground";
   const hasRequired = REQUIRED_DOC_TYPES.every((t) => docs.some((d) => d.document_type === t));
   if (!hasRequired) return "text-yellow-400";
   const bad = docs.filter((d) => d.status === "expired" || d.status === "invalid");
@@ -107,12 +107,12 @@ function DocCard({
     : false;
 
   return (
-    <div className="bg-slate-700/50 rounded-lg border border-slate-600 overflow-hidden">
+    <div className="bg-muted/50 rounded-lg border border-border overflow-hidden">
       <div
-        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-slate-700 transition"
+        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-muted transition"
         onClick={() => setExpanded((e) => !e)}
       >
-        <FileText className="w-4 h-4 text-slate-400 shrink-0" />
+        <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-white">
@@ -123,24 +123,24 @@ function DocCard({
               <span className="text-xs text-orange-400 font-medium">⚠ Expiring soon</span>
             )}
             {doc.ai_confidence != null && (
-              <span className="text-xs text-slate-500">AI {doc.ai_confidence}%</span>
+              <span className="text-xs text-muted-foreground">AI {doc.ai_confidence}%</span>
             )}
           </div>
           {doc.expiration_date && (
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Exp: {new Date(doc.expiration_date).toLocaleDateString()}
             </p>
           )}
         </div>
         {expanded ? (
-          <ChevronDown className="w-4 h-4 text-slate-400" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-slate-400" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
       </div>
 
       {expanded && (
-        <div className="px-3 pb-3 border-t border-slate-600 pt-3 space-y-3">
+        <div className="px-3 pb-3 border-t border-border pt-3 space-y-3">
           {/* AI-extracted fields */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             {[
@@ -152,8 +152,8 @@ function DocCard({
               ["File", doc.file_name],
             ].filter(([, v]) => v).map(([label, value]) => (
               <div key={String(label)}>
-                <p className="text-slate-500">{label}</p>
-                <p className="text-slate-200 truncate">{String(value)}</p>
+                <p className="text-muted-foreground">{label}</p>
+                <p className="text-foreground truncate">{String(value)}</p>
               </div>
             ))}
           </div>
@@ -194,7 +194,7 @@ function DocCard({
             <Button
               size="sm"
               variant="outline"
-              className="h-6 text-xs border-slate-600 text-slate-300 hover:bg-slate-600"
+              className="h-6 text-xs border-border text-foreground/80 hover:bg-muted-foreground/40"
               onClick={() => onRenew(doc.id, contractorId)}
             >
               <RefreshCw className="w-3 h-3 mr-1" /> Request renewal
@@ -215,9 +215,9 @@ function ContractorVerificationRow({ c, onVerify, onRenew }: {
   const docs = c.contractor_documents ?? [];
 
   return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+    <div className="bg-card rounded-lg border border-border overflow-hidden">
       <div
-        className="flex items-center gap-3 p-4 cursor-pointer hover:bg-slate-750 transition"
+        className="flex items-center gap-3 p-4 cursor-pointer hover:bg-muted transition"
         onClick={() => setOpen((o) => !o)}
       >
         <ComplianceIcon docs={docs} />
@@ -238,7 +238,7 @@ function ContractorVerificationRow({ c, onVerify, onRenew }: {
               </Badge>
             )}
           </div>
-          <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-3">
+          <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3">
             <span>{c.phone}</span>
             {c.trade_type && <span>{c.trade_type}</span>}
             {c.service_area && <span>{c.service_area}</span>}
@@ -254,7 +254,7 @@ function ContractorVerificationRow({ c, onVerify, onRenew }: {
                 key={t}
                 title={DOC_TYPE_LABELS[t]}
                 className={`w-2 h-2 rounded-full ${
-                  !d ? "bg-slate-600"
+                  !d ? "bg-muted-foreground/40"
                   : d.status === "verified" || d.status === "ai_extracted" ? "bg-green-500"
                   : d.status === "expired" || d.status === "invalid" ? "bg-red-500"
                   : "bg-yellow-500"
@@ -264,23 +264,23 @@ function ContractorVerificationRow({ c, onVerify, onRenew }: {
           })}
         </div>
         {open ? (
-          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
         )}
       </div>
 
       {open && (
-        <div className="border-t border-slate-700 p-4 space-y-3">
+        <div className="border-t border-border p-4 space-y-3">
           {/* Required doc status summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
             {REQUIRED_DOC_TYPES.map((t) => {
               const d = docs.find((x) => x.document_type === t);
               return (
                 <div key={t} className="text-center">
-                  <p className="text-xs text-slate-500 mb-1">{DOC_TYPE_LABELS[t]}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{DOC_TYPE_LABELS[t]}</p>
                   {d ? statusBadge(d.status) : (
-                    <span className="text-xs text-slate-600 italic">Missing</span>
+                    <span className="text-xs text-muted-foreground italic">Missing</span>
                   )}
                 </div>
               );
@@ -288,7 +288,7 @@ function ContractorVerificationRow({ c, onVerify, onRenew }: {
           </div>
 
           {docs.length === 0 ? (
-            <p className="text-sm text-slate-500 italic text-center py-4">No documents uploaded yet</p>
+            <p className="text-sm text-muted-foreground italic text-center py-4">No documents uploaded yet</p>
           ) : (
             <div className="space-y-2">
               {docs.map((doc) => (

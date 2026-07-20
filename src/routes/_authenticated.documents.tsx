@@ -95,13 +95,11 @@ function DocumentsPage() {
       } });
 
       toast.success("Document uploaded successfully! We'll verify it within 24 hours.");
-      
       // Reset form
       setSelectedFile(null);
       setDocumentType("license");
       setExpirationDate("");
       setNotes("");
-      
       // Refetch documents
       refetchDocuments();
     } catch (error) {
@@ -122,11 +120,11 @@ function DocumentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">License & Insurance Documents</h1>
-          <p className="text-slate-400">
+          <h1 className="text-4xl font-bold text-foreground mb-2">License & Insurance Documents</h1>
+          <p className="text-muted-foreground">
             Upload and manage your contractor credentials, licenses, and insurance documents
           </p>
         </div>
@@ -149,21 +147,21 @@ function DocumentsPage() {
         )}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "upload" | "manage")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800 border border-slate-700">
-            <TabsTrigger value="upload" className="data-[state=active]:bg-blue-600">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload" className="data-[state=active]:bg-primary">
               <Upload className="w-4 h-4 mr-2" />
               Upload Document
             </TabsTrigger>
-            <TabsTrigger value="manage" className="data-[state=active]:bg-blue-600">
+            <TabsTrigger value="manage" className="data-[state=active]:bg-primary">
               <FileText className="w-4 h-4 mr-2" />
               Manage Documents
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload" className="space-y-6 mt-6">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card >
               <CardHeader>
-                <CardTitle className="text-white">Upload New Document</CardTitle>
+                <CardTitle className="text-foreground">Upload New Document</CardTitle>
                 <CardDescription>
                   Upload your contractor license, insurance, or bond documentation. All documents are verified within 24 hours.
                 </CardDescription>
@@ -176,17 +174,17 @@ function DocumentsPage() {
                       onClick={() => setDocumentType(doc.value)}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
                         documentType === doc.value
-                          ? "bg-blue-600/20 border-blue-500"
-                          : "bg-slate-700 border-slate-600 hover:border-slate-500"
+                          ? "bg-primary/20 border-primary"
+                          : "bg-muted border-border hover:border-ring"
                       }`}
                     >
                       <div className="text-2xl mb-2">{doc.icon}</div>
-                      <p className="font-semibold text-white">{doc.label}</p>
+                      <p className="font-semibold text-foreground">{doc.label}</p>
                     </button>
                   ))}
                 </div>
 
-                <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
                   <input
                     type="file"
                     id="doc-input"
@@ -202,20 +200,20 @@ function DocumentsPage() {
                       <>
                         <CheckCircle2 className="w-12 h-12 text-green-500" />
                         <div>
-                          <p className="text-white font-semibold">{selectedFile.name}</p>
-                          <p className="text-slate-400 text-sm">
+                          <p className="text-foreground font-semibold">{selectedFile.name}</p>
+                          <p className="text-muted-foreground text-sm">
                             {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                           </p>
                         </div>
                       </>
                     ) : (
                       <>
-                        <Upload className="w-12 h-12 text-slate-400" />
+                        <Upload className="w-12 h-12 text-muted-foreground" />
                         <div>
-                          <p className="text-white font-semibold">
+                          <p className="text-foreground font-semibold">
                             Click to upload or drag and drop
                           </p>
-                          <p className="text-slate-400 text-sm">
+                          <p className="text-muted-foreground text-sm">
                             PDF or image files up to 50MB
                           </p>
                         </div>
@@ -226,7 +224,7 @@ function DocumentsPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="expiration" className="text-white">
+                    <Label htmlFor="expiration" className="text-foreground">
                       Expiration Date (Optional)
                     </Label>
                     <Input
@@ -234,12 +232,11 @@ function DocumentsPage() {
                       type="date"
                       value={expirationDate}
                       onChange={(e) => setExpirationDate(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="notes" className="text-white">
+                    <Label htmlFor="notes" className="text-foreground">
                       Additional Notes (Optional)
                     </Label>
                     <Textarea
@@ -247,7 +244,6 @@ function DocumentsPage() {
                       placeholder="e.g., License number, policy details, etc."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                       rows={3}
                     />
                   </div>
@@ -256,7 +252,7 @@ function DocumentsPage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile || uploading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full"
                 >
                   {uploading ? (
                     <>
@@ -275,9 +271,9 @@ function DocumentsPage() {
           </TabsContent>
 
           <TabsContent value="manage" className="space-y-6 mt-6">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card >
               <CardHeader>
-                <CardTitle className="text-white">Your Documents</CardTitle>
+                <CardTitle className="text-foreground">Your Documents</CardTitle>
                 <CardDescription>
                   View and manage all your uploaded documents
                 </CardDescription>
@@ -288,15 +284,15 @@ function DocumentsPage() {
                     {documents.documents.map((doc: any) => (
                       <div
                         key={doc.id}
-                        className="bg-slate-700 rounded-lg p-4 border border-slate-600 flex items-start justify-between"
+                        className="bg-muted rounded-lg p-4 border border-border flex items-start justify-between"
                       >
                         <div className="flex items-start gap-3 flex-1">
                           <div className="text-2xl mt-1">{getDocumentIcon(doc.document_type)}</div>
                           <div className="flex-1">
-                            <h3 className="text-white font-semibold">
+                            <h3 className="text-foreground font-semibold">
                               {getDocumentLabel(doc.document_type)}
                             </h3>
-                            <p className="text-slate-400 text-sm">{doc.file_name}</p>
+                            <p className="text-muted-foreground text-sm">{doc.file_name}</p>
                             <div className="flex items-center gap-4 mt-2">
                               <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${
                                 doc.status === "verified"
@@ -309,7 +305,7 @@ function DocumentsPage() {
                                 {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
                               </span>
                               {doc.expiration_date && (
-                                <span className="text-slate-400 text-xs flex items-center gap-1">
+                                <span className="text-muted-foreground text-xs flex items-center gap-1">
                                   <Calendar className="w-3 h-3" />
                                   Expires: {new Date(doc.expiration_date).toLocaleDateString()}
                                 </span>
@@ -322,9 +318,9 @@ function DocumentsPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Shield className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                    <p className="text-slate-400">No documents uploaded yet</p>
-                    <p className="text-slate-500 text-sm mt-1">
+                    <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">No documents uploaded yet</p>
+                    <p className="text-muted-foreground text-sm mt-1">
                       Upload your documents to get verified and start receiving jobs
                     </p>
                   </div>
@@ -335,9 +331,9 @@ function DocumentsPage() {
         </Tabs>
 
         {/* Compliance Status */}
-        <Card className="mt-8 bg-slate-800 border-slate-700">
+        <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <Shield className="w-5 h-5" />
               Compliance Status
             </CardTitle>
@@ -347,11 +343,11 @@ function DocumentsPage() {
               {DOCUMENT_TYPES.map((doc) => {
                 const uploaded = documents?.documents?.find((d: any) => d.document_type === doc.value);
                 return (
-                  <div key={doc.value} className="bg-slate-700 rounded-lg p-4 border border-slate-600">
+                  <div key={doc.value} className="bg-muted rounded-lg p-4 border border-border">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-white font-semibold">{doc.label}</p>
-                        <p className="text-slate-400 text-sm">
+                        <p className="text-foreground font-semibold">{doc.label}</p>
+                        <p className="text-muted-foreground text-sm">
                           {uploaded ? (
                             <span className="text-green-400">✓ Uploaded</span>
                           ) : (

@@ -100,7 +100,6 @@ function MediaUploadPage() {
       } });
 
       toast.success("File uploaded successfully!");
-      
       // Reset form
       setSelectedFile(null);
       setTitle("");
@@ -109,7 +108,6 @@ function MediaUploadPage() {
       setIsDamagePhoto(false);
       setTags("");
       setLocationName("");
-      
       // Refetch media list
       refetchMedia();
     } catch (error) {
@@ -120,31 +118,31 @@ function MediaUploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Media Upload Center</h1>
-          <p className="text-slate-400">
+          <h1 className="text-4xl font-bold text-foreground mb-2">Media Upload Center</h1>
+          <p className="text-muted-foreground">
             Upload project photos and videos to showcase your work and build your portfolio
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "photos" | "videos")} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-slate-800 border border-slate-700">
-            <TabsTrigger value="photos" className="data-[state=active]:bg-blue-600">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="photos" className="data-[state=active]:bg-primary">
               <ImageIcon className="w-4 h-4 mr-2" />
               Photos
             </TabsTrigger>
-            <TabsTrigger value="videos" className="data-[state=active]:bg-blue-600">
+            <TabsTrigger value="videos" className="data-[state=active]:bg-primary">
               <Video className="w-4 h-4 mr-2" />
               Videos
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="photos" className="space-y-6 mt-6">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card >
               <CardHeader>
-                <CardTitle className="text-white">Upload Project Photos</CardTitle>
+                <CardTitle className="text-foreground">Upload Project Photos</CardTitle>
                 <CardDescription>
                   Upload high-quality photos of your completed projects. Max 900MB per file.
                 </CardDescription>
@@ -158,7 +156,7 @@ function MediaUploadPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="photo-title" className="text-white">
+                    <Label htmlFor="photo-title" className="text-foreground">
                       Photo Title
                     </Label>
                     <Input
@@ -166,12 +164,11 @@ function MediaUploadPage() {
                       placeholder="e.g., Roof Replacement - Before"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="photo-description" className="text-white">
+                    <Label htmlFor="photo-description" className="text-foreground">
                       Description
                     </Label>
                     <Textarea
@@ -179,13 +176,12 @@ function MediaUploadPage() {
                       placeholder="Describe what's in the photo..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="location" className="text-white">
+                    <Label htmlFor="location" className="text-foreground">
                       Location/Address
                     </Label>
                     <Input
@@ -193,7 +189,6 @@ function MediaUploadPage() {
                       placeholder="Project location"
                       value={locationName}
                       onChange={(e) => setLocationName(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
 
@@ -204,21 +199,21 @@ function MediaUploadPage() {
                         type="checkbox"
                         checked={isDamagePhoto}
                         onChange={(e) => setIsDamagePhoto(e.target.checked)}
-                        className="rounded border-slate-600"
+                        className="rounded border-border"
                       />
-                      <Label htmlFor="is-damage" className="text-white cursor-pointer">
+                      <Label htmlFor="is-damage" className="text-foreground cursor-pointer">
                         This is a damage assessment photo
                       </Label>
                     </div>
 
                     {isDamagePhoto && (
                       <Select value={damageType} onValueChange={setDamageType}>
-                        <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                        <SelectTrigger>
                           <SelectValue placeholder="Select damage type" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-700 border-slate-600">
+                        <SelectContent >
                           {damageTypes.map((type) => (
-                            <SelectItem key={type} value={type} className="text-white">
+                            <SelectItem key={type} value={type} className="text-foreground">
                               {type.charAt(0).toUpperCase() + type.slice(1)}
                             </SelectItem>
                           ))}
@@ -228,7 +223,7 @@ function MediaUploadPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="tags" className="text-white">
+                    <Label htmlFor="tags" className="text-foreground">
                       Tags (comma-separated)
                     </Label>
                     <Input
@@ -236,7 +231,6 @@ function MediaUploadPage() {
                       placeholder="e.g., before, after, roof, residential"
                       value={tags}
                       onChange={(e) => setTags(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -244,7 +238,7 @@ function MediaUploadPage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile || uploading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full"
                 >
                   {uploading ? (
                     <>
@@ -263,9 +257,9 @@ function MediaUploadPage() {
           </TabsContent>
 
           <TabsContent value="videos" className="space-y-6 mt-6">
-            <Card className="bg-slate-800 border-slate-700">
+            <Card >
               <CardHeader>
-                <CardTitle className="text-white">Upload Project Videos</CardTitle>
+                <CardTitle className="text-foreground">Upload Project Videos</CardTitle>
                 <CardDescription>
                   Upload videos of your projects in progress or completed work. Max 900MB per file.
                 </CardDescription>
@@ -279,7 +273,7 @@ function MediaUploadPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="video-title" className="text-white">
+                    <Label htmlFor="video-title" className="text-foreground">
                       Video Title
                     </Label>
                     <Input
@@ -287,12 +281,11 @@ function MediaUploadPage() {
                       placeholder="e.g., Roof Replacement - Time Lapse"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="video-description" className="text-white">
+                    <Label htmlFor="video-description" className="text-foreground">
                       Description
                     </Label>
                     <Textarea
@@ -300,13 +293,12 @@ function MediaUploadPage() {
                       placeholder="Describe what's in the video..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="video-location" className="text-white">
+                    <Label htmlFor="video-location" className="text-foreground">
                       Location/Address
                     </Label>
                     <Input
@@ -314,12 +306,11 @@ function MediaUploadPage() {
                       placeholder="Project location"
                       value={locationName}
                       onChange={(e) => setLocationName(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="video-tags" className="text-white">
+                    <Label htmlFor="video-tags" className="text-foreground">
                       Tags (comma-separated)
                     </Label>
                     <Input
@@ -327,7 +318,6 @@ function MediaUploadPage() {
                       placeholder="e.g., timelapse, residential, roofing"
                       value={tags}
                       onChange={(e) => setTags(e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                     />
                   </div>
                 </div>
@@ -335,7 +325,7 @@ function MediaUploadPage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!selectedFile || uploading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full"
                 >
                   {uploading ? (
                     <>
@@ -355,9 +345,9 @@ function MediaUploadPage() {
         </Tabs>
 
         {/* Media Gallery */}
-        <Card className="mt-8 bg-slate-800 border-slate-700">
+        <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-white">Your Media Library</CardTitle>
+            <CardTitle className="text-foreground">Your Media Library</CardTitle>
             <CardDescription>
               All your uploaded photos and videos
             </CardDescription>
@@ -366,25 +356,25 @@ function MediaUploadPage() {
             {media && media.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {media.map((item: any) => (
-                  <div key={item.id} className="bg-slate-700 rounded-lg overflow-hidden border border-slate-600">
-                    <div className="aspect-video bg-slate-600 flex items-center justify-center">
+                  <div key={item.id} className="bg-muted rounded-lg overflow-hidden border border-border">
+                    <div className="aspect-video bg-muted flex items-center justify-center">
                       {item.file_type === "photo" ? (
-                        <ImageIcon className="w-8 h-8 text-slate-400" />
+                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
                       ) : (
-                        <Video className="w-8 h-8 text-slate-400" />
+                        <Video className="w-8 h-8 text-muted-foreground" />
                       )}
                     </div>
                     <div className="p-3">
-                      <h3 className="text-white font-semibold truncate">{item.title}</h3>
-                      <p className="text-slate-400 text-sm">{item.file_type}</p>
+                      <h3 className="text-foreground font-semibold truncate">{item.title}</h3>
+                      <p className="text-muted-foreground text-sm">{item.file_type}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-8">
-                <ImageIcon className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400">No media uploaded yet</p>
+                <ImageIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">No media uploaded yet</p>
               </div>
             )}
           </CardContent>
@@ -404,7 +394,7 @@ function UploadZone({
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors">
       <input
         type="file"
         id="file-input"
@@ -420,20 +410,20 @@ function UploadZone({
           <>
             <CheckCircle2 className="w-12 h-12 text-green-500" />
             <div>
-              <p className="text-white font-semibold">{selectedFile.name}</p>
-              <p className="text-slate-400 text-sm">
+              <p className="text-foreground font-semibold">{selectedFile.name}</p>
+              <p className="text-muted-foreground text-sm">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
               </p>
             </div>
           </>
         ) : (
           <>
-            <Upload className="w-12 h-12 text-slate-400" />
+            <Upload className="w-12 h-12 text-muted-foreground" />
             <div>
-              <p className="text-white font-semibold">
+              <p className="text-foreground font-semibold">
                 Click to upload or drag and drop
               </p>
-              <p className="text-slate-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {activeTab === "photos"
                   ? "PNG, JPG, WebP up to 900MB"
                   : "MP4, WebM, MOV up to 900MB"}
