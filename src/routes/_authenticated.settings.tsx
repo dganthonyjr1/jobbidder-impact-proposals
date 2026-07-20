@@ -376,7 +376,7 @@ function SettingsPage() {
                 Define how much more the Better and Best tiers cost relative to Good. Good is always the base price (0% premium).
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label>Good — premium over base (%)</Label>
                 <Input
@@ -468,7 +468,7 @@ function SettingsPage() {
               const bestPrice = goodPrice * (1 + pricing.tier_spread.best / 100);
               const fmt = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
               return (
-                <div className="grid grid-cols-3 gap-4 mt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                   <div className="rounded-lg border border-border p-4 text-center">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Good</p>
                     <p className="text-2xl font-bold text-foreground">{fmt(goodPrice)}</p>

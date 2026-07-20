@@ -366,7 +366,7 @@ function AffiliatePage() {
               </Button>
             </div>
           )}
-          <div className="grid grid-cols-3 gap-3 text-center text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center text-xs">
             {[
               { plan: "Journeyman", monthly: "$497", commission: "+$74.55/mo" },
               { plan: "Master GC",  monthly: "$997", commission: "+$149.55/mo" },

@@ -419,8 +419,8 @@ function PublicProposal() {
         {materials.length > 0 && (
           <Card className="p-6 mb-6">
             <h2 className="font-display font-semibold text-xl mb-4">{t.materials}</h2>
-            <div className="overflow-hidden rounded-md border border-border">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-md border border-border">
+              <table className="w-full text-sm min-w-[480px]">
                 <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">{t.item}</th><th className="text-right p-3">{t.qty}</th><th className="text-right p-3">{t.unitPrice}</th><th className="text-right p-3">{t.total}</th></tr></thead>
                 <tbody>
                   {materials.map((m, i) => {
@@ -448,8 +448,8 @@ function PublicProposal() {
         {!isNarrative && labor.length > 0 && (
           <Card className="p-6 mb-6">
             <h2 className="font-display font-semibold text-xl mb-4">{t.labor}</h2>
-            <div className="overflow-hidden rounded-md border border-border">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-md border border-border">
+              <table className="w-full text-sm min-w-[480px]">
                 <thead className="bg-muted/40 text-xs uppercase text-muted-foreground"><tr><th className="text-left p-3">{t.task}</th><th className="text-right p-3">{t.hours}</th><th className="text-right p-3">{t.rate}</th><th className="text-right p-3">{t.total}</th></tr></thead>
                 <tbody>
                   {labor.map((l, i) => (

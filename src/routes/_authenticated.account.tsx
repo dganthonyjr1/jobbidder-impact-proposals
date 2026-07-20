@@ -128,7 +128,7 @@ function AccountPage() {
               <div className="h-3 rounded-full bg-muted overflow-hidden mb-3">
                 <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
               </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div className="rounded-lg bg-muted/50 p-3">
                   <div className="text-lg font-bold">{usedThisPeriod.toLocaleString()}</div>
                   <div className="text-xs text-muted-foreground">Used this month</div>
