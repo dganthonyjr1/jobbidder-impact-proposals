@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { computeTotals, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { buildPrompt, DEFAULT_PRICING } from "@/lib/proposal-ai.server";
 import { verifyScopeCompleteness } from "@/lib/scope-completeness";
+import { defaultOverheadForTrade } from "@/lib/trade-playbooks";
 import {
   ECHOLS_DESCRIPTION,
   ECHOLS_MATERIALS_COMPLETE,
@@ -100,6 +101,40 @@ describe("Echols K-8 TPO roofing regression", () => {
         0,
       );
       expect(totals.grandTotal - withoutOverhead.grandTotal).toBeCloseTo(totals.overheadAmount, 2);
+    });
+  });
+
+  // The trade-aware overhead default is what makes a LIVE re-run land in band.
+  // A flat 12% would come in ~11% low even with the scope fully priced.
+  describe("trade-aware overhead default lands a live re-run in band", () => {
+    it("roofing default overhead is well above the flat 12%", () => {
+      expect(defaultOverheadForTrade("Roofing")).toBe(25);
+      expect(defaultOverheadForTrade("TPO roof replacement")).toBe(25);
+      // Unlisted trades still fall back to the flat default.
+      expect(defaultOverheadForTrade("painting")).toBe(12);
+    });
+
+    it("at the roofing DEFAULT overhead, the total is inside the band", () => {
+      const total = computeTotals(
+        ECHOLS_MATERIALS_COMPLETE,
+        ECHOLS_LABOR_COMPLETE,
+        "better",
+        ECHOLS_TAX_RATE,
+        defaultOverheadForTrade("Roofing"),
+      ).grandTotal;
+      expect(total).toBeGreaterThanOrEqual(ECHOLS_BAND.low);
+      expect(total).toBeLessThanOrEqual(ECHOLS_BAND.high);
+    });
+
+    it("at the OLD flat 12% overhead, the total falls BELOW the band (the bug)", () => {
+      const total = computeTotals(
+        ECHOLS_MATERIALS_COMPLETE,
+        ECHOLS_LABOR_COMPLETE,
+        "better",
+        ECHOLS_TAX_RATE,
+        12,
+      ).grandTotal;
+      expect(total).toBeLessThan(ECHOLS_BAND.low);
     });
   });
 

@@ -7,6 +7,7 @@ import { mergePricing, resolveTradeRate, callGroqAI, type PricingSettings } from
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import { verifyScopeCompleteness } from "@/lib/scope-completeness";
+import { normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -132,8 +133,14 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           // the row; the public-intake path did not, so public proposals rendered
           // with 0 overhead. Pull the contractor's per-trade overhead default and
           // store a snapshot dollar amount off the base (unmultiplied) totals.
-          const rate = resolveTradeRate(pricing, input.trade_type);
-          const overheadPercentage = Number(rate.overhead ?? 12);
+          // Trade-aware overhead, consistent with the authenticated path: the
+          // contractor's per-trade value, then their default, then a realistic
+          // per-trade default (roofing/commercial ≫ 12%) when nothing is set.
+          const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
+          const tradeKey = normalizeTradeKey(input.trade_type);
+          const overheadPercentage = Number(
+            tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? defaultOverheadForTrade(input.trade_type),
+          );
           const overheadAmount = computeTotals(
             (ai?.materials || []) as any,
             ai?.labor || [],

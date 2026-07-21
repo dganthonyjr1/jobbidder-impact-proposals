@@ -21,7 +21,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 import { computeTotals, generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
-import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
+import { tradePlaybook, normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import { verifyScopeCompleteness } from "@/lib/scope-completeness";
 import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
@@ -272,11 +272,16 @@ export const generateProposal = createServerFn({ method: "POST" })
       console.warn(`[generateProposal] scope-completeness warning — missing: ${scopeCheck.missing.join(", ")}`);
     }
 
-    // P3: pull the contractor's per-trade overhead default (fallback to trades.default),
-    // then compute a snapshot dollar amount off the base (unmultiplied) materials + labor totals.
+    // P3: pull the contractor's per-trade overhead. Prefer their configured
+    // per-trade value, then their default, then a realistic trade-aware default
+    // (roofing/commercial carry far more overhead than the flat 12% — see
+    // defaultOverheadForTrade). Then compute a snapshot dollar amount off the
+    // base (unmultiplied) materials + labor totals.
     const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
     const tradeKey = normalizeTradeKey(data.trade_type);
-    const overheadPercentage = Number(tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? 12);
+    const overheadPercentage = Number(
+      tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? defaultOverheadForTrade(data.trade_type),
+    );
     const baseTotals = computeTotals((ai.materials || []) as any, ai.labor || [], "better", 0.07, overheadPercentage);
 
     const { data: created, error } = await supabaseAdmin

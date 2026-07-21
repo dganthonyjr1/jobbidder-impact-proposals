@@ -53,3 +53,28 @@ const PLAYBOOKS: Record<string, string> = {
 export function tradePlaybook(tradeType?: string | null): string {
   return PLAYBOOKS[normalizeTradeKey(tradeType)] || PLAYBOOKS.general;
 }
+
+/**
+ * Per-trade overhead defaults, as a PERCENT of (materials + labor).
+ *
+ * A flat 12% is realistic for a small residential repair but far too low for
+ * commercial / institutional work, where "non-measured costs" — general
+ * conditions, mobilization, supervision, bonds, insurance, and prevailing-wage
+ * administration — routinely run 20-30%. The Echols K-8 reroof is the reference
+ * point: its real estimate carried $60,010 of non-measured costs on $223,119 of
+ * measured scope = 26.9%. At a flat 12% Jobbidder came in ~11% low even with the
+ * scope fully priced, so overhead has to be trade-aware to be accurate.
+ *
+ * Only trades that genuinely carry higher overhead are raised here; every other
+ * trade falls back to 12, preserving existing behavior. These are the DEFAULTS a
+ * contractor gets before they tune their own pricing_settings.
+ */
+export const TRADE_OVERHEAD_DEFAULTS: Record<string, number> = {
+  roofing: 25, // commercial/institutional roofing: high general conditions, bonds, PW admin
+  general: 20, // general contracting: coordination, GCs, contingency
+};
+
+/** The default overhead percent for a trade (falls back to 12). */
+export function defaultOverheadForTrade(tradeType?: string | null): number {
+  return TRADE_OVERHEAD_DEFAULTS[normalizeTradeKey(tradeType)] ?? 12;
+}
