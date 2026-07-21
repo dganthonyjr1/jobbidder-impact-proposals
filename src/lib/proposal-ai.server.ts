@@ -49,6 +49,12 @@ export interface ProposalAIInput {
 export const DEFAULT_PRICING: PricingSettings = {
   trades: {
     default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
+    // Commercial/institutional trades carry far more overhead (general
+    // conditions, bonds, insurance, prevailing-wage admin) than the flat 12%.
+    // Kept in sync with TRADE_OVERHEAD_DEFAULTS and the pricing_settings column
+    // default. See defaultOverheadForTrade() in trade-playbooks.ts.
+    roofing: { labor_rate: 65, material_markup: 35, overhead: 25, profit_margin: 20 },
+    general: { labor_rate: 65, material_markup: 35, overhead: 20, profit_margin: 20 },
   },
   tier_spread: { good: 0, better: 18, best: 38 },
   tax_rate: 7,
@@ -176,7 +182,11 @@ export async function callGroqAI(
     const groq = new Groq({ apiKey });
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      max_tokens: 4096,
+      // Output-side truncation guard — see proposals.functions.ts callAI. A full
+      // multi-system spec can emit 30+ line items; at 4096 the JSON reply was
+      // cut off mid-list, dropping scope and lowballing the total. 8192 gives
+      // room to price every system. (llama-3.3-70b allows up to 32768.)
+      max_tokens: 8192,
       temperature: 0.3,
       messages: [
         { role: "system", content: system },

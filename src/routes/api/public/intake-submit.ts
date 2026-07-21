@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
+import { generateProposalNumber, computeTotals, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { checkAndDeductCredit } from "@/lib/credits.server";
 import { mergePricing, resolveTradeRate, callGroqAI, type PricingSettings } from "@/lib/proposal-ai.server";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { verifyScopeCompleteness } from "@/lib/scope-completeness";
+import { normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
+import { isCostCatalogEnabled, fetchCatalog, applyCatalogPricing, type CatalogCoverage } from "@/lib/cost-catalog.server";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -127,6 +130,44 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           const pricing: PricingSettings = mergePricing(contractor.pricing_settings as any);
           const ai = await callGroqAI(input, contractor.business_name, pricing);
 
+          // Catalog-based pricing (flagged): replace AI-guessed material prices
+          // with real unit costs where the item matches the cost catalog; unmatched
+          // items keep the AI estimate. No-op when disabled or the catalog is empty.
+          let catalogCoverage: CatalogCoverage | null = null;
+          if (ai && isCostCatalogEnabled(contractor)) {
+            const catalog = await fetchCatalog(supabaseAdmin, { trade: input.trade_type, contractorId: contractor.id });
+            const priced = applyCatalogPricing((ai.materials || []) as any, catalog, { region: null });
+            ai.materials = priced.materials as any;
+            catalogCoverage = priced.coverage;
+          }
+
+          // Step 4: overhead. The authenticated path already writes overhead onto
+          // the row; the public-intake path did not, so public proposals rendered
+          // with 0 overhead. Pull the contractor's per-trade overhead default and
+          // store a snapshot dollar amount off the base (unmultiplied) totals.
+          // Trade-aware overhead, consistent with the authenticated path: the
+          // contractor's per-trade value, then their default, then a realistic
+          // per-trade default (roofing/commercial ≫ 12%) when nothing is set.
+          const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
+          const tradeKey = normalizeTradeKey(input.trade_type);
+          const overheadPercentage = Number(
+            tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? defaultOverheadForTrade(input.trade_type),
+          );
+          const overheadAmount = computeTotals(
+            (ai?.materials || []) as any,
+            ai?.labor || [],
+            "better",
+            (ai?.tax_rate ?? pricing.tax_rate) / 100,
+            overheadPercentage,
+          ).overheadAmount;
+
+          // Step 3: scope-completeness guard — flag any scope item named in the
+          // description that never got a line item, instead of returning a low total.
+          const scopeCheck = verifyScopeCompleteness(input.job_description, ai?.materials || [], ai?.labor || []);
+          if (!scopeCheck.complete) {
+            console.warn(`[intake-submit] scope-completeness warning — missing: ${scopeCheck.missing.join(", ")}`);
+          }
+
           const { data, error } = await supabaseAdmin.from("proposals").insert({
             contractor_id: contractor.id,
             proposal_number: generateProposalNumber(),
@@ -150,10 +191,15 @@ export const Route = createFileRoute("/api/public/intake-submit")({
             photos: input.photos || [],
             language: input.language || 'en',
             valid_through: validThrough.toISOString().slice(0, 10),
+            overhead_percentage: overheadPercentage,
+            overhead_amount: overheadAmount,
+            overhead_source: "contractor_default",
             raw_input: {
               source: "public-intake",
               slug: input.slug,
               prevailing_wage: prevailingWage as any,
+              ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
+              ...(catalogCoverage ? { catalog_pricing: catalogCoverage as any } : {}),
               pricing_used: {
                 labor_rate: resolveTradeRate(pricing, input.trade_type).labor_rate,
                 material_markup: resolveTradeRate(pricing, input.trade_type).material_markup,

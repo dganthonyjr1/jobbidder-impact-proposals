@@ -21,8 +21,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 import { computeTotals, generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
-import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
+import { tradePlaybook, normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { verifyScopeCompleteness } from "@/lib/scope-completeness";
+import { isCostCatalogEnabled, fetchCatalog, applyCatalogPricing, type CatalogCoverage } from "@/lib/cost-catalog.server";
 import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
 import { syncNewProposalToNetsuite, type NetsuiteCredentials } from "@/lib/netsuite.server";
 import Groq from "groq-sdk";
@@ -104,7 +106,12 @@ Produce a realistic, professional proposal with itemized materials and labor in 
   const groq = new Groq({ apiKey });
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    max_tokens: 4096,
+    // Output-side truncation guard: a full multi-system spec (roof membrane,
+    // canopy, gutters, downspouts, drip edge, flashing, insulation, labor
+    // phases…) can emit 30+ line items. At 4096 the JSON reply was getting cut
+    // off mid-list, silently dropping scope and lowballing the total. 8192 gives
+    // the model room to price every system. (llama-3.3-70b allows up to 32768.)
+    max_tokens: 8192,
     temperature: 0.3,
     messages: [
       { role: "system", content: sys },
@@ -252,11 +259,43 @@ export const generateProposal = createServerFn({ method: "POST" })
     // ── Itemized (Good/Better/Best) path ──────────────────────────────────────
     const ai = await callAI(data);
 
-    // P3: pull the contractor's per-trade overhead default (fallback to trades.default),
-    // then compute a snapshot dollar amount off the base (unmultiplied) materials + labor totals.
+    // Catalog-based pricing (flagged): replace AI-guessed material prices with
+    // real unit costs wherever the item matches the cost catalog; unmatched items
+    // keep the AI estimate. Off by default and a no-op with an empty catalog, so
+    // it can never regress the current pipeline.
+    let catalogCoverage: CatalogCoverage | null = null;
+    if (isCostCatalogEnabled(contractor)) {
+      const catalog = await fetchCatalog(supabaseAdmin, { trade: data.trade_type, contractorId: contractor.id });
+      const priced = applyCatalogPricing((ai.materials || []) as any, catalog, { region: data.job_state });
+      ai.materials = priced.materials as any;
+      catalogCoverage = priced.coverage;
+      console.log(`[generateProposal] catalog priced ${priced.coverage.matched}/${priced.coverage.total} material lines`);
+    }
+
+    // Scope-completeness guard: make sure every scope item named in the input
+    // (and any spec systems extracted from an uploaded PDF) actually got priced.
+    // If the model forgot the canopy, gutters, drip edge, etc., flag it loudly
+    // instead of returning a confident low number.
+    const scopeCheck = verifyScopeCompleteness(
+      data.job_description,
+      ai.materials || [],
+      ai.labor || [],
+      data.extracted_systems || [],
+    );
+    if (!scopeCheck.complete) {
+      console.warn(`[generateProposal] scope-completeness warning — missing: ${scopeCheck.missing.join(", ")}`);
+    }
+
+    // P3: pull the contractor's per-trade overhead. Prefer their configured
+    // per-trade value, then their default, then a realistic trade-aware default
+    // (roofing/commercial carry far more overhead than the flat 12% — see
+    // defaultOverheadForTrade). Then compute a snapshot dollar amount off the
+    // base (unmultiplied) materials + labor totals.
     const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
     const tradeKey = normalizeTradeKey(data.trade_type);
-    const overheadPercentage = Number(tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? 12);
+    const overheadPercentage = Number(
+      tradeSettings[tradeKey]?.overhead ?? tradeSettings.default?.overhead ?? defaultOverheadForTrade(data.trade_type),
+    );
     const baseTotals = computeTotals((ai.materials || []) as any, ai.labor || [], "better", 0.07, overheadPercentage);
 
     const { data: created, error } = await supabaseAdmin
@@ -291,6 +330,8 @@ export const generateProposal = createServerFn({ method: "POST" })
           source: "manual",
           prevailing_wage: prevailingWage as any,
           ...(data.extracted_systems?.length ? { extracted_systems: data.extracted_systems } : {}),
+          ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
+          ...(catalogCoverage ? { catalog_pricing: catalogCoverage as any } : {}),
         },
       })
       .select()

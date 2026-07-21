@@ -113,7 +113,9 @@ async function callGroqAI(opts: {
     const groq = new Groq({ apiKey });
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      max_tokens: 4096,
+      // Output-side truncation guard — see proposals.functions.ts callAI. Keeps
+      // large multi-system specs from getting their line-item list cut off.
+      max_tokens: 8192,
       temperature: 0.3,
       messages: [
         { role: "system", content: sys },
