@@ -560,7 +560,8 @@ function SettingsPage() {
                 <span className="block text-sm text-muted-foreground mt-1">
                   When on, Jobbidder AI still reads the spec and figures out quantities, but any material it recognizes is
                   priced from your real unit costs below instead of an AI guess. Items you haven't added yet still get a
-                  smart AI estimate. Remember to click <strong>Save</strong> after toggling.
+                  smart AI estimate. Remember to click <strong>Save</strong> after toggling.{" "}
+                  <Link to="/guide" className="text-primary hover:underline">Learn how it works →</Link>
                 </span>
               </span>
             </label>

@@ -322,8 +322,8 @@ function PublicProposal() {
       )}
       {isOwner && proposal.raw_input?.catalog_pricing?.matched > 0 && (
         <div className="bg-emerald-50 border-b border-emerald-300 text-emerald-900 px-4 sm:px-6 py-2 print:hidden">
-          <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs sm:text-sm">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+          <div className="max-w-5xl mx-auto flex items-start gap-2 text-xs sm:text-sm">
+            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-emerald-600" />
             <span>
               <span className="font-semibold">
                 {proposal.raw_input.catalog_pricing.matched} of {proposal.raw_input.catalog_pricing.total}
