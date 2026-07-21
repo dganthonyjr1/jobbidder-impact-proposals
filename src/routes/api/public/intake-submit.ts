@@ -8,6 +8,7 @@ import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import { verifyScopeCompleteness } from "@/lib/scope-completeness";
 import { normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
+import { isCostCatalogEnabled, fetchCatalog, applyCatalogPricing, type CatalogCoverage } from "@/lib/cost-catalog.server";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -129,6 +130,17 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           const pricing: PricingSettings = mergePricing(contractor.pricing_settings as any);
           const ai = await callGroqAI(input, contractor.business_name, pricing);
 
+          // Catalog-based pricing (flagged): replace AI-guessed material prices
+          // with real unit costs where the item matches the cost catalog; unmatched
+          // items keep the AI estimate. No-op when disabled or the catalog is empty.
+          let catalogCoverage: CatalogCoverage | null = null;
+          if (ai && isCostCatalogEnabled(contractor)) {
+            const catalog = await fetchCatalog(supabaseAdmin, { trade: input.trade_type, contractorId: contractor.id });
+            const priced = applyCatalogPricing((ai.materials || []) as any, catalog, { region: null });
+            ai.materials = priced.materials as any;
+            catalogCoverage = priced.coverage;
+          }
+
           // Step 4: overhead. The authenticated path already writes overhead onto
           // the row; the public-intake path did not, so public proposals rendered
           // with 0 overhead. Pull the contractor's per-trade overhead default and
@@ -187,6 +199,7 @@ export const Route = createFileRoute("/api/public/intake-submit")({
               slug: input.slug,
               prevailing_wage: prevailingWage as any,
               ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
+              ...(catalogCoverage ? { catalog_pricing: catalogCoverage as any } : {}),
               pricing_used: {
                 labor_rate: resolveTradeRate(pricing, input.trade_type).labor_rate,
                 material_markup: resolveTradeRate(pricing, input.trade_type).material_markup,

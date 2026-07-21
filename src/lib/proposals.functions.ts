@@ -24,6 +24,7 @@ import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook, normalizeTradeKey, defaultOverheadForTrade } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
 import { verifyScopeCompleteness } from "@/lib/scope-completeness";
+import { isCostCatalogEnabled, fetchCatalog, applyCatalogPricing, type CatalogCoverage } from "@/lib/cost-catalog.server";
 import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
 import { syncNewProposalToNetsuite, type NetsuiteCredentials } from "@/lib/netsuite.server";
 import Groq from "groq-sdk";
@@ -258,6 +259,19 @@ export const generateProposal = createServerFn({ method: "POST" })
     // ── Itemized (Good/Better/Best) path ──────────────────────────────────────
     const ai = await callAI(data);
 
+    // Catalog-based pricing (flagged): replace AI-guessed material prices with
+    // real unit costs wherever the item matches the cost catalog; unmatched items
+    // keep the AI estimate. Off by default and a no-op with an empty catalog, so
+    // it can never regress the current pipeline.
+    let catalogCoverage: CatalogCoverage | null = null;
+    if (isCostCatalogEnabled(contractor)) {
+      const catalog = await fetchCatalog(supabaseAdmin, { trade: data.trade_type, contractorId: contractor.id });
+      const priced = applyCatalogPricing((ai.materials || []) as any, catalog, { region: data.job_state });
+      ai.materials = priced.materials as any;
+      catalogCoverage = priced.coverage;
+      console.log(`[generateProposal] catalog priced ${priced.coverage.matched}/${priced.coverage.total} material lines`);
+    }
+
     // Scope-completeness guard: make sure every scope item named in the input
     // (and any spec systems extracted from an uploaded PDF) actually got priced.
     // If the model forgot the canopy, gutters, drip edge, etc., flag it loudly
@@ -317,6 +331,7 @@ export const generateProposal = createServerFn({ method: "POST" })
           prevailing_wage: prevailingWage as any,
           ...(data.extracted_systems?.length ? { extracted_systems: data.extracted_systems } : {}),
           ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
+          ...(catalogCoverage ? { catalog_pricing: catalogCoverage as any } : {}),
         },
       })
       .select()
