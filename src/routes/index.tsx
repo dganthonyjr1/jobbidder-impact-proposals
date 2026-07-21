@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat } from "lucide-react";
+import { FileText, DollarSign, Sparkles, ShieldCheck, ArrowRight, Languages, HardHat, PhoneCall, BookOpen } from "lucide-react";
 import { JessicaWebCallWidget } from "@/components/JessicaWebCallWidget";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
@@ -24,6 +24,7 @@ function Index() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-16 py-2 sm:py-0 flex flex-wrap items-center justify-between gap-y-2">
           <Link to="/"><JobbidderLogo size="sm" className="!h-[29px] sm:!h-[38px]" /></Link>
           <nav className="flex items-center gap-2 sm:gap-3">
+            <Link to="/how-it-works" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">How it works</Link>
             <Link to="/pricing" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Pricing</Link>
             <Link to="/why-jobbidder" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition">Why Jobbidder</Link>
             <Link to="/contractor-apply" search={{ phone: "", email: "", name: "", ghl_id: "" }} className="text-sm font-semibold text-muted-foreground hover:text-foreground transition hidden sm:inline">For Contractors</Link>
@@ -74,6 +75,42 @@ function Index() {
               <p className="mt-2 text-sm font-medium text-muted-foreground">{f.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* How it works — condensed, links to the full walkthrough */}
+      <section className="border-t border-border/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+          <div className="text-center max-w-2xl mx-auto">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">How Jobbidder works</h2>
+            <p className="mt-3 text-muted-foreground">
+              From the first call to a signed deposit — accurate, itemized proposals grounded in real numbers, not AI guesses.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: PhoneCall, step: "1", title: "A lead comes in", body: "AI intake answers, qualifies the caller, and captures every job 24/7 — nothing lost to voicemail." },
+              { icon: FileText, step: "2", title: "Proposal in ~60 seconds", body: "Paste the scope or upload the architect's spec; get an itemized Good/Better/Best proposal." },
+              { icon: BookOpen, step: "3", title: "Priced from real costs", body: "Your cost catalog grounds pricing in real unit costs, with a scope check so nothing gets left off." },
+              { icon: ShieldCheck, step: "4", title: "Sign & collect deposit", body: "The client picks a tier, e-signs, and pays the deposit right on the proposal link." },
+            ].map((s) => (
+              <div key={s.step} className="rounded-xl border border-border bg-card p-5 sm:p-6 shadow-card">
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <s.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-xs font-bold text-muted-foreground">STEP {s.step}</span>
+                </div>
+                <h3 className="mt-4 font-display font-bold text-lg">{s.title}</h3>
+                <p className="mt-2 text-sm font-medium text-muted-foreground">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10 text-center">
+            <Button asChild size="lg" variant="outline">
+              <Link to="/how-it-works">See the full walkthrough <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </div>
         </div>
       </section>
 

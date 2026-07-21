@@ -161,7 +161,11 @@ function NewProposalPage() {
         <ArrowLeft className="h-5 w-5" /> Back to dashboard
       </Link>
       <h1 className="font-display text-3xl font-bold tracking-tight mb-2">New AI Proposal</h1>
-      <p className="text-muted-foreground mb-8">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
+      <p className="text-muted-foreground mb-2">Enter the job details — AI will draft scope, materials, labor and tiers in seconds.</p>
+      <p className="text-sm text-muted-foreground mb-8">
+        Tip: paste the full spec or upload the PDF — nothing gets dropped and every system gets priced.{" "}
+        <Link to="/guide" className="text-primary hover:underline">How it works →</Link>
+      </p>
       {formError && (
         <div role="alert" className="mb-6 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {formError}
