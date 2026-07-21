@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Copy, Check, ExternalLink, Wallet } from "lucide-react";
+import { CostCatalogSettings } from "@/components/CostCatalogSettings";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Jobbidder" }] }),
@@ -34,7 +35,9 @@ const TRADE_OPTIONS = [
 const DEFAULT_PRICING: PricingSettings = {
   trades: {
     default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
-    roofing: { labor_rate: 70, material_markup: 40, overhead: 12, profit_margin: 22 },
+    // Commercial/institutional roofing carries high general conditions, bonds, and
+    // prevailing-wage admin — a flat 12% underprices it (see the Echols K-8 case).
+    roofing: { labor_rate: 70, material_markup: 40, overhead: 25, profit_margin: 22 },
     hvac: { labor_rate: 85, material_markup: 35, overhead: 14, profit_margin: 22 },
     plumbing: { labor_rate: 90, material_markup: 35, overhead: 14, profit_margin: 22 },
     electrical: { labor_rate: 95, material_markup: 30, overhead: 14, profit_margin: 20 },
@@ -62,6 +65,8 @@ interface PricingSettings {
   tax_rate: number;
   payment_terms: string;
   warranty_default: string;
+  /** Opt this contractor into catalog-based (real unit-cost) pricing. */
+  use_cost_catalog?: boolean;
 }
 
 const TRADE_LABELS: Record<string, string> = {
@@ -85,7 +90,7 @@ function SettingsPage() {
   const [integration, setIntegration] = useState<any>({ contractor_sms_notifications_enabled: false });
   const [pricing, setPricing] = useState<PricingSettings>(DEFAULT_PRICING);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const [activeTab, setActiveTab] = useState<"business" | "pricing" | "integrations">("business");
+  const [activeTab, setActiveTab] = useState<"business" | "pricing" | "catalog" | "integrations">("business");
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -186,6 +191,7 @@ function SettingsPage() {
   const tabs = [
     { id: "business", label: "Business" },
     { id: "pricing", label: "Pricing & AI" },
+    { id: "catalog", label: "Cost Catalog" },
     { id: "integrations", label: "Integrations" },
   ] as const;
 
@@ -535,6 +541,31 @@ function SettingsPage() {
               );
             })()}
           </Card>
+        </div>
+      )}
+
+      {/* ── COST CATALOG TAB ── */}
+      {activeTab === "catalog" && (
+        <div className="space-y-6">
+          <Card className="p-6">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={pricing.use_cost_catalog === true}
+                onChange={(e) => setPricing((p) => ({ ...p, use_cost_catalog: e.target.checked }))}
+              />
+              <span>
+                <span className="font-display font-semibold">Price from my cost catalog</span>
+                <span className="block text-sm text-muted-foreground mt-1">
+                  When on, Jobbidder AI still reads the spec and figures out quantities, but any material it recognizes is
+                  priced from your real unit costs below instead of an AI guess. Items you haven't added yet still get a
+                  smart AI estimate. Remember to click <strong>Save</strong> after toggling.
+                </span>
+              </span>
+            </label>
+          </Card>
+          <CostCatalogSettings contractorId={contractor.id} />
         </div>
       )}
 

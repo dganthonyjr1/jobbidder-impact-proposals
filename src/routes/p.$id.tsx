@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Check, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { Check, CheckCircle2, FileText, PlayCircle, Sparkles, PenLine, Camera, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { SignatureModal } from "@/components/SignatureModal";
 import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { computeTotals, type MaterialLine, type LaborLine } from "@/lib/pricing";
@@ -317,6 +317,21 @@ function PublicProposal() {
                 you send this to the client.
               </p>
             </div>
+          </div>
+        </div>
+      )}
+      {isOwner && proposal.raw_input?.catalog_pricing?.matched > 0 && (
+        <div className="bg-emerald-50 border-b border-emerald-300 text-emerald-900 px-4 sm:px-6 py-2 print:hidden">
+          <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs sm:text-sm">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+            <span>
+              <span className="font-semibold">
+                {proposal.raw_input.catalog_pricing.matched} of {proposal.raw_input.catalog_pricing.total}
+              </span>{" "}
+              material line{proposal.raw_input.catalog_pricing.total === 1 ? "" : "s"} priced from your cost catalog
+              {" "}({Math.round((proposal.raw_input.catalog_pricing.ratio || 0) * 100)}% grounded in real unit costs).
+              The rest use a smart AI estimate — add them to your catalog to lock those in too.
+            </span>
           </div>
         </div>
       )}

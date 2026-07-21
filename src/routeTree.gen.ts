@@ -17,6 +17,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ContractorApplyRouteImport } from './routes/contractor-apply'
 import { Route as ContractorRouteImport } from './routes/contractor'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -113,6 +114,11 @@ const PricingRoute = PricingRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContractorApplyRoute = ContractorApplyRouteImport.update({
@@ -431,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -497,6 +504,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -565,6 +573,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/contractor': typeof ContractorRoute
   '/contractor-apply': typeof ContractorApplyRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -633,6 +642,7 @@ export interface FileRouteTypes {
     | '/'
     | '/contractor'
     | '/contractor-apply'
+    | '/how-it-works'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -699,6 +709,7 @@ export interface FileRouteTypes {
     | '/'
     | '/contractor'
     | '/contractor-apply'
+    | '/how-it-works'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -766,6 +777,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/contractor'
     | '/contractor-apply'
+    | '/how-it-works'
     | '/login'
     | '/pricing'
     | '/privacy'
@@ -834,6 +846,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ContractorRoute: typeof ContractorRoute
   ContractorApplyRoute: typeof ContractorApplyRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -943,6 +956,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contractor-apply': {
@@ -1383,6 +1403,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ContractorRoute: ContractorRoute,
   ContractorApplyRoute: ContractorApplyRoute,
+  HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
