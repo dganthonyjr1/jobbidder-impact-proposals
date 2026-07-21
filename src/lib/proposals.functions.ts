@@ -23,6 +23,7 @@ import { computeTotals, generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } fro
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { tradePlaybook, normalizeTradeKey } from "@/lib/trade-playbooks";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { verifyScopeCompleteness } from "@/lib/scope-completeness";
 import { syncNewProposalToHubspot, type HubspotCredentials } from "@/lib/hubspot.server";
 import { syncNewProposalToNetsuite, type NetsuiteCredentials } from "@/lib/netsuite.server";
 import Groq from "groq-sdk";
@@ -104,7 +105,12 @@ Produce a realistic, professional proposal with itemized materials and labor in 
   const groq = new Groq({ apiKey });
   const completion = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
-    max_tokens: 4096,
+    // Output-side truncation guard: a full multi-system spec (roof membrane,
+    // canopy, gutters, downspouts, drip edge, flashing, insulation, labor
+    // phases…) can emit 30+ line items. At 4096 the JSON reply was getting cut
+    // off mid-list, silently dropping scope and lowballing the total. 8192 gives
+    // the model room to price every system. (llama-3.3-70b allows up to 32768.)
+    max_tokens: 8192,
     temperature: 0.3,
     messages: [
       { role: "system", content: sys },
@@ -252,6 +258,20 @@ export const generateProposal = createServerFn({ method: "POST" })
     // ── Itemized (Good/Better/Best) path ──────────────────────────────────────
     const ai = await callAI(data);
 
+    // Scope-completeness guard: make sure every scope item named in the input
+    // (and any spec systems extracted from an uploaded PDF) actually got priced.
+    // If the model forgot the canopy, gutters, drip edge, etc., flag it loudly
+    // instead of returning a confident low number.
+    const scopeCheck = verifyScopeCompleteness(
+      data.job_description,
+      ai.materials || [],
+      ai.labor || [],
+      data.extracted_systems || [],
+    );
+    if (!scopeCheck.complete) {
+      console.warn(`[generateProposal] scope-completeness warning — missing: ${scopeCheck.missing.join(", ")}`);
+    }
+
     // P3: pull the contractor's per-trade overhead default (fallback to trades.default),
     // then compute a snapshot dollar amount off the base (unmultiplied) materials + labor totals.
     const tradeSettings = (contractor.pricing_settings as any)?.trades || {};
@@ -291,6 +311,7 @@ export const generateProposal = createServerFn({ method: "POST" })
           source: "manual",
           prevailing_wage: prevailingWage as any,
           ...(data.extracted_systems?.length ? { extracted_systems: data.extracted_systems } : {}),
+          ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
         },
       })
       .select()

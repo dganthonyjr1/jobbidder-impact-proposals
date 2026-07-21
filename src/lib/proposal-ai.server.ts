@@ -176,7 +176,11 @@ export async function callGroqAI(
     const groq = new Groq({ apiKey });
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
-      max_tokens: 4096,
+      // Output-side truncation guard — see proposals.functions.ts callAI. A full
+      // multi-system spec can emit 30+ line items; at 4096 the JSON reply was
+      // cut off mid-list, dropping scope and lowballing the total. 8192 gives
+      // room to price every system. (llama-3.3-70b allows up to 32768.)
+      max_tokens: 8192,
       temperature: 0.3,
       messages: [
         { role: "system", content: system },

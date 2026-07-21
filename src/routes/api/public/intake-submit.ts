@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { generateProposalNumber, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
+import { generateProposalNumber, computeTotals, JOB_DESCRIPTION_MAX_LENGTH } from "@/lib/pricing";
 import { checkAndDeductCredit } from "@/lib/credits.server";
 import { mergePricing, resolveTradeRate, callGroqAI, type PricingSettings } from "@/lib/proposal-ai.server";
 import { evaluatePrevailingWage } from "@/lib/prevailing-wage";
 import { isNarrativeTrade, generateNarrativeProposal } from "@/lib/narrative-proposal.server";
+import { verifyScopeCompleteness } from "@/lib/scope-completeness";
 
 const Body = z.object({
   slug: z.string().min(1).max(120),
@@ -127,6 +128,27 @@ export const Route = createFileRoute("/api/public/intake-submit")({
           const pricing: PricingSettings = mergePricing(contractor.pricing_settings as any);
           const ai = await callGroqAI(input, contractor.business_name, pricing);
 
+          // Step 4: overhead. The authenticated path already writes overhead onto
+          // the row; the public-intake path did not, so public proposals rendered
+          // with 0 overhead. Pull the contractor's per-trade overhead default and
+          // store a snapshot dollar amount off the base (unmultiplied) totals.
+          const rate = resolveTradeRate(pricing, input.trade_type);
+          const overheadPercentage = Number(rate.overhead ?? 12);
+          const overheadAmount = computeTotals(
+            (ai?.materials || []) as any,
+            ai?.labor || [],
+            "better",
+            (ai?.tax_rate ?? pricing.tax_rate) / 100,
+            overheadPercentage,
+          ).overheadAmount;
+
+          // Step 3: scope-completeness guard — flag any scope item named in the
+          // description that never got a line item, instead of returning a low total.
+          const scopeCheck = verifyScopeCompleteness(input.job_description, ai?.materials || [], ai?.labor || []);
+          if (!scopeCheck.complete) {
+            console.warn(`[intake-submit] scope-completeness warning — missing: ${scopeCheck.missing.join(", ")}`);
+          }
+
           const { data, error } = await supabaseAdmin.from("proposals").insert({
             contractor_id: contractor.id,
             proposal_number: generateProposalNumber(),
@@ -150,10 +172,14 @@ export const Route = createFileRoute("/api/public/intake-submit")({
             photos: input.photos || [],
             language: input.language || 'en',
             valid_through: validThrough.toISOString().slice(0, 10),
+            overhead_percentage: overheadPercentage,
+            overhead_amount: overheadAmount,
+            overhead_source: "contractor_default",
             raw_input: {
               source: "public-intake",
               slug: input.slug,
               prevailing_wage: prevailingWage as any,
+              ...(scopeCheck.complete ? {} : { scope_check: { missing: scopeCheck.missing, message: scopeCheck.message } }),
               pricing_used: {
                 labor_rate: resolveTradeRate(pricing, input.trade_type).labor_rate,
                 material_markup: resolveTradeRate(pricing, input.trade_type).material_markup,

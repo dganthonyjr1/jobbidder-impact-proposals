@@ -1,0 +1,989 @@
+SECTION 075423 
+
+THERMOPLASTIC-POLYOLEFIN (TPO) ROOFING 
+
+PART 1 -  GENERAL 
+
+1.01  RELATED DOCUMENTS 
+
+A. 
+
+Drawings and general provisions of the Contract, including General and Supple-
+mentary Conditions and Division 01 Specification Sections, apply to this Section. 
+
+1.02 
+
+SUMMARY 
+A. 
+
+B. 
+
+C. 
+
+Mechanically fastened, thermoplastic polyolefin (TPO) roofing system. 
+Roof insulation. 
+Cover board. 
+Walkways. 
+
+Section Includes: 
+1. 
+2. 
+3. 
+4. 
+Section includes installation of sound-absorbing insulation strips in ribs of roof 
+deck. Sound-absorbing insulation strips are furnished under Division 5. 
+Related Requirements: 
+1. 
+
+Section 061000 "Rough Carpentry" for wood nailers, curbs, and blocking; 
+and for wood-based, structural-use roof deck panels. 
+Section 072100 "Thermal Insulation" for insulation beneath the roof deck. 
+Section 076200 "Sheet Metal Flashing and Trim" for metal roof flashings 
+and counterflashings. 
+Section 079200 "Joint Sealants" for joint sealants, joint fillers, and joint 
+preparation. 
+
+2. 
+3. 
+
+4. 
+
+1.03  DEFINITIONS 
+
+A. 
+
+Roofing Terminology: Definitions in ASTM D 1079 and glossary in NRCA's "The 
+NRCA Roofing Manual: Membrane Roof Systems" apply to Work of this Section. 
+
+1.04 
+
+PREINSTALLATION MEETINGS 
+A. 
+
+Preliminary Roofing Conference: Before starting roof deck construction, conduct 
+conference at Project site 
+1. 
+
+Meet with Construction Manager roofing Installer, roofing system manu-
+facturer's representative, deck Installer, air barrier Installer, and installers 
+whose work interfaces with or affects roofing, including installers of roof 
+accessories and roof-mounted equipment. 
+Review methods and procedures related to roofing installation, including 
+manufacturer's written instructions. 
+Review and finalize construction schedule, and verify availability of mate-
+rials, Installer's personnel, equipment, and facilities needed to make pro-
+gress and avoid delays. 
+Review deck substrate requirements for conditions and finishes, includ-
+ing flatness and fastening. 
+Review structural loading limitations of roof deck during and after roofing. 
+Review base flashings, special roofing details, roof drainage, roof pene-
+trations, equipment curbs, and condition of other construction that affects 
+roofing system. 
+Review governing regulations and requirements for insurance and certifi-
+cates if applicable. 
+Review temporary protection requirements for roofing system during and 
+after installation. 
+Review roof observation and repair procedures after roofing installation. 
+
+2. 
+
+3. 
+
+4. 
+
+5. 
+6. 
+
+7. 
+
+8. 
+
+9. 
+
+1.05 
+
+ACTION SUBMITTALS 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-1 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+A. 
+B. 
+
+C. 
+
+D. 
+
+Product Data: For each type of product. 
+Shop Drawings: Include roof plans, sections, details, and attachments to other 
+work, including the following: 
+1. 
+2. 
+3. 
+4. 
+5. 
+
+Layout and thickness of insulation. 
+Base flashings and membrane termination details. 
+Flashing details at penetrations. 
+Tapered insulation layout, thickness, and slopes. 
+Roof plan showing orientation of steel roof deck and orientation of roof 
+membrane, fastening spacings, and patterns for mechanically fastened 
+roofing system. 
+Insulation fastening patterns for corner, perimeter, and field-of-roof loca-
+tions. 
+Tie-in with adjoining air barrier. 
+
+7. 
+Samples for Verification: For the following products: 
+1. 
+2. 
+Wind Uplift Resistance Submittal: For roofing system, indicating compliance with 
+wind uplift performance requirements. 
+
+Roof membrane and flashings, of color required. 
+Walkway pads or rolls, of color required. 
+
+6. 
+
+1.06 
+
+INFORMATIONAL SUBMITTALS 
+A. 
+B. 
+
+C. 
+D. 
+
+Qualification Data: For Installer and manufacturer. 
+Product Test Reports: For roof membrane and insulation, for tests performed by 
+a qualified testing agency, indicating compliance with specified requirements. 
+Evaluation Reports: For components of roofing system, from ICC-ES. 
+Field Test Reports: 
+1. 
+
+Fastener-pullout test results and manufacturer's revised requirements for 
+fastener patterns. 
+
+E. 
+
+Sample Warranties: For manufacturer's special warranties. 
+
+1.07  CLOSEOUT SUBMITTALS 
+
+A. 
+
+Maintenance Data: For roofing system to include in maintenance manuals. 
+
+1.08  QUALITY ASSURANCE 
+
+A. 
+
+B. 
+
+Manufacturer Qualifications: A qualified manufacturer that is UL listed for roofing 
+system identical to that used for this Project. 
+Installer Qualifications: A qualified firm that is approved, authorized, or licensed 
+by roofing system manufacturer to install manufacturer's product and that is eligi-
+ble to receive manufacturer's special warranty. 
+
+1.09  DELIVERY, STORAGE, AND HANDLING 
+
+A. 
+
+B. 
+
+C. 
+
+D. 
+
+Deliver roofing materials to Project site in original containers with seals unbroken 
+and labeled with manufacturer's name, product brand name and type, date of 
+manufacture, approval or listing agency markings, and directions for storing and 
+mixing with other components. 
+Store liquid materials in their original undamaged containers in a clean, dry, pro-
+tected location and within the temperature range required by roofing system 
+manufacturer. Protect stored liquid material from direct sunlight. 
+1. 
+
+Discard and legally dispose of liquid material that cannot be applied with-
+in its stated shelf life. 
+
+Protect roof insulation materials from physical damage and from deterioration by 
+sunlight, moisture, soiling, and other sources. Store in a dry location. Comply 
+with insulation manufacturer's written instructions for handling, storing, and pro-
+tecting during installation. 
+Handle and store roofing materials, and place equipment in a manner to avoid 
+permanent deflection of deck. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-2 
+
+ 
+ 
+ 
+ 
+ 
+1.10 
+
+FIELD CONDITIONS 
+A. 
+
+Weather Limitations: Proceed with installation only when existing and forecasted 
+weather conditions permit roofing system to be installed according to manufac-
+turer's written instructions and warranty requirements. 
+
+1.11  WARRANTY 
+
+A. 
+
+B. 
+
+PART 2 -  PRODUCTS 
+
+Special Warranty: Manufacturer agrees to repair or replace components of roof-
+ing system that fail in materials or workmanship within specified warranty period. 
+1. 
+
+Special warranty includes roof membrane, base flashings, roof insula-
+tion, fasteners, cover boards, vapor retarder, and other components of 
+roofing system. 
+2. 
+Warranty Period: 20 years from date of Substantial Completion. 
+Special Project Warranty: Submit roofing Installer's warranty, on warranty form at 
+end of this Section, signed by Installer, covering the Work of this Section, includ-
+ing all components of roofing system such as roof membrane, base flashing, roof 
+insulation, fasteners, cover boards, vapor retarders, and walkway products, for 
+the following warranty period: 
+1. 
+
+Warranty Period: Two years from date of Substantial Completion. 
+
+2.01 
+
+PERFORMANCE REQUIREMENTS 
+A. 
+
+General Performance: Installed roofing system and flashings shall withstand 
+specified uplift pressures, thermally induced movement, and exposure to weather 
+without failure due to defective manufacture, fabrication, installation, or other de-
+fects in construction. Roof system and flashings shall remain watertight. 
+1. 
+
+Accelerated Weathering: Roof membrane shall withstand 20,000 hours 
+of exposure when tested according to ASTM G 152, ASTM G 154, or 
+ASTM G 155. 
+Impact Resistance: Roof membrane shall resist impact damage when 
+tested according to ASTM D 3746, ASTM D 4272, or the "Resistance to 
+Foot Traffic Test" in FM Approvals 4470. 
+
+2. 
+
+B. 
+
+C. 
+
+D. 
+
+E. 
+
+F. 
+
+G. 
+
+Material Compatibility: Roofing materials shall be compatible with one another 
+and adjacent materials under conditions of service and application required, as 
+demonstrated by roof membrane manufacturer based on testing and field experi-
+ence. 
+Wind Uplift Resistance: Roofing system shall be identical to systems that have 
+been successfully tested by a qualified testing and inspecting agency to resist 
+wind uplift pressure calculated in accordance with ASCE 7-16. 
+ENERGY STAR Listing: Roofing system shall be listed on the DOE's ENERGY 
+STAR "Roof Products Qualified Product List" for low -slope roof products. 
+EPA Energy Star: Roofing membrane shall achieve an initial reflectance of 
+greater than 0.65 and a three year aged reflectance of greater than 0.50. 
+Fire-Test-Response Characteristics:  Provide roofing materials with the fire-test-
+response characteristics indicated as determined by testing identical products 
+per test method below by UL, FMG, or another testing and inspecting agency ac-
+ceptable to authorities having jurisdiction.  Materials shall be identified with ap-
+propriate markings of applicable testing and inspecting agency. 
+Coping and Edge Metal:  Provide prefabricated 24 gauge Steel with Kynar finish 
+in manufacturers standard colors to be selected by owner.  Edge metal must 
+meet FM wind uplift requirements and have ES-1 test approval. 
+
+2.02 
+
+THERMOPLASTIC POLYOLEFIN (TPO) ROOFING 
+A. 
+
+TPO Sheet: ASTM D 6878/D 6878M, internally fabric- or scrim-reinforced, TPO 
+sheet. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-3 
+
+ 
+ 
+ 
+ 
+ 
+2.03 
+
+AUXILIARY ROOFING MATERIALS 
+A. 
+
+1. 
+
+2. 
+3. 
+
+Source Limitations: Obtain components for roofing system from roof 
+membrane manufacturer. 
+Thickness: 60 mils (1.5 mm), nominal. 
+Exposed Face Color: Gray – Vertical Applications, White – Horizontal 
+Applications  
+
+General: Auxiliary materials recommended by roofing system manufacturer for 
+intended use and compatible with other roofing components. 
+Sheet Flashing: Manufacturer's standard unreinforced TPO sheet flashing, [55 
+mils (1.4 mm)] thick, minimum, of same color as TPO sheet. 
+Prefabricated Pipe Flashings: As recommended by roof membrane manufactur-
+er. 
+Roof Vents: As recommended by roof membrane manufacturer. 
+1. 
+Size: Not less than 4-inch (100-mm) diameter. 
+Bonding Adhesive: Manufacturer's standard bonding adhesive for membrane and 
+base flashings. 
+Metal Termination Bars: Manufacturer's standard, predrilled stainless steel or 
+aluminum bars, approximately 1 by 1/8 inch (25 by 3 mm) thick; with anchors. 
+Metal Battens: Manufacturer's standard, aluminum-zinc-alloy-coated or zinc-
+coated steel sheet, approximately 1 inch wide by 0.05 inch thick (25 mm wide by 
+1.3 mm thick), prepunched. 
+Fasteners: Factory-coated steel fasteners and metal or plastic plates complying 
+with corrosion-resistance provisions in FM Approvals 4470, designed for fas-
+tening roofing components to substrate, and acceptable to roofing system manu-
+facturer. 
+Miscellaneous Accessories: Provide pourable sealers, preformed cone and vent 
+sheet flashings, preformed inside and outside corner sheet flashings, T-joint co-
+vers, lap sealants, termination reglets, and other accessories.  Limit unreinforced 
+flashings and corners and must be manufacturer approved if used. 
+Coping and Edge Metal:  Provide prefabricated 24 gauge Steel with Kynar finish 
+in manufacturers standard colors to be selected by Architect.  Edge metal must 
+meet FM wind uplift requirements and have ES-1 test approval. 
+
+General: Preformed roof insulation boards manufactured  by TPO roof mem-
+brane manufacturer. 
+Polyisocyanurate Board Insulation: ASTM C 1289, Type II, Class 1, Grade 2, felt 
+or glass-fiber reinforced paper facer on both major surfaces. 
+1. 
+2. 
+3. 
+
+Compressive Strength: 20 psi (138 kPa) 
+Size: 48 by 96 inches (1219 by 2438 mm). 
+Thickness: 
+a) 
+b) 
+
+Base Layer: 2 1/2 inches. 
+Upper Layer: 2 inches 
+
+Tapered Insulation: Provide factory-tapered insulation boards. 
+1. 
+2. 
+3. 
+
+Material: Match roof insulation  
+Minimum Thickness: 1/4 inch (6.35 mm). 
+Slope: 
+a) 
+
+b) 
+
+Roof Field: [1/2 inch per foot (1:48)] unless otherwise indicated 
+on Drawings. 
+Saddles  and  Crickets:  [1/2  inch  per  foot  (1:24)]  unless 
+otherwise indicated on Drawings. 
+
+B. 
+
+C. 
+
+D. 
+
+E. 
+
+F. 
+
+G. 
+
+H. 
+
+I. 
+
+J. 
+
+A. 
+
+B. 
+
+C. 
+
+2.04  ROOF INSULATION 
+
+2.05 
+
+INSULATION ACCESSORIES 
+A. 
+
+General: Roof insulation accessories recommended by insulation manufacturer 
+for intended use and compatibility with other roofing system components. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-4 
+
+ 
+ 
+ 
+B. 
+
+C. 
+
+D. 
+
+Fasteners: Factory-coated steel fasteners with metal or plastic plates complying 
+with corrosion-resistance provisions in FM Approvals 4470, designed for fas-
+tening cover boards to substrate, and acceptable to roofing system manufacturer. 
+Insulation Adhesive: Insulation manufacturer's recommended and approved ad-
+hesive formulated to attach roof insulation to substrate or to another insulation 
+layer as follows: 
+1. 
+
+Bead-applied, low-rise, one-component or multicomponent urethane ad-
+hesive. 
+
+Cover Board: ASTM C 1177/C 1177M, glass-mat, water-resistant gypsum board 
+or ASTM C 1278/C 1278M fiber-reinforced gypsum board. 
+1. 
+2. 
+
+Thickness: 1/4 inch (6 mm) 
+Surface Finish: Factory primed 
+
+2.06  WALKWAYS 
+
+A. 
+
+Flexible Walkways: Factory-formed, nonporous, heavy-duty, slip-resisting, sur-
+face-textured walkway rolls, approximately 3/16 inch (5 mm) thick and accepta-
+ble to roofing system manufacturer. 
+1. 
+2. 
+
+Size: Approximately 30 wide (914 mm). 
+Color: Contrasting with roof membrane. 
+
+PART 3 -  EXECUTION 
+
+3.01 
+
+3.02 
+
+EXAMINATION 
+A. 
+
+Examine substrates, areas, and conditions, with Installer present, for compliance 
+with requirements and other conditions affecting performance of the Work. 
+1. 
+
+Verify that roof openings and penetrations are in place, curbs are set and 
+braced, and roof-drain bodies are securely clamped in place. 
+Verify that wood blocking, curbs, and nailers are securely anchored to 
+roof deck at penetrations and terminations and that nailers match thick-
+nesses of insulation. 
+Verify that surface plane flatness and fastening of steel roof deck com-
+plies with requirements in Division 5 "Steel Decking." 
+
+2. 
+
+3. 
+
+B. 
+
+Proceed with installation only after unsatisfactory conditions have been correct-
+ed. 
+
+PREPARATION 
+A. 
+
+Clean substrate of dust, debris, moisture, and other substances detrimental to 
+roofing system installation according to roofing system manufacturer's written in-
+structions. Remove sharp projections. 
+Prevent materials from entering and clogging roof drains and conductors and 
+from spilling or migrating onto surfaces of other construction. Remove roof-drain 
+plugs when no work is taking place or when rain is forecast. 
+Install sound-absorbing insulation strips according to acoustical roof deck manu-
+facturer's written instructions. 
+
+B. 
+
+C. 
+
+3.03  ROOFING INSTALLATION, GENERAL 
+
+A. 
+
+B. 
+
+C. 
+
+Install roofing system according to roofing system manufacturer's written instruc-
+tions, and FM Global Property Loss Prevention Data Sheet 1-29. 
+Complete terminations and base flashings and provide temporary seals to pre-
+vent water from entering completed sections of roofing system at end of workday 
+or when rain is forecast. Remove and discard temporary seals before beginning 
+Work on adjoining roofing. 
+Coordinate installation and transition of roofing system component serving as an 
+air barrier with air barrier specified under Section 07272 "Fluid-Applied Mem-
+brane Air Barriers." 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-5 
+
+ 
+ 
+ 
+ 
+ 
+ 
+3.04 
+
+3.05 
+
+INSULATION INSTALLATION 
+A. 
+
+B. 
+
+C. 
+
+Coordinate installing roofing system components so insulation is not exposed to 
+precipitation or left exposed at end of workday. 
+Comply with roofing system and roof insulation manufacturer's written instruc-
+tions for installing roof insulation. 
+Installation Over Metal Decking: 
+1. 
+
+Install base layer of insulation with end joints staggered not less than 12 
+inches (305 mm) in adjacent rows and with long joints continuous at right 
+angle to flutes of decking. 
+a) 
+b) 
+
+Locate end joints over top flange of decking. 
+Trim insulation neatly to fit around penetrations and projections, 
+and to fit tight to intersecting sloping roof decks. 
+Make  joints  between  adjacent  insulation  boards  not  more  than 
+1/4 inch (6 mm) in width. 
+At  internal roof  drains, slope  insulation to create a square drain 
+sump with each side equal to the diameter of the drain bowl plus 
+24 inches (610 mm). 
+1) 
+Fill gaps exceeding 1/4 inch (6 mm) with insulation. 
+Cut  and  fit  insulation  within  1/4  inch  (6  mm)  of  nailers, 
+projections, and penetrations. 
+Loosely lay base layer of insulation units over substrate. 
+
+Trim insulation so that water flow is unrestricted. 
+
+g) 
+Install upper layers of insulation and tapered insulation with joints of 
+each layer offset not less than 12 inches (305 mm) from previous layer of 
+insulation. 
+a) 
+
+c) 
+
+d) 
+
+e) 
+f) 
+
+Install  with  long  joints  continuous  and  with  end  joints  staggered 
+not less than 12 inches (305 mm) in adjacent rows. 
+Trim insulation neatly to fit around penetrations and projections, 
+and to fit tight to intersecting sloping roof decks. 
+Make  joints  between  adjacent  insulation  boards  not  more  than 
+1/4 inch (6 mm) in width. 
+Fill gaps exceeding 1/4 inch (6 mm) with insulation. 
+Cut  and  fit  insulation  within  1/4  inch  (6  mm)  of  nailers, 
+projections, and penetrations. 
+Mechanically attach upper layer of insulation units to metal deck 
+if cover board is not specified. 
+
+b) 
+
+c) 
+
+d) 
+e) 
+
+f) 
+
+2. 
+
+INSTALLATION OF COVER BOARDS 
+A. 
+
+Install cover boards over insulation with long joints in continuous straight lines 
+with end joints staggered between rows. Offset joints of insulation below a mini-
+mum of 6 inches (150 mm) in each direction. 
+1. 
+
+Trim cover board neatly to fit around penetrations and projections, and to 
+fit tight to intersecting sloping roof decks. 
+At internal roof drains, conform to slope of drain sump. 
+Trim cover board so that water flow is unrestricted. 
+a) 
+Cut and fit cover board tight to nailers, projections, and penetrations. 
+Mechanically attach cover board to metal deck at minimum rate recom-
+mended by roof manufacturer. 
+
+2. 
+
+3. 
+4. 
+
+3.06  MECHANICALLY FASTENED ROOFING INSTALLATION 
+
+A. 
+
+B. 
+C. 
+
+Mechanically fasten roof membrane over area to receive roofing according to 
+roofing system manufacturer's written instructions. 
+Unroll roof membrane and allow to relax before installing. 
+For in-splice attachment, install roof membrane with long dimension perpendicu-
+lar to steel roof deck flutes. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-6 
+
+ 
+ 
+D. 
+
+E. 
+
+F. 
+
+G. 
+
+H. 
+
+I. 
+
+Start installation of roofing in presence of roofing system manufacturer's technical 
+personnel. 
+Accurately align roof membrane, and maintain uniform side and end laps of min-
+imum dimensions required by manufacturer. Stagger end laps. 
+Mechanically fasten or adhere roof membrane securely at terminations, penetra-
+tions, and perimeter of roofing. 
+Apply roof membrane with side laps shingled with slope of roof deck where pos-
+sible. 
+In-Seam Attachment: Secure one edge of TPO sheet using fastening plates or 
+metal battens centered within seam, and mechanically fasten TPO sheet to roof 
+deck. 
+Seams: Clean seam areas, overlap roof membrane, and hot-air weld side and 
+end laps of roof membrane and sheet flashings to ensure a watertight seam in-
+stallation. 
+1. 
+
+Test lap edges with probe to verify seam weld continuity. Apply lap seal-
+ant to seal cut edges of roof membrane and flashing sheet. 
+Verify field strength of seams a minimum of twice daily, and repair seam 
+sample areas. 
+Repair tears, voids, and lapped seams in roof membrane that do not 
+comply with requirements. 
+
+2. 
+
+3. 
+
+J. 
+
+Spread sealant bed over deck-drain flange at roof drains, and securely seal roof 
+membrane in place with clamping ring. 
+
+3.07 
+
+BASE FLASHING INSTALLATION 
+A. 
+
+B. 
+
+C. 
+
+D. 
+
+E. 
+
+Install sheet flashings and preformed flashing accessories, and adhere to sub-
+strates according to roofing system manufacturer's written instructions. 
+Apply bonding adhesive to substrate and underside of sheet flashing at required 
+rate, and allow to partially dry. Do not apply to seam area of flashing. 
+Flash penetrations and field-formed inside and outside corners with cured or un-
+cured sheet flashing. 
+Clean seam areas, overlap, and firmly roll sheet flashings into the adhesive. Hot-
+air weld side and end laps to ensure a watertight seam installation. 
+Terminate and seal top of sheet flashings and mechanically anchor to substrate 
+through termination bars. 
+
+3.08  WALKWAY INSTALLATION 
+Flexible Walkways: 
+1. 
+
+A. 
+
+c) 
+
+Install flexible walkways at the following locations: 
+a) 
+b) 
+
+Perimeter of each rooftop unit. 
+Between  each  rooftop  unit  location,  creating  a  continuous  path 
+connecting rooftop unit locations. 
+Between  each roof hatch and each rooftop unit  location or path 
+connecting rooftop unit locations. 
+Locations indicated on Drawings. 
+
+d) 
+Provide 6-inch (76-mm) clearance between adjoining pads. 
+Heat weld to substrate or adhere walkway products to substrate with 
+compatible adhesive according to roofing system manufacturer's written 
+instructions. 
+
+2. 
+3. 
+
+3.09 
+
+FIELD QUALITY CONTROL 
+A. 
+
+Final Roof Inspection: Arrange for roofing system manufacturer's technical per-
+sonnel to inspect roofing installation on completion, in presence of Architect, and 
+to prepare inspection report. 
+Repair or remove and replace components of roofing system where inspections 
+indicate that they do not comply with specified requirements. 
+
+B. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-7 
+
+ 
+ 
+ 
+C. 
+
+Additional testing and inspecting, at Contractor's expense, will be performed to 
+determine if replaced or additional work complies with specified requirements. 
+
+3.10 
+
+PROTECTING AND CLEANING 
+A. 
+
+B. 
+
+Protect roofing system from damage and wear during remainder of construction 
+period. When remaining construction does not affect or endanger roofing system, 
+inspect roofing system for deterioration and damage, describing its nature and 
+extent in a written report, with copies to Architect and Owner. 
+Correct deficiencies in or remove roofing system that does not comply with re-
+quirements, repair substrates, and repair or reinstall roofing system to a condition 
+free of damage and deterioration at time of Substantial Completion and accord-
+ing to warranty requirements. 
+
+3.11  ROOFING INSTALLER'S WARRANTY 
+
+A. 
+
+B. 
+
+C. 
+
+D. 
+
+Owner: <Insert name of Owner>. 
+Address: <Insert address>. 
+Building Name/Type: <Insert information>. 
+Address: <Insert address>. 
+Area of Work: <Insert information>. 
+Acceptance Date: _________________. 
+Warranty Period: <Insert time>. 
+Expiration Date: __________________. 
+
+WHEREAS _______________________________ of 
+___________________________, herein called the "Roofing Installer," has per-
+formed roofing and associated work ("work") on the following project: 
+1. 
+2. 
+3. 
+4. 
+5. 
+6. 
+7. 
+8. 
+AND WHEREAS Roofing Installer has contracted (either directly with Owner or 
+indirectly as a subcontractor) to warrant said work against leaks and faulty or de-
+fective materials and workmanship for designated Warranty Period, 
+NOW THEREFORE Roofing Installer hereby warrants, subject to terms and con-
+ditions herein set forth, that during Warranty Period Roofing Installer will, at Roof-
+ing Installer's own cost and expense, make or cause to be made such repairs to 
+or replacements of said work as are necessary to correct faulty and defective 
+work and as are necessary to maintain said work in a watertight condition. 
+This Warranty is made subject to the following terms and conditions: 
+1. 
+
+roofing  system  substrate, 
+
+Specifically excluded from this Warranty are damages to work and other 
+parts of the building, and to building contents, caused by: 
+a) 
+b) 
+c) 
+d) 
+
+lightning; 
+peak gust wind speed exceeding 120 mph (m/sec); 
+fire; 
+failure  of 
+settlement, 
+decomposition; 
+faulty construction of parapet walls, copings, chimneys, skylights, 
+vents,  equipment  supports,  and  other  edge  conditions  and 
+penetrations of the work; 
+vapor condensation on bottom of roofing; and 
+activity  on  roofing  by  others,  including  construction  contractors, 
+maintenance  personnel,  other  persons,  and  animals,  whether 
+authorized or unauthorized by Owner. 
+
+including  cracking, 
+and 
+deterioration, 
+
+e) 
+
+f) 
+g) 
+
+deflection, 
+
+excessive 
+
+2. 
+
+3. 
+
+When work has been damaged by any of foregoing causes, Warranty 
+shall be null and void until such damage has been repaired by Roofing 
+Installer and until cost and expense thereof have been paid by Owner or 
+by another responsible party so designated. 
+Roofing Installer is responsible for damage to work covered by this War-
+ranty but is not liable for consequential damages to building or building 
+contents resulting from leaks or faults or defects of work. 
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-8 
+
+ 
+ 
+4. 
+
+5. 
+
+6. 
+
+7. 
+
+During Warranty Period, if Owner allows alteration of work by anyone 
+other than Roofing Installer, including cutting, patching, and maintenance 
+in connection with penetrations, attachment of other work, and position-
+ing of anything on roof, this Warranty shall become null and void on date 
+of said alterations, but only to the extent said alterations affect work cov-
+ered by this Warranty. If Owner engages Roofing Installer to perform 
+said alterations, Warranty shall not become null and void unless Roofing 
+Installer, before starting said work, shall have notified Owner in writing, 
+showing reasonable cause for claim, that said alterations would likely 
+damage or deteriorate work, thereby reasonably justifying a limitation or 
+termination of this Warranty. 
+During Warranty Period, if original use of roof is changed and it becomes 
+used for, but was not originally specified for, a promenade, work deck, 
+spray-cooled surface, flooded basin, or other use or service more severe 
+than originally specified, this Warranty shall become null and void on 
+date of said change, but only to the extent said change affects work cov-
+ered by this Warranty. 
+Owner shall promptly notify Roofing Installer of observed, known, or sus-
+pected leaks, defects, or deterioration and shall afford reasonable oppor-
+tunity for Roofing Installer to inspect work and to examine evidence of 
+such leaks, defects, or deterioration. 
+This Warranty is recognized to be the only warranty of Roofing Installer 
+on said work and shall not operate to restrict or cut off Owner from other 
+remedies and resources lawfully available to Owner in cases of roofing 
+failure. Specifically, this Warranty shall not operate to relieve Roofing In-
+staller of responsibility for performance of original work according to re-
+quirements of the Contract Documents, regardless of whether Contract 
+was a contract directly with Owner or a subcontract with Owner's Gen-
+eral Contractor. 
+
+E. 
+
+IN WITNESS THEREOF, this instrument has been duly executed this 
+___________ day of ___________________, ________________. 
+1. 
+2. 
+3. 
+
+Authorized Signature: _______________________________________. 
+Name: ______________________________________. 
+Title: _______________________________________. 
+
+END OF SECTION  
+
+23030 Echols HS Addition 
+Altman + Barrett Architects 
+
+075423-9 
+
+ 
+ 
+ 
+ 
+
