@@ -39,7 +39,6 @@ function AuthLayout() {
     { to: "/media-upload", label: "Media", icon: ImagePlus },
     { to: "/affiliate", label: "Affiliate", icon: Share2 },
     { to: "/account", label: "Billing", icon: CreditCard },
-    { to: "/guide", label: "Guide", icon: BookOpen },
     { to: "/settings", label: "Settings", icon: Settings },
   ] as const;
 
@@ -94,7 +93,15 @@ function AuthLayout() {
           ))}
         </nav>
         <div className="p-3 border-t border-border">
-          <div className="text-sm text-muted-foreground truncate px-2 pb-2">{email}</div>
+          <Link
+            to="/guide"
+            onClick={() => setMobileOpen(false)}
+            activeProps={{ className: "text-foreground" }}
+            className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent/50 transition"
+          >
+            <BookOpen className="h-4 w-4" /> Guide &amp; help
+          </Link>
+          <div className="text-sm text-muted-foreground truncate px-2 py-2">{email}</div>
           <button onClick={signOut} className="flex items-center gap-2 w-full rounded-md px-3 py-2 text-base text-muted-foreground hover:bg-accent/50 transition">
             <LogOut className="h-5 w-5" /> Sign out
           </button>

@@ -15,6 +15,7 @@ import { readPrevailingWage } from "@/lib/prevailing-wage";
 import { useState } from "react";
 import { toast } from "sonner";
 import { listUserMedia, deleteMedia } from "@/lib/media.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { MediaUpload } from "@/components/media-upload";
 import { MediaGallery } from "@/components/media-gallery";
 
@@ -137,12 +138,13 @@ function CreditWidget({ credits }: { credits: NonNullable<Awaited<ReturnType<typ
 
 const ONBOARDING_DISMISSED_KEY = "jobbidder-onboarding-dismissed";
 
-function OnboardingChecklist({ total, sentCount, accepted }: { total: number; sentCount: number; accepted: number }) {
+function OnboardingChecklist({ total, sentCount, accepted, catalogSetup }: { total: number; sentCount: number; accepted: number; catalogSetup: boolean }) {
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem(ONBOARDING_DISMISSED_KEY) === "true"
   );
 
   const steps = [
+    { label: "Set your pricing & add cost-catalog items", done: catalogSetup, to: "/settings" as const },
     { label: "Create your first AI proposal", done: total > 0, to: "/proposals/new" as const },
     { label: "Send a proposal to a client", done: sentCount > 0 || accepted > 0, to: "/proposals/new" as const },
     { label: "Get your first proposal accepted", done: accepted > 0, to: "/dashboard" as const },
@@ -166,7 +168,7 @@ function OnboardingChecklist({ total, sentCount, accepted }: { total: number; se
         <button onClick={dismiss} className="text-xs text-muted-foreground hover:text-foreground transition">Dismiss</button>
       </div>
       <p className="text-xs text-muted-foreground mb-3">
-        New here? Start in <Link to="/settings" className="text-primary hover:underline">Settings</Link> to add your license #, trade type, and branding — then work through the steps below.
+        New here? Start in <Link to="/settings" className="text-primary hover:underline">Settings</Link> to add your license #, trade type, and branding — then work through the steps below. Not sure how something works? Read the <Link to="/guide" className="text-primary hover:underline">Guide</Link>.
       </p>
       <div className="space-y-1.5">
         {steps.map((s) => (
@@ -293,6 +295,16 @@ function Dashboard() {
   const { data: contractors, isLoading: contractorsLoading } = useQuery({ queryKey: ["contractors"], queryFn: () => fetchContractors() });
   const fetchMedia = useServerFn(listUserMedia);
   const { data: media, isLoading: mediaLoading, refetch: refetchMedia } = useQuery({ queryKey: ["media"], queryFn: () => fetchMedia() });
+  // Has the contractor added any of their OWN cost-catalog rows? RLS only returns
+  // this user's rows among the non-null contractor_id rows, so any hit = engaged.
+  const { data: catalogSetup } = useQuery({
+    queryKey: ["catalog-setup"],
+    queryFn: async () => {
+      const { data } = await (supabase as any)
+        .from("cost_catalog").select("contractor_id").not("contractor_id", "is", null).limit(1);
+      return (data?.length ?? 0) > 0;
+    },
+  });
   const fetchCredits = useServerFn(getCreditUsage);
   const { data: credits } = useQuery({ queryKey: ["credits"], queryFn: () => fetchCredits() });
   const doDeleteMedia = useServerFn(deleteMedia);
@@ -422,7 +434,7 @@ function Dashboard() {
         </Button>
       </div>
 
-      <OnboardingChecklist total={total} sentCount={pending} accepted={accepted} />
+      <OnboardingChecklist total={total} sentCount={pending} accepted={accepted} catalogSetup={catalogSetup === true} />
 
       {/* Credit usage widget */}
       {credits && <CreditWidget credits={credits} />}
