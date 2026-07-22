@@ -154,13 +154,20 @@ function RootShell({ children }: { children: ReactNode }) {
           data-source="WEB_USER"
           async
         />
-        {/* Hide GHL widget visually — kept for A2P compliance only */}
+        {/* Hide GHL widget visually — kept for A2P compliance only.
+            The v2 loader (chat-widget/loader.js) injects a <chat-widget> custom
+            element that the old selectors missed, so its blue launcher + greeting
+            bubble leaked onto the page alongside the "Talk to Jessica" widget.
+            Hiding the <chat-widget> host hides the whole thing (shadow DOM and all). */}
         <style>{`
+          chat-widget,
           #LeadConnector-widget-container,
           #lc-widget-container,
           [id^="lc-"],
+          [id^="lc_"],
           [class*="lc-widget"],
           [class*="leadconnector"],
+          [class*="chat-widget"],
           iframe[src*="leadconnectorhq.com"],
           iframe[src*="widgets.leadconnector"] {
             display: none !important;
