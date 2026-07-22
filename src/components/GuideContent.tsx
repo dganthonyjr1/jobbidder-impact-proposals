@@ -1,6 +1,6 @@
 import {
   PhoneCall, FileText, UploadCloud, ShieldCheck, Layers,
-  Calculator, BookOpen, ScrollText, PenLine, Database, Check, ArrowRight,
+  Calculator, BookOpen, ScrollText, PenLine, Database, Check, ArrowRight, Search,
 } from "lucide-react";
 
 /**
@@ -45,11 +45,11 @@ export const GUIDE_STEPS: Step[] = [
     title: "3. Upload the architect's spec — nothing gets dropped",
     what: "For commercial and institutional work you can upload the full architect's spec PDF. Jobbidder reads the entire document and pulls out every distinct system that has to be priced.",
     how: [
-      "Upload the spec PDF (up to 20 MB). Claude reads the whole document — no character limit.",
+      "Upload the spec PDF (up to 20 MB). The AI reads the whole document, however long it is.",
       "It lists every system it finds — membrane, canopy, gutters, downspouts, drip edge, coping, flashing, and so on — each as its own line to price.",
       "You review the extracted list, remove anything out of scope, and generate. Every system gets its own materials and labor.",
     ],
-    why: "This is the exact failure we fixed: a real $295,644 school reroof once came back 44% low because the spec text was silently cut off and whole systems vanished. Now the full spec reaches the model and every system is priced.",
+    why: "This is the exact failure we fixed: a real $295,644 school reroof once came back 44% low because the spec text got silently cut off and whole systems vanished. Now the full spec reaches the AI and every system is priced.",
   },
   {
     icon: ShieldCheck,
@@ -88,8 +88,8 @@ export const GUIDE_STEPS: Step[] = [
     title: "7. Good / Better / Best pricing, built in",
     what: "Every proposal comes as three tiers so the client chooses a scope, not whether to hire you.",
     how: [
-      "Good is your base scope; Better and Best add upgraded materials and scope at spreads you control.",
-      "Set the tier spread once in Settings; it applies to every proposal automatically.",
+      "Good is your base scope; Better and Best add upgraded materials and more work, at prices you control.",
+      "Set how much more Better and Best cost once in Settings; it applies to every proposal automatically.",
     ],
     why: "Three-option pricing consistently lifts the average job size — clients trade up when the choice is framed as good/better/best instead of yes/no.",
   },
@@ -98,7 +98,7 @@ export const GUIDE_STEPS: Step[] = [
     title: "8. Public-job & prevailing-wage safety net",
     what: "Jobbidder flags jobs that look like government, school, or publicly funded work so they aren't accidentally priced at market rate.",
     how: [
-      "A single intake question ('is this public/grant-funded?') plus a server-side keyword check flags the proposal.",
+      "A single intake question ('is this public/grant-funded?') plus an automatic scan of the job details flags the proposal.",
       "You get a prevailing-wage notice with reference rates before you send.",
     ],
     why: "Bidding a prevailing-wage job at private-market labor is a fast way to win the job and lose the year. The flag keeps you from that mistake.",
@@ -118,10 +118,20 @@ export const GUIDE_STEPS: Step[] = [
     title: "10. You own your data — and it makes you money",
     what: "Your leads, proposals, pricing, and win history are yours. Jobbidder also runs a referral program that pays you.",
     how: [
-      "Export and integrate (HubSpot sync today, more coming). Your pipeline isn't held hostage.",
+      "Export your data anytime, or connect it to other tools you use (like HubSpot today, with more coming). Your pipeline isn't held hostage.",
       "Refer other contractors and earn — payout or account credit, your choice.",
     ],
     why: "The big platforms rent you access to your own customer data. Jobbidder is built the opposite way: you own it, and the tool pays you instead of the other way around.",
+  },
+  {
+    icon: Search,
+    title: "11. Ask your documents — the Knowledge Base",
+    what: "Upload your documents (or pre-load your existing proposals) and ask a plain-English question. You get a straight answer, and it shows you exactly which document the answer came from.",
+    how: [
+      "Open Knowledge Base, upload a PDF or click “Pre-load my existing proposals,” and it's ready to search in seconds.",
+      "Ask something like “What warranty did we quote on the Echols roof?” — the answer shows you which document it used, and tells you honestly when your documents don't have the answer.",
+    ],
+    why: "Your business knowledge is scattered across hundreds of documents. This turns that pile into something you can just ask — instead of digging — while keeping your documents private to your own account.",
   },
 ];
 
@@ -132,19 +142,19 @@ export const GUIDE_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How accurate are the numbers, really?",
-    a: "As accurate as what you feed it. Out of the box the AI produces a realistic estimate. Turn on your Cost Catalog with your real supplier pricing and the material side becomes deterministic — the same job always prices the same way, from numbers you can defend line by line. The remaining variable is quantity takeoff, which you confirm on review.",
+    a: "As accurate as what you feed it. Right out of the box the AI produces a realistic estimate. Turn on your Cost Catalog with your real supplier pricing and the material side stops being a guess — the same job always prices the same way, from numbers you can defend line by line. The one thing you still confirm yourself is the quantities (how much of each material the job needs), which you check when you review.",
   },
   {
     q: "What happens with a giant commercial spec — will it choke or cut things off?",
-    a: "No. You can paste up to 50,000 characters (with a visible warning if you somehow exceed it — never a silent cut), or upload the full spec PDF and let Jobbidder read the entire document. It then lists every system so nothing gets dropped, and a completeness guard warns you if a named system wasn't priced.",
+    a: "No. You can paste a huge amount of text (up to about 25 pages — with a clear warning if you somehow go over, never a silent cut), or upload the full spec PDF and let Jobbidder read the entire document. It then lists every system so nothing gets dropped, and a completeness check warns you if a named system wasn't priced.",
   },
   {
     q: "Does it handle prevailing-wage and public jobs?",
-    a: "Yes. Jobbidder asks whether the job is government/school/publicly funded and also runs a server-side keyword check, then flags the proposal with a prevailing-wage notice and reference rates so you don't bid public work at private-market labor.",
+    a: "Yes. Jobbidder asks whether the job is government/school/publicly funded and also scans the job details automatically, then flags the proposal with a prevailing-wage notice and reference rates so you don't bid public work at private-market labor.",
   },
   {
     q: "How is this different from ServiceTitan, Jobber, or Housecall Pro?",
-    a: "Those are scheduling and dispatch systems that bolt on estimating; they're priced per-tech per-month, take months to set up, and keep your data. Jobbidder is estimate-first: it writes accurate, itemized, tiered proposals in about a minute, grounds pricing in your real costs, answers your phone with AI, lets you own and export your data, and even pays you for referrals.",
+    a: "Those are scheduling and dispatch systems that add estimating on as an afterthought; they charge per worker per month, take months to set up, and keep your data. Jobbidder is built around estimating first: it writes accurate, line-by-line proposals with three price options in about a minute, prices from your real costs, answers your phone with AI, lets you own and export your data, and even pays you for referrals.",
   },
   {
     q: "Do I need to be technical to set it up?",
@@ -160,7 +170,7 @@ export const GUIDE_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Where does my data live, and can I get it out?",
-    a: "Your data is yours. Jobbidder runs on modern, secure infrastructure with row-level security so contractors only ever see their own records, and you can export and integrate (HubSpot sync today). You're never locked in.",
+    a: "Your data is yours. Jobbidder runs on secure, modern systems, and every contractor only ever sees their own records — never anyone else's. You can export your data or connect it to tools like HubSpot anytime. You're never locked in.",
   },
   {
     q: "How much does it cost?",
@@ -169,12 +179,13 @@ export const GUIDE_FAQS: { q: string; a: string }[] = [
 ];
 
 export const GUIDE_STANDOUTS: { title: string; body: string }[] = [
-  { title: "Estimate-first, not dispatch-first", body: "Everyone else treats estimating as an add-on. It's the whole point of Jobbidder — a real, itemized, tiered proposal in about a minute." },
-  { title: "Grounded in real costs", body: "Your cost catalog makes material pricing deterministic and defensible, instead of an AI guess you have to hope is close." },
-  { title: "It reads the actual spec", body: "Upload the architect's PDF and every system gets priced — with a guard that flags anything missing before you send." },
+  { title: "Estimating first, not scheduling first", body: "Everyone else treats estimating as an add-on. It's the whole point of Jobbidder — a real, line-by-line proposal with three price options in about a minute." },
+  { title: "Priced from real costs", body: "Your cost catalog makes material pricing consistent and easy to defend, instead of an AI guess you have to hope is close." },
+  { title: "It reads the actual spec", body: "Upload the architect's PDF and every system gets priced — with a check that flags anything missing before you send." },
   { title: "It answers your phone", body: "Jessica, the AI voice assistant, qualifies leads 24/7 so you stop losing jobs to whoever called back first." },
-  { title: "You own your data", body: "No per-seat lock-in, no holding your customers hostage. Export and integrate freely." },
+  { title: "You own your data", body: "No per-user lock-in, no holding your customers hostage. Export it or connect it to your other tools, freely." },
   { title: "It pays you back", body: "A built-in referral program turns your network into income instead of a subscription bill." },
+  { title: "It answers your documents", body: "The Knowledge Base lets you ask questions across everything you've uploaded and get answers that show their sources — your files, kept private to your account." },
 ];
 
 /**

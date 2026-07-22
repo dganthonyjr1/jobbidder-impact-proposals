@@ -13,9 +13,11 @@ import {
   listKnowledgeDocuments,
   deleteKnowledgeDocument,
   askKnowledgeBase,
+  indexExistingProposals,
   type KbCitation,
 } from "@/lib/knowledge-base.server";
-import { BookOpen, Search, Trash2, Loader2, FileText, Sparkles, AlertCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { BookOpen, Search, Trash2, Loader2, FileText, Sparkles, AlertCircle, Upload, FolderInput } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/knowledge")({
@@ -28,11 +30,13 @@ function KnowledgePage() {
   const ingestFn = useServerFn(ingestKnowledgeDocument);
   const deleteFn = useServerFn(deleteKnowledgeDocument);
   const askFn = useServerFn(askKnowledgeBase);
+  const indexProposalsFn = useServerFn(indexExistingProposals);
 
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<{ answer: string; citations: KbCitation[] } | null>(null);
   const [docTitle, setDocTitle] = useState("");
   const [docText, setDocText] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const { data, refetch, isLoading } = useQuery({
     queryKey: ["kb-documents"],
@@ -61,6 +65,38 @@ function KnowledgePage() {
     onSuccess: () => refetch(),
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const preload = useMutation({
+    mutationFn: () => indexProposalsFn({ data: { limit: 200 } }),
+    onSuccess: (res) => {
+      toast.success(`Indexed ${res.indexed} proposal${res.indexed === 1 ? "" : "s"}` + (res.skipped ? `, skipped ${res.skipped}` : "") + (res.failed ? `, ${res.failed} failed` : ""));
+      refetch();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  async function handlePdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-selecting the same file
+    if (!file) return;
+    if (file.type !== "application/pdf") return toast.error("Please choose a PDF file.");
+    if (file.size > 20 * 1024 * 1024) return toast.error("PDF exceeds 20 MB.");
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return toast.error("Please sign in again.");
+      const path = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      const { error: upErr } = await supabase.storage.from("proposal-specs").upload(path, file, { contentType: "application/pdf", upsert: false });
+      if (upErr) return toast.error(upErr.message);
+      const res = await ingestFn({ data: { title: file.name.replace(/\.pdf$/i, ""), source_type: "upload", storage_path: path, file_mime: "application/pdf" } });
+      toast.success(`Indexed “${file.name}” (${res.chunks} passages)`);
+      refetch();
+    } catch (err: any) {
+      toast.error(err?.message || "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const enabled = data?.enabled ?? false;
   const embeddingsReady = data?.embeddings_ready ?? false;
@@ -159,13 +195,30 @@ function KnowledgePage() {
         </CardContent>
       </Card>
 
-      {/* Add a document (paste text) */}
+      {/* Add a document */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Add a document</CardTitle>
-          <CardDescription>Paste text to index it now. (PDF upload uses the same pipeline server-side.)</CardDescription>
+          <CardTitle className="text-lg">Add documents</CardTitle>
+          <CardDescription>Upload a PDF, pre-load your existing proposals, or paste text directly.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          {/* PDF upload + pre-load existing proposals */}
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" disabled={!enabled || !embeddingsReady || uploading}>
+              <label className="cursor-pointer">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                <span className="ml-2">Upload a PDF</span>
+                <input type="file" accept="application/pdf" className="hidden" onChange={handlePdfUpload} disabled={!enabled || !embeddingsReady || uploading} />
+              </label>
+            </Button>
+            <Button variant="outline" onClick={() => preload.mutate()} disabled={!enabled || !embeddingsReady || preload.isPending}>
+              {preload.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FolderInput className="h-4 w-4" />}
+              <span className="ml-2">Pre-load my existing proposals</span>
+            </Button>
+          </div>
+
+          <div className="border-t pt-4 text-sm font-medium text-muted-foreground">Or paste text</div>
+
           <div className="space-y-1">
             <Label htmlFor="kb-title">Title</Label>
             <Input id="kb-title" value={docTitle} onChange={(e) => setDocTitle(e.target.value)} placeholder="e.g. Standard warranty terms" disabled={!enabled} />

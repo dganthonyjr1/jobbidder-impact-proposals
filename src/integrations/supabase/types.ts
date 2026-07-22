@@ -1467,6 +1467,7 @@ export type Database = {
           file_mime: string | null
           file_url: string | null
           id: string
+          source_id: string | null
           source_type: string
           status: string
           title: string
@@ -1483,6 +1484,7 @@ export type Database = {
           file_mime?: string | null
           file_url?: string | null
           id?: string
+          source_id?: string | null
           source_type?: string
           status?: string
           title: string
@@ -1499,6 +1501,7 @@ export type Database = {
           file_mime?: string | null
           file_url?: string | null
           id?: string
+          source_id?: string | null
           source_type?: string
           status?: string
           title?: string
