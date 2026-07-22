@@ -6,8 +6,8 @@
  * else) just asks for "the text" and doesn't care what the file was.
  *
  * Supported today: PDF, Word (.docx), Excel (.xlsx) + CSV, PowerPoint (.pptx),
- * plain text / Markdown, and email (.eml and Outlook .msg). Everything is done
- * in-memory from a Buffer — no shelling out.
+ * plain text / Markdown, and email (.eml). Everything is done in-memory from a
+ * Buffer — no shelling out. (Outlook .msg is not supported yet — save as .eml.)
  */
 
 export type ExtractKind =
@@ -20,7 +20,7 @@ export interface ExtractResult {
 
 /** Human list of what can be uploaded — used in UI copy and error messages. */
 export const SUPPORTED_UPLOAD_EXTENSIONS = [
-  ".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md", ".pptx", ".eml", ".msg",
+  ".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md", ".pptx", ".eml",
 ] as const;
 
 function extOf(filename: string): string {
@@ -39,8 +39,13 @@ async function pdfToText(buf: Buffer): Promise<string> {
 async function officeToText(buf: Buffer): Promise<string> {
   const mod: any = await import(/* @vite-ignore */ "officeparser");
   const parseOffice = mod.parseOffice ?? mod.default?.parseOffice ?? mod.default;
-  const text = await parseOffice(buf);
-  return (typeof text === "string" ? text : "").trim();
+  const result = await parseOffice(buf);
+  // officeparser v7 returns a rich object with a .toText() method (older/other
+  // shapes returned a plain string or a { content } object — handle all three).
+  if (typeof result === "string") return result.trim();
+  if (result && typeof result.toText === "function") return String(result.toText()).trim();
+  if (result && typeof result.content === "string") return result.content.trim();
+  return "";
 }
 
 /** Decode a MIME "encoded-word" (=?utf-8?B?..?= / =?utf-8?Q?..?=) in a header. */
@@ -118,21 +123,6 @@ async function emlToText(buf: Buffer): Promise<string> {
   return [header, text].filter(Boolean).join("\n\n").trim();
 }
 
-async function msgToText(buf: Buffer): Promise<string> {
-  const mod: any = await import(/* @vite-ignore */ "@kenjiuno/msgreader");
-  const MsgReader = mod.default ?? mod.MsgReader ?? mod;
-  const reader = new MsgReader(new Uint8Array(buf).buffer);
-  const data = reader.getFileData();
-  if (data?.error) throw new Error(`Could not read Outlook .msg: ${data.error}`);
-  const header = [
-    data?.subject ? `Subject: ${data.subject}` : "",
-    data?.senderName ? `From: ${data.senderName}` : "",
-    data?.recipients?.length ? `To: ${data.recipients.map((r: any) => r.name || r.email).join(", ")}` : "",
-  ].filter(Boolean).join("\n");
-  const body = (data?.body || "").trim();
-  return [header, body].filter(Boolean).join("\n\n").trim();
-}
-
 function stripHtml(html: string): string {
   return html
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -177,7 +167,7 @@ export async function extractTextFromFile(
     case "eml":
       return { text: await emlToText(buf), kind: "email" };
     case "msg":
-      return { text: await msgToText(buf), kind: "email" };
+      throw new Error("Outlook .msg files aren't supported yet — please save the email as .eml or PDF and upload that.");
     case "doc":
     case "ppt":
       throw new Error(

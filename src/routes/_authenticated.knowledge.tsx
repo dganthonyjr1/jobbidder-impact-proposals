@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/knowledge")({
 });
 
 // File types the knowledge base accepts (kept in sync with file-extract.server.ts).
-const ACCEPT_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md", ".pptx", ".eml", ".msg"];
+const ACCEPT_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md", ".pptx", ".eml"];
 
 function KnowledgePage() {
   const listFn = useServerFn(listKnowledgeDocuments);

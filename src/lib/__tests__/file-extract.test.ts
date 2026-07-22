@@ -1,7 +1,43 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { extractTextFromFile, SUPPORTED_UPLOAD_EXTENSIONS } from "@/lib/file-extract.server";
 
 const buf = (s: string) => Buffer.from(s, "utf-8");
+const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "office");
+const fixture = (name: string) => readFileSync(join(fixtureDir, name));
+
+describe("file-extract: Office formats (real generated files)", () => {
+  it("reads a PDF", async () => {
+    const r = await extractTextFromFile(fixture("sample.pdf"), "sample.pdf");
+    expect(r.kind).toBe("pdf");
+    const flat = r.text.replace(/\s+/g, " "); // PDF line-wraps; compare on flattened text
+    expect(flat).toContain("TPO membrane");
+    expect(flat).toContain("gutters and downspouts");
+  });
+
+  it("reads a Word .docx", async () => {
+    const r = await extractTextFromFile(fixture("sample.docx"), "sample.docx");
+    expect(r.kind).toBe("word");
+    expect(r.text).toContain("20-year manufacturer warranty");
+    expect(r.text).toContain("TPO membrane");
+  });
+
+  it("reads an Excel .xlsx (cell values)", async () => {
+    const r = await extractTextFromFile(fixture("sample.xlsx"), "sample.xlsx");
+    expect(r.kind).toBe("excel");
+    expect(r.text).toContain("TPO membrane");
+    expect(r.text).toContain("12.5");
+  });
+
+  it("reads a PowerPoint .pptx (slide text)", async () => {
+    const r = await extractTextFromFile(fixture("sample.pptx"), "sample.pptx");
+    expect(r.kind).toBe("powerpoint");
+    expect(r.text).toContain("NGS Capability Overview");
+    expect(r.text).toContain("Central intelligence");
+  });
+});
 
 describe("file-extract: text formats", () => {
   it("reads plain text (.txt)", async () => {
@@ -79,7 +115,12 @@ describe("file-extract: error handling", () => {
 
   it("advertises the expected supported extensions", () => {
     expect(SUPPORTED_UPLOAD_EXTENSIONS).toEqual(
-      expect.arrayContaining([".pdf", ".docx", ".xlsx", ".csv", ".txt", ".pptx", ".eml", ".msg"]),
+      expect.arrayContaining([".pdf", ".docx", ".xlsx", ".csv", ".txt", ".pptx", ".eml"]),
     );
+    expect(SUPPORTED_UPLOAD_EXTENSIONS).not.toContain(".msg");
+  });
+
+  it("gives a helpful message for an Outlook .msg file (not yet supported)", async () => {
+    await expect(extractTextFromFile(buf("x"), "email.msg")).rejects.toThrow(/\.eml or PDF/i);
   });
 });
