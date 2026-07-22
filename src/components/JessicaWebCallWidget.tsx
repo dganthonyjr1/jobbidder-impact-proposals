@@ -235,8 +235,11 @@ export function JessicaWebCallWidget({ floating = false }: { floating?: boolean 
           bottom: 0;
           left: 0;
           right: 0;
-          z-index: 9998;
-          padding: 10px 16px 20px;
+          /* Below the app's modals (Tailwind z-50) so the signature/upgrade
+             dialogs always cover this bar instead of the other way around. */
+          z-index: 40;
+          /* Respect iPhone home-indicator safe area */
+          padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
           background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.0) 100%);
           pointer-events: none;
         }
@@ -284,12 +287,18 @@ export function JessicaWebCallWidget({ floating = false }: { floating?: boolean 
           pointer-events: none;
         }
 
-        /* ── Fixed positioning for non-homepage pages ── */
-        .jessica-orb-fixed {
+        /* ── Fixed positioning for non-homepage pages ──
+           The #id selector above sets position:relative and outranks a bare
+           class, which used to leave the orb in the page flow at the top-left
+           (clipped, and pushing the page content down). The combined
+           id+class selector wins the specificity fight so the orb genuinely
+           floats bottom-right, out of the document flow. z-index stays below
+           the app's modals (Tailwind z-50) so dialogs cover the widget. */
+        #jessica-orb-desktop.jessica-orb-fixed {
           position: fixed;
           bottom: 24px;
           right: 24px;
-          z-index: 9998;
+          z-index: 40;
         }
 
         /* ── Responsive: show orb on desktop, sticky bar on mobile ── */
@@ -299,6 +308,11 @@ export function JessicaWebCallWidget({ floating = false }: { floating?: boolean 
           }
           #jessica-mobile-bar {
             display: block;
+          }
+          /* Reserve space so the sticky bar never covers the page's last
+             content (accept buttons, footers) on pages where it renders. */
+          body {
+            padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
           }
         }
 
