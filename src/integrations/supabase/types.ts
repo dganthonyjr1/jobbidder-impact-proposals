@@ -702,6 +702,41 @@ export type Database = {
           },
         ]
       }
+      contractor_settings_audit_log: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          contractor_id: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          contractor_id: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          contractor_id?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contractor_settings_audit_log_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contractor_survey_responses: {
         Row: {
           availability: string | null
@@ -856,6 +891,65 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      cost_catalog: {
+        Row: {
+          active: boolean
+          aliases: string[]
+          contractor_id: string | null
+          created_at: string
+          id: string
+          item_key: string
+          name: string
+          region: string | null
+          retail_unit_cost: number | null
+          source: string
+          trade: string
+          unit: string
+          unit_cost: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          aliases?: string[]
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          item_key: string
+          name: string
+          region?: string | null
+          retail_unit_cost?: number | null
+          source?: string
+          trade: string
+          unit: string
+          unit_cost: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          aliases?: string[]
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          item_key?: string
+          name?: string
+          region?: string | null
+          retail_unit_cost?: number | null
+          source?: string
+          trade?: string
+          unit?: string
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_catalog_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credit_ledger: {
         Row: {
@@ -1305,6 +1399,122 @@ export type Database = {
         }
         Relationships: []
       }
+      kb_chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          contractor_id: string
+          created_at: string
+          department: string | null
+          document_id: string
+          embedding: string | null
+          heading: string | null
+          id: string
+          page: number | null
+          token_estimate: number | null
+        }
+        Insert: {
+          chunk_index: number
+          content: string
+          contractor_id: string
+          created_at?: string
+          department?: string | null
+          document_id: string
+          embedding?: string | null
+          heading?: string | null
+          id?: string
+          page?: number | null
+          token_estimate?: number | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          contractor_id?: string
+          created_at?: string
+          department?: string | null
+          document_id?: string
+          embedding?: string | null
+          heading?: string | null
+          id?: string
+          page?: number | null
+          token_estimate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_chunks_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kb_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "kb_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kb_documents: {
+        Row: {
+          char_count: number
+          chunk_count: number
+          contractor_id: string
+          created_at: string
+          department: string | null
+          error: string | null
+          file_mime: string | null
+          file_url: string | null
+          id: string
+          source_type: string
+          status: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          char_count?: number
+          chunk_count?: number
+          contractor_id: string
+          created_at?: string
+          department?: string | null
+          error?: string | null
+          file_mime?: string | null
+          file_url?: string | null
+          id?: string
+          source_type?: string
+          status?: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          char_count?: number
+          chunk_count?: number
+          contractor_id?: string
+          created_at?: string
+          department?: string | null
+          error?: string | null
+          file_mime?: string | null
+          file_url?: string | null
+          id?: string
+          source_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_documents_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           category: string
@@ -1619,6 +1829,42 @@ export type Database = {
           },
         ]
       }
+      pricing_model_snapshots: {
+        Row: {
+          created_at: string
+          feature_means: Json
+          feature_names: string[]
+          feature_stds: Json
+          id: string
+          intercept: number
+          sample_size: number
+          trained_at: string
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          feature_means: Json
+          feature_names: string[]
+          feature_stds: Json
+          id?: string
+          intercept: number
+          sample_size: number
+          trained_at?: string
+          weights: Json
+        }
+        Update: {
+          created_at?: string
+          feature_means?: Json
+          feature_names?: string[]
+          feature_stds?: Json
+          id?: string
+          intercept?: number
+          sample_size?: number
+          trained_at?: string
+          weights?: Json
+        }
+        Relationships: []
+      }
       proposal_acceptances: {
         Row: {
           accepted_at: string
@@ -1662,42 +1908,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      pricing_model_snapshots: {
-        Row: {
-          created_at: string
-          feature_means: Json
-          feature_names: string[]
-          feature_stds: Json
-          id: string
-          intercept: number
-          sample_size: number
-          trained_at: string
-          weights: Json
-        }
-        Insert: {
-          created_at?: string
-          feature_means: Json
-          feature_names: string[]
-          feature_stds: Json
-          id?: string
-          intercept: number
-          sample_size: number
-          trained_at?: string
-          weights: Json
-        }
-        Update: {
-          created_at?: string
-          feature_means?: Json
-          feature_names?: string[]
-          feature_stds?: Json
-          id?: string
-          intercept?: number
-          sample_size?: number
-          trained_at?: string
-          weights?: Json
-        }
-        Relationships: []
       }
       proposal_followups: {
         Row: {
@@ -2271,6 +2481,23 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      match_kb_chunks: {
+        Args: {
+          match_count?: number
+          p_contractor_id: string
+          p_department?: string
+          query_embedding: string
+        }
+        Returns: {
+          chunk_index: number
+          content: string
+          document_id: string
+          heading: string
+          id: string
+          page: number
+          similarity: number
+        }[]
       }
       move_to_dlq: {
         Args: {
