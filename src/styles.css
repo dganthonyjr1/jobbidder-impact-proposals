@@ -146,6 +146,12 @@
   --shadow-card: 0 1px 0 oklch(0 0 0 / 0.03) inset, 0 10px 30px -10px oklch(0 0 0 / 0.15);
 }
 
+/* Jobbidder wordmark: swap to the dark-ink variant in light mode so it stays
+   legible against light surfaces (the default asset is white-on-transparent). */
+.jobbidder-logo-for-light-bg { display: none; }
+:root.light .jobbidder-logo-for-dark-bg { display: none; }
+:root.light .jobbidder-logo-for-light-bg { display: block; }
+
 @layer base {
   * {
     border-color: var(--color-border);
