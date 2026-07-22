@@ -31,6 +31,7 @@ import { Route as AuditTokenRouteImport } from './routes/audit.$token'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated.pipeline'
 import { Route as AuthenticatedMediaUploadRouteImport } from './routes/_authenticated.media-upload'
+import { Route as AuthenticatedKnowledgeRouteImport } from './routes/_authenticated.knowledge'
 import { Route as AuthenticatedGuideRouteImport } from './routes/_authenticated.guide'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
@@ -187,6 +188,11 @@ const AuthenticatedMediaUploadRoute =
     path: '/media-upload',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedKnowledgeRoute = AuthenticatedKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedGuideRoute = AuthenticatedGuideRouteImport.update({
   id: '/guide',
   path: '/guide',
@@ -459,6 +465,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/guide': typeof AuthenticatedGuideRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -527,6 +534,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
   '/guide': typeof AuthenticatedGuideRoute
+  '/knowledge': typeof AuthenticatedKnowledgeRoute
   '/media-upload': typeof AuthenticatedMediaUploadRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -597,6 +605,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
   '/_authenticated/guide': typeof AuthenticatedGuideRoute
+  '/_authenticated/knowledge': typeof AuthenticatedKnowledgeRoute
   '/_authenticated/media-upload': typeof AuthenticatedMediaUploadRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -667,6 +676,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/guide'
+    | '/knowledge'
     | '/media-upload'
     | '/pipeline'
     | '/settings'
@@ -735,6 +745,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/guide'
+    | '/knowledge'
     | '/media-upload'
     | '/pipeline'
     | '/settings'
@@ -804,6 +815,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
     | '/_authenticated/guide'
+    | '/_authenticated/knowledge'
     | '/_authenticated/media-upload'
     | '/_authenticated/pipeline'
     | '/_authenticated/settings'
@@ -1066,6 +1078,13 @@ declare module '@tanstack/react-router' {
       path: '/media-upload'
       fullPath: '/media-upload'
       preLoaderRoute: typeof AuthenticatedMediaUploadRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/knowledge': {
+      id: '/_authenticated/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof AuthenticatedKnowledgeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/guide': {
@@ -1394,6 +1413,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
   AuthenticatedGuideRoute: typeof AuthenticatedGuideRoute
+  AuthenticatedKnowledgeRoute: typeof AuthenticatedKnowledgeRoute
   AuthenticatedMediaUploadRoute: typeof AuthenticatedMediaUploadRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -1409,6 +1429,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
   AuthenticatedGuideRoute: AuthenticatedGuideRoute,
+  AuthenticatedKnowledgeRoute: AuthenticatedKnowledgeRoute,
   AuthenticatedMediaUploadRoute: AuthenticatedMediaUploadRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

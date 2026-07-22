@@ -17,6 +17,16 @@ export default defineConfig({
   },
   vite: {
     base: process.env.GITHUB_PAGES === "true" ? "/jobbidder-impact-proposals/" : "/",
+    build: {
+      rollupOptions: {
+        // officeparser (used only to read Word/Excel/PowerPoint text) statically
+        // references these optional heavy deps for features we never call —
+        // puppeteer (PDF *generation*) and tesseract.js (OCR). Leave them
+        // external so the bundler doesn't try to resolve/inline them; the code
+        // paths that would load them are never executed.
+        external: ["puppeteer", "tesseract.js"],
+      },
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).

@@ -110,8 +110,13 @@ describe("Echols K-8 TPO roofing regression", () => {
     it("roofing default overhead is well above the flat 12%", () => {
       expect(defaultOverheadForTrade("Roofing")).toBe(25);
       expect(defaultOverheadForTrade("TPO roof replacement")).toBe(25);
-      // Unlisted trades still fall back to the flat default.
-      expect(defaultOverheadForTrade("painting")).toBe(12);
+      // painting now has its own tuned default (10%) from the shared pricing
+      // table rather than silently falling back to the generic 12% — that
+      // silent fallback for trades the Settings screen already had tuned
+      // values for was exactly the drift this consolidation fixes.
+      expect(defaultOverheadForTrade("painting")).toBe(10);
+      // A trade with no tuned entry at all still falls back to the flat default.
+      expect(defaultOverheadForTrade("glazing")).toBe(12);
     });
 
     it("at the roofing DEFAULT overhead, the total is inside the band", () => {

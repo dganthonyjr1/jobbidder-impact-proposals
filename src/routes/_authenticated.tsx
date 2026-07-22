@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, FileText, Settings, LogOut, ShieldCheck, Kanban, Share2, CreditCard, ImagePlus, BookOpen, Menu, X } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, LogOut, ShieldCheck, Kanban, Share2, CreditCard, ImagePlus, BookOpen, Library, Menu, X } from "lucide-react";
 import { JobbidderLogo } from "@/components/JobbidderLogo";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -37,6 +37,7 @@ function AuthLayout() {
     { to: "/contractor-verification", label: "Verify Credentials", icon: ShieldCheck },
     { to: "/proposals/new", label: "New Proposal", icon: FileText },
     { to: "/media-upload", label: "Media", icon: ImagePlus },
+    { to: "/knowledge", label: "Knowledge Base", icon: Library },
     { to: "/affiliate", label: "Affiliate", icon: Share2 },
     { to: "/account", label: "Billing", icon: CreditCard },
     { to: "/settings", label: "Settings", icon: Settings },

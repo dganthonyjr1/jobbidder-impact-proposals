@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Copy, Check, ExternalLink, Wallet } from "lucide-react";
 import { CostCatalogSettings } from "@/components/CostCatalogSettings";
+import { DEFAULT_TRADE_PRICING } from "@/lib/trade-playbooks";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Jobbidder" }] }),
@@ -31,21 +32,12 @@ const TRADE_OPTIONS = [
   "Other",
 ];
 
-// Default pricing settings for a new contractor
+// Default pricing settings for a new contractor.
+// trades comes from the single shared source (trade-playbooks.ts) — this used
+// to be its own separate copy that had drifted out of sync with the actual
+// AI-generation fallback (see DEFAULT_TRADE_PRICING for the full story).
 const DEFAULT_PRICING: PricingSettings = {
-  trades: {
-    default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
-    // Commercial/institutional roofing carries high general conditions, bonds, and
-    // prevailing-wage admin — a flat 12% underprices it (see the Echols K-8 case).
-    roofing: { labor_rate: 70, material_markup: 40, overhead: 25, profit_margin: 22 },
-    hvac: { labor_rate: 85, material_markup: 35, overhead: 14, profit_margin: 22 },
-    plumbing: { labor_rate: 90, material_markup: 35, overhead: 14, profit_margin: 22 },
-    electrical: { labor_rate: 95, material_markup: 30, overhead: 14, profit_margin: 20 },
-    remodeling: { labor_rate: 75, material_markup: 38, overhead: 13, profit_margin: 22 },
-    painting: { labor_rate: 55, material_markup: 30, overhead: 10, profit_margin: 20 },
-    flooring: { labor_rate: 60, material_markup: 35, overhead: 11, profit_margin: 20 },
-    landscaping: { labor_rate: 50, material_markup: 30, overhead: 10, profit_margin: 18 },
-  },
+  trades: DEFAULT_TRADE_PRICING,
   tier_spread: { good: 0, better: 18, best: 38 },
   tax_rate: 7,
   payment_terms: "50% deposit, 50% on completion",

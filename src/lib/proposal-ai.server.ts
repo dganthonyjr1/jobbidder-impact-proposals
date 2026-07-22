@@ -1,5 +1,5 @@
 import Groq from "groq-sdk";
-import { tradePlaybook } from "./trade-playbooks";
+import { tradePlaybook, DEFAULT_TRADE_PRICING } from "./trade-playbooks";
 
 /**
  * Shared proposal-generation logic used by both:
@@ -47,15 +47,8 @@ export interface ProposalAIInput {
 }
 
 export const DEFAULT_PRICING: PricingSettings = {
-  trades: {
-    default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
-    // Commercial/institutional trades carry far more overhead (general
-    // conditions, bonds, insurance, prevailing-wage admin) than the flat 12%.
-    // Kept in sync with TRADE_OVERHEAD_DEFAULTS and the pricing_settings column
-    // default. See defaultOverheadForTrade() in trade-playbooks.ts.
-    roofing: { labor_rate: 65, material_markup: 35, overhead: 25, profit_margin: 20 },
-    general: { labor_rate: 65, material_markup: 35, overhead: 20, profit_margin: 20 },
-  },
+  // Single shared source — see DEFAULT_TRADE_PRICING in trade-playbooks.ts.
+  trades: DEFAULT_TRADE_PRICING,
   tier_spread: { good: 0, better: 18, best: 38 },
   tax_rate: 7,
   payment_terms: "50% deposit, 50% on completion",

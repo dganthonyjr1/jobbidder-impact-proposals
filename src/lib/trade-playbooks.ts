@@ -54,27 +54,49 @@ export function tradePlaybook(tradeType?: string | null): string {
   return PLAYBOOKS[normalizeTradeKey(tradeType)] || PLAYBOOKS.general;
 }
 
+export interface DefaultTradeRate {
+  labor_rate: number;
+  material_markup: number;
+  overhead: number;
+  profit_margin: number;
+}
+
 /**
- * Per-trade overhead defaults, as a PERCENT of (materials + labor).
+ * Single source of truth for per-trade default pricing (labor rate, material
+ * markup, overhead, profit margin) — the fallback used whenever a contractor
+ * hasn't configured their own pricing_settings for a given trade.
  *
- * A flat 12% is realistic for a small residential repair but far too low for
- * commercial / institutional work, where "non-measured costs" — general
- * conditions, mobilization, supervision, bonds, insurance, and prevailing-wage
- * administration — routinely run 20-30%. The Echols K-8 reroof is the reference
- * point: its real estimate carried $60,010 of non-measured costs on $223,119 of
- * measured scope = 26.9%. At a flat 12% Jobbidder came in ~11% low even with the
- * scope fully priced, so overhead has to be trade-aware to be accurate.
+ * This used to be defined three times (here as overhead-only, again in
+ * proposal-ai.server.ts's DEFAULT_PRICING, and again in the Settings screen's
+ * own local DEFAULT_PRICING), and the copies had already drifted out of sync —
+ * e.g. the Settings screen showed HVAC/plumbing/electrical/etc. at their own
+ * tuned rates, but the actual AI-generation fallback had no entry for those
+ * trades at all and silently used the flat "default" rate instead. Now there
+ * is exactly one copy, imported everywhere.
  *
- * Only trades that genuinely carry higher overhead are raised here; every other
- * trade falls back to 12, preserving existing behavior. These are the DEFAULTS a
- * contractor gets before they tune their own pricing_settings.
+ * Overhead in particular is trade-aware because a flat 12% is realistic for a
+ * small residential repair but far too low for commercial/institutional work,
+ * where "non-measured costs" — general conditions, mobilization, supervision,
+ * bonds, insurance, and prevailing-wage administration — routinely run
+ * 20-30%. The Echols K-8 reroof is the reference point: its real estimate
+ * carried $60,010 of non-measured costs on $223,119 of measured scope = 26.9%.
+ * At a flat 12% Jobbidder came in ~11% low even with the scope fully priced.
  */
-export const TRADE_OVERHEAD_DEFAULTS: Record<string, number> = {
-  roofing: 25, // commercial/institutional roofing: high general conditions, bonds, PW admin
-  general: 20, // general contracting: coordination, GCs, contingency
+export const DEFAULT_TRADE_PRICING: Record<string, DefaultTradeRate> = {
+  default: { labor_rate: 65, material_markup: 35, overhead: 12, profit_margin: 20 },
+  roofing: { labor_rate: 70, material_markup: 40, overhead: 25, profit_margin: 22 },
+  general: { labor_rate: 65, material_markup: 35, overhead: 20, profit_margin: 20 },
+  hvac: { labor_rate: 85, material_markup: 35, overhead: 14, profit_margin: 22 },
+  plumbing: { labor_rate: 90, material_markup: 35, overhead: 14, profit_margin: 22 },
+  electrical: { labor_rate: 95, material_markup: 30, overhead: 14, profit_margin: 20 },
+  remodeling: { labor_rate: 75, material_markup: 38, overhead: 13, profit_margin: 22 },
+  painting: { labor_rate: 55, material_markup: 30, overhead: 10, profit_margin: 20 },
+  flooring: { labor_rate: 60, material_markup: 35, overhead: 11, profit_margin: 20 },
+  landscaping: { labor_rate: 50, material_markup: 30, overhead: 10, profit_margin: 18 },
 };
 
-/** The default overhead percent for a trade (falls back to 12). */
+/** The default overhead percent for a trade (falls back to the shared "default" rate). */
 export function defaultOverheadForTrade(tradeType?: string | null): number {
-  return TRADE_OVERHEAD_DEFAULTS[normalizeTradeKey(tradeType)] ?? 12;
+  const key = normalizeTradeKey(tradeType);
+  return DEFAULT_TRADE_PRICING[key]?.overhead ?? DEFAULT_TRADE_PRICING.default.overhead;
 }

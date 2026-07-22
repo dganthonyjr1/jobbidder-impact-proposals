@@ -379,25 +379,24 @@ function PricingPage() {
               </p>
 
               <div className="mt-8 flex items-baseline gap-2">
-                <span className="font-display text-5xl font-bold tracking-tight">$3,500</span>
-                <span className="text-muted-foreground font-medium text-lg">/mo</span>
+                <span className="font-display text-4xl sm:text-5xl font-bold tracking-tight">Custom Pricing</span>
               </div>
               <p className="mt-1 text-sm font-semibold text-muted-foreground">
-                + $3,500 one-time setup fee · 14-day money-back guarantee · 10,000 AI credits/mo included · $0.50/credit after
+                Scoped to your contractor network size and needs · 10,000+ AI credits/mo included
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                vs. $3,299+/mo for NetSuite + HubSpot combined — with none of the contractor-specific capabilities.
+                Built to replace the cost and complexity of running NetSuite and HubSpot separately — with none of the contractor-specific capabilities they lack.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Button asChild size="lg" className="font-bold">
-                  <a href="https://link.suddenimpactagency.io/payment-link/6a402be19b12592b36824ddf" target="_blank" rel="noreferrer">Get Started</a>
+                  <a href="mailto:don@suddenimpactagency.io?subject=Enterprise%20Plan%20Inquiry">Contact Sales</a>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <a href="mailto:don@suddenimpactagency.io?subject=Enterprise%20Plan%20Inquiry">Book a Demo</a>
+                  <a href="mailto:don@suddenimpactagency.io?subject=Enterprise%20Demo%20Request">Book a Demo</a>
                 </Button>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">Custom onboarding included · Dedicated account manager · Cancel anytime</p>
+              <p className="mt-4 text-xs text-muted-foreground">Custom onboarding · Dedicated account manager · Flexible terms</p>
             </div>
 
             {/* Right: Feature list */}
