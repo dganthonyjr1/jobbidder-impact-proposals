@@ -128,7 +128,7 @@ export const GUIDE_STEPS: Step[] = [
     title: "11. Ask your documents — the Knowledge Base",
     what: "Upload your documents (or pre-load your existing proposals) and ask a plain-English question. You get a straight answer, and it shows you exactly which document the answer came from.",
     how: [
-      "Open Knowledge Base, upload a PDF or click “Pre-load my existing proposals,” and it's ready to search in seconds.",
+      "Open Knowledge Base and upload a file — PDF, Word, Excel or CSV, PowerPoint, plain text, or an email — or click “Pre-load my existing proposals.” It's ready to search in seconds.",
       "Ask something like “What warranty did we quote on the Echols roof?” — the answer shows you which document it used, and tells you honestly when your documents don't have the answer.",
     ],
     why: "Your business knowledge is scattered across hundreds of documents. This turns that pile into something you can just ask — instead of digging — while keeping your documents private to your own account.",

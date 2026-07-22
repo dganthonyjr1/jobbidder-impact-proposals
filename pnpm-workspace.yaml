@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: true
+  tesseract.js: false
 
 overrides:
   entities: 4.5.0

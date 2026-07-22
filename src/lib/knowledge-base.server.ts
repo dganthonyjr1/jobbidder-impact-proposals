@@ -25,6 +25,9 @@ import { z } from "zod";
 import Anthropic from "@anthropic-ai/sdk";
 import { chunkText } from "./rag-chunk";
 import { embedTexts, embedQuery, embeddingsConfigured } from "./embeddings.server";
+import { extractTextFromFile, SUPPORTED_UPLOAD_EXTENSIONS } from "./file-extract.server";
+
+const KNOWLEDGE_BUCKET = "knowledge-docs";
 
 /** Is the knowledge base turned on? Global env kill-switch OR per-contractor pilot. */
 export function isRagEnabled(contractor?: { pricing_settings?: unknown } | null): boolean {
@@ -44,26 +47,19 @@ async function resolveContractor(userId: string) {
   return data;
 }
 
-/** Pull the text layer out of a PDF buffer (same approach as document-ai.server.ts). */
-async function pdfBufferToText(buf: Buffer): Promise<string> {
-  // @ts-expect-error - pdf-parse ships no type declarations for the /lib subpath
-  const pdfMod = await import("pdf-parse/lib/pdf-parse.js");
-  const pdfParse = (pdfMod as any).default as (b: Buffer) => Promise<{ text?: string }>;
-  const pdf = await pdfParse(buf).catch(() => null);
-  return (pdf?.text || "").trim();
-}
-
-async function extractPdfTextFromUrl(fileUrl: string): Promise<string> {
-  const res = await fetch(fileUrl);
-  if (!res.ok) throw new Error(`Could not fetch document (${res.status})`);
-  return pdfBufferToText(Buffer.from(await res.arrayBuffer()));
-}
-
-/** Read a PDF that the browser already uploaded to Supabase storage. */
-async function extractPdfTextFromStorage(bucket: string, path: string): Promise<string> {
+/** Read a file the browser uploaded to storage and extract its text (any supported type). */
+async function extractTextFromStorage(bucket: string, path: string, fileName: string): Promise<string> {
   const { data: file, error } = await supabaseAdmin.storage.from(bucket).download(path);
   if (error || !file) throw new Error(`Could not read uploaded file: ${error?.message || "not found"}`);
-  return pdfBufferToText(Buffer.from(await file.arrayBuffer()));
+  const { text } = await extractTextFromFile(Buffer.from(await file.arrayBuffer()), fileName);
+  return text;
+}
+
+async function extractTextFromUrl(fileUrl: string, fileName: string): Promise<string> {
+  const res = await fetch(fileUrl);
+  if (!res.ok) throw new Error(`Could not fetch document (${res.status})`);
+  const { text } = await extractTextFromFile(Buffer.from(await res.arrayBuffer()), fileName);
+  return text;
 }
 
 interface IngestMeta {
@@ -160,16 +156,18 @@ async function ingestTextForContractor(
 const ingestSchema = z.object({
   title: z.string().min(1).max(300),
   source_type: z.enum(["upload", "spec", "proposal", "credential", "note"]).default("upload"),
-  // Provide ONE of: raw text, a storage_path (a PDF the browser uploaded to the
-  // 'proposal-specs' bucket), or a public file_url to fetch + parse server-side.
+  // Provide ONE of: raw text, a storage_path (a file the browser uploaded to the
+  // knowledge-docs bucket), or a public file_url to fetch + parse server-side.
+  // file_name drives which extractor is used (PDF, Word, Excel, etc.).
   text: z.string().optional(),
   storage_path: z.string().max(500).optional(),
-  storage_bucket: z.string().max(100).default("proposal-specs"),
+  storage_bucket: z.string().max(100).default(KNOWLEDGE_BUCKET),
   file_url: z.string().url().optional(),
+  file_name: z.string().max(300).optional(),
   file_mime: z.string().optional(),
 });
 
-/** Ingest one document (pasted text, an uploaded PDF, or a PDF url). */
+/** Ingest one document (pasted text, or any supported uploaded file / url). */
 export const ingestKnowledgeDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ingestSchema.parse(input))
@@ -180,9 +178,11 @@ export const ingestKnowledgeDocument = createServerFn({ method: "POST" })
       throw new Error("Knowledge base is enabled but no embeddings provider key is set (OPENAI_API_KEY / VOYAGE_API_KEY).");
     }
 
+    // The file name (for type detection) comes from file_name, else the storage path/url tail.
+    const fileName = data.file_name || data.storage_path?.split("/").pop() || data.file_url?.split("/").pop()?.split("?")[0] || data.title;
     let text = (data.text || "").trim();
-    if (!text && data.storage_path) text = await extractPdfTextFromStorage(data.storage_bucket, data.storage_path);
-    if (!text && data.file_url) text = await extractPdfTextFromUrl(data.file_url);
+    if (!text && data.storage_path) text = await extractTextFromStorage(data.storage_bucket, data.storage_path, fileName);
+    if (!text && data.file_url) text = await extractTextFromUrl(data.file_url, fileName);
 
     return ingestTextForContractor(contractor.id, context.userId, {
       title: data.title,
@@ -191,6 +191,9 @@ export const ingestKnowledgeDocument = createServerFn({ method: "POST" })
       file_mime: data.file_mime ?? null,
     }, text);
   });
+
+/** The file extensions the knowledge base can ingest (for UI copy / accept lists). */
+export const KNOWLEDGE_SUPPORTED_EXTENSIONS = SUPPORTED_UPLOAD_EXTENSIONS;
 
 /** Flatten a proposal row into plain searchable text. */
 function proposalToText(p: any): string {

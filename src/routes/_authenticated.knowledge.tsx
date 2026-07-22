@@ -25,6 +25,9 @@ export const Route = createFileRoute("/_authenticated/knowledge")({
   component: KnowledgePage,
 });
 
+// File types the knowledge base accepts (kept in sync with file-extract.server.ts).
+const ACCEPT_EXTS = [".pdf", ".docx", ".xlsx", ".xls", ".csv", ".txt", ".md", ".pptx", ".eml", ".msg"];
+
 function KnowledgePage() {
   const listFn = useServerFn(listKnowledgeDocuments);
   const ingestFn = useServerFn(ingestKnowledgeDocument);
@@ -75,20 +78,21 @@ function KnowledgePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  async function handlePdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = ""; // allow re-selecting the same file
     if (!file) return;
-    if (file.type !== "application/pdf") return toast.error("Please choose a PDF file.");
-    if (file.size > 20 * 1024 * 1024) return toast.error("PDF exceeds 20 MB.");
+    const ext = (file.name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1]) ?? "";
+    if (!ACCEPT_EXTS.includes(`.${ext}`)) return toast.error(`Unsupported file type. Try: ${ACCEPT_EXTS.join(", ")}`);
+    if (file.size > 25 * 1024 * 1024) return toast.error("File exceeds 25 MB.");
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return toast.error("Please sign in again.");
       const path = `${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-      const { error: upErr } = await supabase.storage.from("proposal-specs").upload(path, file, { contentType: "application/pdf", upsert: false });
+      const { error: upErr } = await supabase.storage.from("knowledge-docs").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
       if (upErr) return toast.error(upErr.message);
-      const res = await ingestFn({ data: { title: file.name.replace(/\.pdf$/i, ""), source_type: "upload", storage_path: path, file_mime: "application/pdf" } });
+      const res = await ingestFn({ data: { title: file.name.replace(/\.[a-z0-9]+$/i, ""), source_type: "upload", storage_path: path, file_name: file.name, file_mime: file.type || undefined } });
       toast.success(`Indexed “${file.name}” (${res.chunks} passages)`);
       refetch();
     } catch (err: any) {
@@ -199,7 +203,7 @@ function KnowledgePage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Add documents</CardTitle>
-          <CardDescription>Upload a PDF, pre-load your existing proposals, or paste text directly.</CardDescription>
+          <CardDescription>Upload a file (PDF, Word, Excel/CSV, PowerPoint, text, or email), pre-load your existing proposals, or paste text directly.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* PDF upload + pre-load existing proposals */}
@@ -207,8 +211,8 @@ function KnowledgePage() {
             <Button asChild variant="outline" disabled={!enabled || !embeddingsReady || uploading}>
               <label className="cursor-pointer">
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                <span className="ml-2">Upload a PDF</span>
-                <input type="file" accept="application/pdf" className="hidden" onChange={handlePdfUpload} disabled={!enabled || !embeddingsReady || uploading} />
+                <span className="ml-2">Upload a file</span>
+                <input type="file" accept={ACCEPT_EXTS.join(",")} className="hidden" onChange={handleFileUpload} disabled={!enabled || !embeddingsReady || uploading} />
               </label>
             </Button>
             <Button variant="outline" onClick={() => preload.mutate()} disabled={!enabled || !embeddingsReady || preload.isPending}>
