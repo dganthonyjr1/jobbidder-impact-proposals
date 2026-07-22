@@ -68,7 +68,7 @@ export function JessicaWebCallWidget({ floating = false }: { floating?: boolean 
             <rect x="8" y="4" width="8" height="16" rx="4" />
             <path d="M12 20v3m-4 0h8" />
           </svg>
-          <span id="jessica-mobile-text">🎙️ Talk to Jessica</span>
+          <span id="jessica-mobile-text">Talk to Jessica</span>
         </button>
         <div id="jessica-mobile-status"></div>
       </div>
@@ -393,7 +393,7 @@ function initJessicaWebCall() {
       mobileBtn.classList.toggle('active', active);
     }
     if (mobileText) {
-      mobileText.textContent = active ? '🔴 End Call' : '🎙️ Talk to Jessica';
+      mobileText.textContent = active ? 'End Call' : 'Talk to Jessica';
     }
   }
 
