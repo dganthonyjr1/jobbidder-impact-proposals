@@ -7,6 +7,7 @@ import { TEMPLATES } from '@/lib/email-templates/registry'
 import { computeTotals, fmt, type MaterialLine, type LaborLine } from '@/lib/pricing'
 import { scheduleProposalFollowups } from '@/lib/followups.server'
 import { sendSmsViaGHL, sendEmailViaGHL, type GhlCredentials } from '@/lib/ghl.server'
+import { scopeReviewBlocksSend, withScopeReviewAcknowledged, type StoredScopeCheck } from '@/lib/scope-review-gate'
 
 const SITE_NAME = 'Jobbidder'
 const FROM_DOMAIN = 'jobbidder.io'
@@ -14,6 +15,7 @@ const FROM_DOMAIN = 'jobbidder.io'
 const BodySchema = z.object({
   proposalId: z.string().uuid(),
   recipientEmail: z.string().email().max(254),
+  acknowledgeScopeWarning: z.boolean().optional().default(false),
 })
 
 export const Route = createFileRoute('/api/public/send-proposal-email')({
@@ -38,7 +40,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
             { status: 400 }
           )
         }
-        const { proposalId, recipientEmail } = parsed
+        const { proposalId, recipientEmail, acknowledgeScopeWarning } = parsed
         const normalizedEmail = recipientEmail.toLowerCase().trim()
 
         // 1. Load proposal + contractor
@@ -50,6 +52,25 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
         if (pErr || !proposal) {
           return Response.json({ error: 'Proposal not found' }, { status: 404 })
         }
+
+        // 2. Scope-completeness review gate — an AI-generated proposal that is
+        // likely missing priced scope must not reach the client unreviewed. The
+        // proposal page already shows this as a warning banner to the owner;
+        // this is where that warning is actually enforced instead of skippable.
+        const rawInput = (proposal.raw_input || {}) as Record<string, unknown>
+        const scopeCheck = rawInput.scope_check as StoredScopeCheck | undefined
+        if (scopeReviewBlocksSend(scopeCheck, acknowledgeScopeWarning)) {
+          return Response.json(
+            {
+              success: false,
+              reason: 'scope_review_required',
+              error: 'This proposal may be missing priced scope. Review the flagged items on the proposal page and confirm before sending.',
+              missing: scopeCheck!.missing,
+            },
+            { status: 409 },
+          )
+        }
+        const acknowledgedScopeCheck = withScopeReviewAcknowledged(scopeCheck, acknowledgeScopeWarning)
 
         const { data: contractor } = proposal.contractor_id
           ? await supabaseAdmin
@@ -79,7 +100,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
               }
             : null
 
-        // 2. Suppression check
+        // 3. Suppression check
         const { data: suppressed, error: suppressedError } = await supabaseAdmin
           .from('suppressed_emails')
           .select('email')
@@ -90,7 +111,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           return Response.json({ success: false, reason: 'email_suppressed' }, { status: 200 })
         }
 
-        // 3. Compute totals
+        // 4. Compute totals
         const materials = (proposal.materials || []) as MaterialLine[]
         const labor = (proposal.labor || []) as LaborLine[]
         const tier = (proposal.selected_tier as any) || 'better'
@@ -112,7 +133,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           language: proposalLang,
         }
 
-        // 4. Render email template
+        // 5. Render email template
         const template = TEMPLATES['proposal-ready']
         if (!template) {
           return Response.json({ error: 'Template missing' }, { status: 500 })
@@ -125,7 +146,7 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
             ? template.subject(templateData)
             : template.subject
 
-        // 5. Send email via GHL
+        // 6. Send email via GHL
         // For SIA-backed contractors: use their GHL from_email (their own domain/address)
         // For all others: send from support@jobbidder.io with contractor's email as reply-to
         const businessName = contractor?.business_name || SITE_NAME
@@ -158,24 +179,28 @@ export const Route = createFileRoute('/api/public/send-proposal-email')({
           )
         }
 
-        // 6. Update proposal status
+        // 7. Update proposal status, recording the scope-review event if this
+        // send only went through because a human just acknowledged the warning.
         await supabaseAdmin
           .from('proposals')
           .update({
             client_email: normalizedEmail,
             status: 'sent',
             expires_at: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+            ...(acknowledgedScopeCheck !== scopeCheck
+              ? { raw_input: { ...rawInput, scope_check: acknowledgedScopeCheck } as any }
+              : {}),
           })
           .eq('id', proposal.id)
 
-        // 7. Schedule follow-up cadence (24h / 72h / 7d). Non-fatal on error.
+        // 8. Schedule follow-up cadence (24h / 72h / 7d). Non-fatal on error.
         try {
           await scheduleProposalFollowups(proposal.id)
         } catch (e) {
           console.warn('schedule followups failed:', (e as Error).message)
         }
 
-        // 8. Send SMS with the proposal link if client phone is on file
+        // 9. Send SMS with the proposal link if client phone is on file
         const SMS_TEMPLATES: Record<string, (b: string, n: string, a: string, u: string) => string> = {
           en: (b, n, a, u) => `${b} sent your proposal ${n}${a ? ` (${a})` : ''}: ${u} — Reply STOP to opt out`,
           es: (b, n, a, u) => `${b} envió tu propuesta ${n}${a ? ` (${a})` : ''}: ${u} — Responde STOP para cancelar`,

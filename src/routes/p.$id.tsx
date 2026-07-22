@@ -42,6 +42,7 @@ function PublicProposal() {
   const [sendEmail, setSendEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [scopeAckChecked, setScopeAckChecked] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [savingPhotos, setSavingPhotos] = useState(false);
   const [showClientUpload, setShowClientUpload] = useState(false);
@@ -195,11 +196,19 @@ function PublicProposal() {
       const res = await fetch("/api/public/send-proposal-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ proposalId: id, recipientEmail: sendEmail.trim() }),
+        body: JSON.stringify({
+          proposalId: id,
+          recipientEmail: sendEmail.trim(),
+          acknowledgeScopeWarning: scopeAckChecked,
+        }),
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
-        toast.error(json.error || json.reason || "Failed to send");
+        if (json.reason === "scope_review_required") {
+          toast.error("Check the box confirming you've reviewed the missing scope before sending.");
+        } else {
+          toast.error(json.error || json.reason || "Failed to send");
+        }
       } else {
         setSentTo(sendEmail.trim());
         toast.success(`Proposal sent to ${sendEmail.trim()}`);
@@ -755,6 +764,21 @@ function PublicProposal() {
         <Card className="p-6 mt-6 print:hidden">
           <h3 className="font-display text-lg font-bold mb-2">{t.sendToClient}</h3>
           <p className="text-sm text-muted-foreground mb-4">{t.sendToClientHint}</p>
+          {isOwner && proposal.raw_input?.scope_check?.missing?.length > 0 && !proposal.raw_input?.scope_check?.acknowledged_at && (
+            <label className="flex items-start gap-2 mb-4 text-sm bg-red-50 border border-red-200 rounded-md p-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={scopeAckChecked}
+                onChange={(e) => setScopeAckChecked(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span className="text-red-900">
+                I've reviewed the possible missing scope above (
+                <span className="font-semibold">{proposal.raw_input.scope_check.missing.join(", ")}</span>
+                ) and want to send this proposal anyway.
+              </span>
+            </label>
+          )}
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
               type="email"
@@ -763,7 +787,15 @@ function PublicProposal() {
               onChange={(e) => setSendEmail(e.target.value)}
               className="flex-1"
             />
-            <Button onClick={sendToClient} disabled={sending}>
+            <Button
+              onClick={sendToClient}
+              disabled={
+                sending ||
+                (proposal.raw_input?.scope_check?.missing?.length > 0 &&
+                  !proposal.raw_input?.scope_check?.acknowledged_at &&
+                  !scopeAckChecked)
+              }
+            >
               {sending ? t.sending : t.sendBtn}
             </Button>
           </div>
